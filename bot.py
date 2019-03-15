@@ -206,7 +206,7 @@ def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
     tg.sendMessage(chatId, msg)
 
 def notifyTaskTested(handle, task, accepted):
-  funnyInsults = ["%s faild on system tests for task %s. What a looser.", 
+  funnyInsults = ["%s faild on system tests for task %s. What a looser.",
                   "%s should probably look for a different hobby. He faild the system tests for task %s.",
                   "%s failed the system tests for task %s. *So sad! It's true.*"]
 
@@ -318,6 +318,10 @@ def noCommand(cid, msg):
     invalidCommand(cid, msg)
 
 
+def testEditMessage(chatId, msg):
+  id = tg.sendMessage(chatId, "test")
+  time.sleep(3)
+  tg.editMessageText(chatId, id, "edited test")
 
 #-----
 def handleMessage(chatId, text):
@@ -327,7 +331,8 @@ def handleMessage(chatId, text):
     "/add_friend":handleAddFriendRequest,
     "/set_authorization":handleSetAuthorization,
     "/current_standings":sendStandings,
-    "/friend_settings":sendFriendSettingsButtons
+    "/friend_settings":sendFriendSettingsButtons,
+    "/test_command":testEditMessage
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)
   func(str(chatId), text)

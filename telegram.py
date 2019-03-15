@@ -70,14 +70,16 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 
 def editMessageText(chatId, msgId, msg):
   #TODO escape msg???
-  util.log("editMessageText:", chatId, msg)
+  util.log("editMessageText: " + str(chatId) + " " + str(msg))
   params = {
-    'chat_id=':str(chatId),
-    'message_id=':str(msgId),
-    'text=':msg
+    'chat_id':str(chatId),
+    'message_id':str(msgId),
+    'text':msg
   }
   url = requestUrl + 'editMessageText'
   try:
+    print(url)
+    print(params)
     r = requests.post(requestUrl, data=params)
     r = r.json()
     print("feedback:", r)
