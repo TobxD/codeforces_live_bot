@@ -8,6 +8,10 @@ import util
 
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 openCommandFunc = {}
+standingsSent = {}
+
+points = {}
+notFinal = {}
 
 #------------------------ Callback functions -----------------------------------
 #-------------------------------------------------------------------------------
@@ -182,12 +186,13 @@ def getFriendStandings(chatId, contestId):
   return msg
 
 def sendContestStandings(chatId, contestId):
+  global standingsSent
   id = tg.sendMessage(chatId, getFriendStandings(chatId, contestId))
   if chatId not in standingsSent:
     standingsSent[chatId] = {}
   if id != False:
     standingsSent[chatId][contestId] = id
-  util.log('standings:')
+  print('standings initialized:')
   print(standingsSent)
 
 def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
@@ -217,8 +222,8 @@ def updateStadingForUser(contest, user, messageId):
   msg = getFriendStandings(user, contest)
   tg.editMessageText(user, messageId, msg)
 
-standingsSent = {}
 def updateStandings(contest, users):
+  global standingsSent
   for user in users:
     if user not in standingsSent:
       standingsSent[user] = {}
@@ -228,9 +233,12 @@ def updateStandings(contest, users):
       util.log('update stadings for ' + str(user) + '!')
       updateStadingForUser(contest, user, standingsSent[user][contest])
 
-points = {}
-notFinal = {}
 def analyseFriendStandings(firstRead=False):
+  global standingsSent
+  print('standings at other point:')
+  print(standingsSent)
+  global points
+  global notFinal
   friends = db.getAllFriends()
   for c in cf.getCurrentContests():
     if c not in points:
@@ -294,6 +302,7 @@ def invalidCommand(cid, msg):
   tg.sendMessage(cid, "Invalid command!")
 
 def noCommand(cid, msg):
+  global openCommandFunc
   if cid in openCommandFunc:
     openCommandFunc[cid](cid, msg)
   else:

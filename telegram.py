@@ -13,7 +13,6 @@ lastUpdateID = -1
 def readRequestUrl():
   global requestUrl
   requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
-  print(requestUrl)
 
 def poll():
   try:
