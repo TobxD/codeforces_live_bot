@@ -69,14 +69,18 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
     traceback.print_exc()
 
 def editMessageText(chatId, msgId, msg):
+  #TODO escape msg???
+  util.log("editMessageText:", chatId, msg)
   params = {
-    'chat_id=':(str(chatId) + '&'),
-    'message_id=':(str(msgId) + '&'),
+    'chat_id=':str(chatId),
+    'message_id=':str(msgId),
     'text=':msg
   }
   url = requestUrl + 'editMessageText'
   try:
-    r = request.post(requestUrl, data=params)
+    r = requests.post(requestUrl, data=params)
+    r = r.json()
+    print("feedback:", r)
   except Exception as e:
     traceback.print_exc()
 

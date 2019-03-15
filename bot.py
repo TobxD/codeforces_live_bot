@@ -9,7 +9,6 @@ import util
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 openCommandFunc = {}
 standingsSent = {}
-
 points = {}
 notFinal = {}
 
@@ -207,16 +206,26 @@ def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
     tg.sendMessage(chatId, msg)
 
 def notifyTaskTested(handle, task, accepted):
+  funnyInsults = ["%s faild on system tests for task %s. What a looser.", 
+                  "%s should probably look for a different hobby. He faild the system tests for task %s.",
+                  "%s failed the system tests for task %s. *So sad! It's true.*"]
+
   if accepted:
     msg = handle + " got accepted on system tests for task " + task
   else:
-    msg = handle + " failed on system tests for task " + task
+    if tg.getUserRating(handle) >= 2300:
+      insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
+      msg = insult % (handle, task)
+    else:
+      msg = handle + " failed on system tests for task " + task
+
   for chatId in db.getWhoseFriends(handle):
     tg.sendMessage(chatId, msg)
 
 def sendStandings(chatId, msg):
   for c in cf.getCurrentContests():
     sendContestStandings(chatId, c)
+  print("sendStandings:", standingsSent)
 
 def updateStadingForUser(contest, user, messageId):
   msg = getFriendStandings(user, contest)
@@ -236,7 +245,7 @@ def updateStandings(contest, users):
 def analyseFriendStandings(firstRead=False):
   global standingsSent
   print('standings at other point:')
-  print(standingsSent)
+  print(str(standingsSent))
   global points
   global notFinal
   friends = db.getAllFriends()
@@ -266,7 +275,7 @@ def analyseFriendStandings(firstRead=False):
           if not firstRead:
             notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
                  task["bestSubmissionTimeSeconds"], r["rank"] != 0)
-            updateStandings(c, db.getWhoseFriends(handle))
+            updateStandings(c, db.getWhoseFriends(handle, allList=True))
           lastPoints[handle].append(taski)
           flag = True
           if task['type'] == 'PRELIMINARY':
@@ -274,7 +283,7 @@ def analyseFriendStandings(firstRead=False):
         if task['type'] == 'FINAL' and taski in notFinal[c][handle]:
           notFinal[c][handle].remove(taski)
           notifyTaskTested(handle, taskName, task['points'] > 0)
-          updateStandings(c, db.getWhoseFriends(handle))
+          updateStandings(c, db.getWhoseFriends(handle, allList=True))
 
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
@@ -321,7 +330,8 @@ def handleMessage(chatId, text):
     "/friend_settings":sendFriendSettingsButtons
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)
-  func(chatId, text)
+  func(str(chatId), text)
+
 
 def mainLoop():
   tg.readRequestUrl()

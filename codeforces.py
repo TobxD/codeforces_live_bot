@@ -40,6 +40,12 @@ def getUserInfos(userNameArr):
   r = sendRequest('user.info', {'handles':usrList})
   return r
 
+def getUserRating(handle):
+  info = cf.getUserInfos([handle])
+  if info == False:
+    return 0
+  return info[0]["rating"]
+
 def getFriendsWithDetails(chatId):
   if time.time() - friendsLastUpdated.get(chatId, 0) > 1200:
     p = {}

@@ -65,7 +65,10 @@ def getAllFriends():
   res = queryDB(query, ())
   return [x[0] for x in res]
 
-def getWhoseFriends(handle):
-  query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND contestWatch=True"
+def getWhoseFriends(handle, allList = False):
+  if allList:
+    query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND (ratingWatch=True OR contestWatch=True)"
+  else:
+    query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND contestWatch=True"
   res = queryDB(query, (handle,))
   return [row[0] for row in res]
