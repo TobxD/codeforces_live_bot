@@ -105,7 +105,7 @@ def loadCurrentContests():
 
 def getCurrentContests():
   #return [1114]
-  return [1133]
+  #return [1133]
   global aktuelleContests
   global currentContests
   selectImportantContests(aktuelleContests)

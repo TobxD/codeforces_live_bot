@@ -58,9 +58,9 @@ def sendMessage(chatId, text, reply_markup = None):
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
   params = {
-  'chat_id':str(chatId),
-  'message_id': str(msgId),
-  'reply_markup': reply_markup
+    'chat_id':str(chatId),
+    'message_id': str(msgId),
+    'reply_markup': reply_markup
   }
   try:
     r = requests.post(requestUrl + 'editMessageReplyMarkup', data=params)
@@ -72,17 +72,17 @@ def editMessageText(chatId, msgId, msg):
   #TODO escape msg???
   util.log("editMessageText: " + str(chatId) + " " + str(msg))
   params = {
+    'parse_mode':'Markdown',
     'chat_id':str(chatId),
     'message_id':str(msgId),
     'text':msg
   }
   url = requestUrl + 'editMessageText'
   try:
-    print(url)
-    print(params)
-    r = requests.post(requestUrl, data=params)
+    r = requests.post(url, data=params)
     r = r.json()
-    print("feedback:", r)
+    if not r['ok']:
+      print("fehler beim editieren einer Nachricht:", r['description'])
   except Exception as e:
     traceback.print_exc()
 

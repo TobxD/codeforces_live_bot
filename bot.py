@@ -191,8 +191,6 @@ def sendContestStandings(chatId, contestId):
     standingsSent[chatId] = {}
   if id != False:
     standingsSent[chatId][contestId] = id
-  print('standings initialized:')
-  print(standingsSent)
 
 def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
   if official:
@@ -213,7 +211,7 @@ def notifyTaskTested(handle, task, accepted):
   if accepted:
     msg = handle + " got accepted on system tests for task " + task
   else:
-    if tg.getUserRating(handle) >= 2300:
+    if cf.getUserRating(handle) >= 2300:
       insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
       msg = insult % (handle, task)
     else:
@@ -225,7 +223,6 @@ def notifyTaskTested(handle, task, accepted):
 def sendStandings(chatId, msg):
   for c in cf.getCurrentContests():
     sendContestStandings(chatId, c)
-  print("sendStandings:", standingsSent)
 
 def updateStadingForUser(contest, user, messageId):
   msg = getFriendStandings(user, contest)
@@ -244,8 +241,6 @@ def updateStandings(contest, users):
 
 def analyseFriendStandings(firstRead=False):
   global standingsSent
-  print('standings at other point:')
-  print(str(standingsSent))
   global points
   global notFinal
   friends = db.getAllFriends()
@@ -317,12 +312,6 @@ def noCommand(cid, msg):
   else:
     invalidCommand(cid, msg)
 
-
-def testEditMessage(chatId, msg):
-  id = tg.sendMessage(chatId, "test")
-  time.sleep(3)
-  tg.editMessageText(chatId, id, "edited test")
-
 #-----
 def handleMessage(chatId, text):
   msgSwitch = {
@@ -331,8 +320,7 @@ def handleMessage(chatId, text):
     "/add_friend":handleAddFriendRequest,
     "/set_authorization":handleSetAuthorization,
     "/current_standings":sendStandings,
-    "/friend_settings":sendFriendSettingsButtons,
-    "/test_command":testEditMessage
+    "/friend_settings":sendFriendSettingsButtons
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)
   func(str(chatId), text)
@@ -344,9 +332,9 @@ def mainLoop():
   cf.loadCurrentContests()
   analyseFriendStandings(True)
   callbacks = [
-  (cf.loadCurrentContests, 3600, time.time()),
-  (analyseFriendStandings, 30, 0),
-  (tg.startPolling,1,0)
+    (cf.loadCurrentContests, 3600, time.time()),
+    (analyseFriendStandings, 30, 0),
+    (tg.startPolling,1,0)
   ]
   while True:
     for i in range(len(callbacks)):
@@ -358,6 +346,3 @@ def mainLoop():
         except Exception as e:
           traceback.print_exc()
     time.sleep(0.01)
-
-if __name__ == "__main__":
-  mainLoop()
