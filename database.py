@@ -3,7 +3,7 @@ import util
 
 def openDB():
   db_creds = [line.rstrip('\n') for line in open('.database_creds')]
-  db = mysql.connector.connect(user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database="zbBzZKMXJ6")
+  db = mysql.connector.connect(user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
   return db
 
 def queryDB(query, params):
