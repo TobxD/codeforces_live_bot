@@ -95,11 +95,12 @@ def handleCallbackQuery(callback):
   chatId = callback['message']['chat']['id']
   data = callback['data']
   [handle, button, gesetzt] = data.split(';')
+  gesetzt = (gesetzt == '1')
   if button == "0":
-    notf = "You will " + ("" if gesetzt else "no longer") + " see "+ handle +" on your list."
+    notf = "You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
     db.setFriendSettings(chatId, handle, 'ratingWatch', gesetzt)
   else:
-    notf = "You will " + ("" if gesetzt else "no longer") + " receive notifications for "+ handle +"."
+    notf = "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
     db.setFriendSettings(chatId, handle, 'contestWatch', gesetzt)
   tg.sendAnswerCallback(callback['id'], notf)
 
@@ -111,7 +112,9 @@ def handleCallbackQuery(callback):
 # ------ Current Standings  -------
 
 def getRatingChanges(contestId):
+  util.log('request rating changes from cf-predictor')
   r = requests.get(cfPredictorUrl + str(contestId))
+  util.log('rating changes received')
   r = r.json()
   if r['status'] != 'OK':
     return {}

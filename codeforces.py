@@ -37,7 +37,9 @@ def sendRequest(method, params, authorized = False, chatId = -1):
 
 def getUserInfos(userNameArr):
   usrList = ';'.join(userNameArr)
+  util.log('requesting info of ' + str(len(userNameArr)) + ' users ')
   r = sendRequest('user.info', {'handles':usrList})
+  util.log('requesting infos finished')
   return r
 
 def getUserRating(handle):
@@ -47,13 +49,16 @@ def getUserRating(handle):
   return info[0]["rating"]
 
 def getFriendsWithDetails(chatId):
+  global friendsLastUpdated
   if time.time() - friendsLastUpdated.get(chatId, 0) > 1200:
     p = {}
     p['onlyOnline'] = 'false'
+    util.log('request friends of user with chat_id ' + str(chatId))
     f = sendRequest("user.friends", p, True, chatId)
+    util.log('requesting friends finished')
     if f != False:
       db.addFriends(chatId, f)
-      friendsLastUpdated['userId'] = time.time()
+      friendsLastUpdated[chatId] = time.time()
       util.log('friends updated for user ' + str(chatId))
   return db.getFriends(chatId)
 
@@ -63,7 +68,10 @@ def getFriends(chatId):
 
 def getStandings(contestId, handleList):
   handleString = ";".join(handleList)
-  return sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+  util.log('request standings for contest ' + str(contestId) + ' for ' + str(len(handleList)) + ' users')
+  standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+  util.log('standings received')
+  return standings
 
 aktuelleContests = []
 currentContests = []
