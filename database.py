@@ -1,8 +1,12 @@
 import mysql.connector
 import util
 
+db_creds = None
+
 def openDB():
-  db_creds = [line.rstrip('\n') for line in open('.database_creds')]
+  global db_creds
+  if db_creds == None:
+    db_creds = [line.rstrip('\n') for line in open('.database_creds')]
   db = mysql.connector.connect(user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
   return db
 
