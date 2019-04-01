@@ -290,7 +290,6 @@ def getDescription(contest):
   res += " starts in "
   timeLeft = int(contest['startTimeSeconds'] - time.time())
   delta = datetime.timedelta(seconds=timeLeft)
-  #res += str(delta)
   res += '*' + ':'.join(str(delta).split(':')[:2]) + ' hours' + '*'
   res += '\n'
   return res
@@ -302,7 +301,22 @@ def handleUpcoming(chatId, req):
       msg += "\n"
     msg += getDescription(c)
   tg.sendMessage(chatId, msg)
+
+def notifyAllUpcoming(contest):
+  description = getDescription(contest)
+  for chatId in db.getAllChatPartners():
+    tg.sendMessage(chatId, description)
     
+notified = {}
+def checkUpcomingContest():
+  global notified
+  notifyTimes = [3600*24+59, 3600*2+59, -100000000]
+  for c in cf.getFutureContests():
+    timeLeft = c['startTimeSeconds'] - time.time()
+    for i in range(len(notifyTimes)):
+      if timeLeft <= notifyTimes[notified.get(c['id'], 0)]:
+        notified[c['id']] = notified.get(c['id'], 0) + 1
+        notifyAllUpcoming(c)
 
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
@@ -359,7 +373,8 @@ def mainLoop():
   callbacks = [
     (cf.loadCurrentContests, 3600, time.time()),
     (analyseFriendStandings, 30, 0),
-    (tg.startPolling,1,0)
+    (tg.startPolling,1,0),
+    (checkUpcomingContest,50,0)
   ]
   while True:
     for i in range(len(callbacks)):

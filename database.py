@@ -76,3 +76,11 @@ def getWhoseFriends(handle, allList = False):
     query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND contestWatch=True"
   res = queryDB(query, (handle,))
   return [row[0] for row in res]
+
+def getAllChatPartners():
+  query = "SELECT chatId FROM tokens"
+  res = queryDB(query, ())
+  ret = []
+  for x in res:
+    ret.append(x[0])
+  return ret
