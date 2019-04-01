@@ -1,4 +1,4 @@
-import json, requests, time
+import json, requests, time, datetime
 import sys, traceback, random, hashlib
 import database as db
 import telegram as tg
@@ -283,6 +283,27 @@ def analyseFriendStandings(firstRead=False):
           notifyTaskTested(handle, taskName, task['points'] > 0)
           updateStandings(c, db.getWhoseFriends(handle, allList=True))
 
+# ------- Upcoming Contests -----
+def getDescription(contest):
+  res = ""
+  res += "*" + contest['name'] + "*"
+  res += " starts in "
+  timeLeft = int(contest['startTimeSeconds'] - time.time())
+  delta = datetime.timedelta(seconds=timeLeft)
+  #res += str(delta)
+  res += '*' + ':'.join(str(delta).split(':')[:2]) + ' hours' + '*'
+  res += '\n'
+  return res
+
+def handleUpcoming(chatId, req):
+  msg = ""
+  for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):
+    if msg != "":
+      msg += "\n"
+    msg += getDescription(c)
+  tg.sendMessage(chatId, msg)
+    
+
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
   db.setApiSecret(chatId, req)
@@ -323,7 +344,8 @@ def handleMessage(chatId, text):
     "/add_friend":handleAddFriendRequest,
     "/set_authorization":handleSetAuthorization,
     "/current_standings":sendStandings,
-    "/friend_settings":sendFriendSettingsButtons
+    "/friend_settings":sendFriendSettingsButtons,
+    "/upcoming": handleUpcoming
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)
   func(str(chatId), text)

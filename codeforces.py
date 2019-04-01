@@ -112,9 +112,14 @@ def loadCurrentContests():
   util.log('loding contests finished')
 
 def getCurrentContests():
-  #return [1114]
-  #return [1133]
   global aktuelleContests
   global currentContests
   selectImportantContests(aktuelleContests)
   return currentContests
+
+def getFutureContests():
+  res = []
+  for c in aktuelleContests:
+    if c.get('startTimeSeconds', -1) > time.time():
+      res.append(c)
+  return res

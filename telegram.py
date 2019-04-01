@@ -70,7 +70,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 
 def editMessageText(chatId, msgId, msg):
   #TODO escape msg???
-  util.log("editMessageText: " + str(chatId) + " " + str(msg))
+  #util.log("editMessageText: " + str(chatId) + " " + str(msg))
   params = {
     'parse_mode':'Markdown',
     'chat_id':str(chatId),
