@@ -1,4 +1,5 @@
 import json, requests, time, datetime
+from pytz import timezone
 import sys, traceback, random, hashlib
 import database as db
 import telegram as tg
@@ -56,58 +57,6 @@ def handleAddFriendRequest(chatId, req):
   global openCommandFunc
   openCommandFunc[chatId] = handleAddFriendRequestCont
   tg.sendMessage(chatId, "Codeforces handle:")
-
-#------ Notification Settings------
-
-def getButtons(handle, ratingWatch, contestWatch):
-  text1 = handle + " list ["+ ("X" if ratingWatch else " ") + "]"
-  text2 = handle + " notify ["+ ("X" if contestWatch else " ") + "]"
-  data1 = handle + ";0;" + ("0" if ratingWatch else "1")
-  data2 = handle + ";1;" + ("0" if contestWatch else "1")
-  return [{"text":text1, "callback_data":data1}, {"text":text2, "callback_data":data2}]
-
-def getButtonRows(chatId):
-  buttons = []
-  friends = cf.getFriendsWithDetails(chatId)
-  if friends == None:
-    tg.sendMessage(chatId, "You don't have any friends :(")
-    return
-
-  for [handle, ratingWatch, contestWatch] in friends:
-    buttons.append(getButtons(handle, ratingWatch == 1, contestWatch == 1))
-  return buttons
-
-def sendFriendSettingsButtons(chatId, msg):
-  buttons = getButtonRows(chatId)
-
-  replyMarkup = {"inline_keyboard": buttons}
-  replyMarkup = json.dumps(replyMarkup)
-  tg.sendMessage(chatId, "Click the buttons to change the friend settings.", replyMarkup)
-
-def updateButtons(chatId, msg):
-  buttons = getButtonRows(chatId)
-
-  replyMarkup = {"inline_keyboard": buttons}
-  replyMarkup = json.dumps(replyMarkup)
-  tg.editMessageReplyMarkup(chatId, msg['message_id'], replyMarkup)
-
-def handleCallbackQuery(callback):
-  chatId = callback['message']['chat']['id']
-  data = callback['data']
-  [handle, button, gesetzt] = data.split(';')
-  gesetzt = (gesetzt == '1')
-  if button == "0":
-    notf = "You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
-    db.setFriendSettings(chatId, handle, 'ratingWatch', gesetzt)
-  else:
-    notf = "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
-    db.setFriendSettings(chatId, handle, 'contestWatch', gesetzt)
-  tg.sendAnswerCallback(callback['id'], notf)
-
-  if 'message' in callback:
-    updateButtons(chatId, callback['message'])
-  else:
-    log("Message probably too old")
 
 # ------ Current Standings  -------
 
@@ -284,13 +233,20 @@ def analyseFriendStandings(firstRead=False):
           updateStandings(c, db.getWhoseFriends(handle, allList=True))
 
 # ------- Upcoming Contests -----
-def getDescription(contest):
+
+
+
+
+def getDescription(contest, chatId):
+  timez = db.getUserTimezone(chatId)
+  tim = contest['startTimeSeconds']
   res = ""
   res += "*" + contest['name'] + "*"
-  res += " starts in "
+  res += " starts at *"
+  res += util.displayTime(tim, timez)
   timeLeft = int(contest['startTimeSeconds'] - time.time())
   delta = datetime.timedelta(seconds=timeLeft)
-  res += '*' + ':'.join(str(delta).split(':')[:2]) + ' hours' + '*'
+  res += '* (' + ':'.join(str(delta).split(':')[:2]) + ' hours' + ')'
   res += '\n'
   return res
 
@@ -299,12 +255,12 @@ def handleUpcoming(chatId, req):
   for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):
     if msg != "":
       msg += "\n"
-    msg += getDescription(c)
+    msg += getDescription(c, chatId)
   tg.sendMessage(chatId, msg)
 
 def notifyAllUpcoming(contest):
-  description = getDescription(contest)
   for chatId in db.getAllChatPartners():
+    description = getDescription(contest, chatId)
     tg.sendMessage(chatId, description)
     
 notified = {}
@@ -318,13 +274,128 @@ def checkUpcomingContest():
         notified[c['id']] = notified.get(c['id'], 0) + 1
         notifyAllUpcoming(c)
 
+
+#######################################################
+##--------------------- Settings --------------------##
+#######################################################
+
+def handleSettings(chatId, req):
+  buttons = getButtonSettings(chatId)
+  replyMarkup = {"inline_keyboard": buttons}
+  replyMarkup = json.dumps(replyMarkup)
+  tg.sendMessage(chatId, "What do you want to change?", replyMarkup)
+
+def getButtonSettings(chatId):
+  buttons = [
+    [{"text": "Change time zone",                       "callback_data": "settings:timezone"}],
+    [{"text": "Change your CF handle",                  "callback_data": "settings:handle"}],
+    [{"text": "Change Codeforces API key",              "callback_data": "settings:apikey"}],
+    [{"text": "Change friends & notification settings", "callback_data": "settings:notf"}],
+  ]
+  return buttons
+
+# all button presses
+def handleCallbackQuery(callback):
+  chatId = str(callback['message']['chat']['id'])
+  data = callback['data']
+
+  if not ":" in data:
+    log("Invalid callback data: "+ data)
+    return
+
+  pref, data = data.split(":", 1)
+
+  if pref == "settings":
+    handleSettingsCallback(chatId, data, callback)
+  elif pref == "friend_notf":
+    handleFriendNotSettingsCallback(chatId, data, callback)
+  else:
+    log("Invalid callback prefix: "+ pref + ", data: "+ data)
+
+def handleSettingsCallback(chatId, data, callback):
+  funs = {
+    "timezone": handleChangeTimezone,
+    "handle": handleSetUserHandlePrompt,
+    "apikey": handleSetAuthorization,
+    "notf": sendFriendSettingsButtons,
+  }
+  funs[data](chatId, "")
+  tg.sendAnswerCallback(callback['id'])
+
+#------ Notification Settings------
+
+def getButtons(handle, ratingWatch, contestWatch):
+  text1 = handle + " list ["+ ("X" if ratingWatch else " ") + "]"
+  text2 = handle + " notify ["+ ("X" if contestWatch else " ") + "]"
+  data1 = "friend_notf:" + handle + ";0;" + ("0" if ratingWatch else "1")
+  data2 = "friend_notf:" + handle + ";1;" + ("0" if contestWatch else "1")
+  return [{"text":text1, "callback_data":data1}, {"text":text2, "callback_data":data2}]
+
+def getButtonRows(chatId):
+  buttons = []
+  friends = cf.getFriendsWithDetails(chatId)
+  if friends == None:
+    tg.sendMessage(chatId, "You don't have any friends :(")
+    return
+
+  for [handle, ratingWatch, contestWatch] in friends:
+    buttons.append(getButtons(handle, ratingWatch == 1, contestWatch == 1))
+  return buttons
+
+def sendFriendSettingsButtons(chatId, msg):
+  buttons = getButtonRows(chatId)
+
+  replyMarkup = {"inline_keyboard": buttons}
+  replyMarkup = json.dumps(replyMarkup)
+  tg.sendMessage(chatId, "Click the buttons to change the friend settings.", replyMarkup)
+
+def updateButtons(chatId, msg):
+  buttons = getButtonRows(chatId)
+
+  replyMarkup = {"inline_keyboard": buttons}
+  replyMarkup = json.dumps(replyMarkup)
+  tg.editMessageReplyMarkup(chatId, msg['message_id'], replyMarkup)
+
+
+def handleFriendNotSettingsCallback(chatId, data, callback):
+  [handle, button, gesetzt] = data.split(';')
+  gesetzt = (gesetzt == '1')
+  if button == "0":
+    notf = "You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
+    db.setFriendSettings(chatId, handle, 'ratingWatch', gesetzt)
+  else:
+    notf = "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
+    db.setFriendSettings(chatId, handle, 'contestWatch', gesetzt)
+  tg.sendAnswerCallback(callback['id'], notf)
+
+  updateButtons(chatId, callback['message'])
+
+# ---- Set User Handle ------
+def handleSetUserHandlePrompt(chatId, msg):
+  global openCommandFunc
+  openCommandFunc[chatId] = handleSetUserHandle
+  tg.sendMessage(chatId, "Please enter your Codeforces handle:")
+
+def handleSetUserHandle(chatId, handle):
+  handle = util.cleanString(handle)
+  userInfos = cf.getUserInfos([handle])
+  if userInfos == False:
+    tg.sendMessage(chatId, "No user with this handle! Try again:")
+  else:
+    del openCommandFunc[chatId]
+    db.setUserHandle(chatId, handle)
+    db.addFriends(chatId, [handle])
+    db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself
+    tg.sendMessage(chatId, "Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
+      str(userInfos[0]['rating']) + ".")
+
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
   db.setApiSecret(chatId, req)
   global openCommandFunc
-  openCommandFunc[chatId] = handleAddFriendRequestCont
+  del openCommandFunc[chatId]
   util.log('new secret added for user ' + str(chatId))
-  tg.sendMessage(chatId, "Key added. Your friends are now added. Please enter your own handle:")
+  tg.sendMessage(chatId, "Key added. Your friends are now added.")
 
 def handleAddKey(chatId, req):
   db.setApiKey(chatId, req)
@@ -338,6 +409,36 @@ def handleSetAuthorization(chatId, req):
   openCommandFunc[chatId] = handleAddKey
   tg.sendMessage(chatId, "Go to https://codeforces.com/settings/api and generate a key.\n"
   + "Then text me two seperate messages - the first one containing the key and the second one containing the secret")
+
+#------ Start -------------
+def handleStart(chatId, text):
+  global openCommandFunc
+  openCommandFunc[chatId] = handleSetTimezone
+  tg.sendMessage(chatId, "*Welcome to the Codeforces Live Bot!*\n\n"
+  + "You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
+  + "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "
+  + "'Munich'.")
+
+# ------- Time zone -------------
+def handleChangeTimezone(chatId, text):
+  global openCommandFunc
+  openCommandFunc[chatId] = handleSetTimezone
+  tg.sendMessage(chatId, "Setting up your time zone... Please enter the city you live in:")
+
+def handleSetTimezone(chatId, req):
+  global openCommandFunc
+  req = req.lstrip().rstrip()
+  tz = util.getTimeZone(req)
+  if not tz:
+    tg.sendMessage(chatId, "Name lookup failed. Please use a different city:")
+  else:
+    del openCommandFunc[chatId]
+    db.setTimezone(chatId, tz)
+    tg.sendMessage(chatId, "Timezone set to '" + tz + "'")
+    # if in setup after start, ask for user handle
+    if not db.hasHandle(chatId):
+      tg.sendMessage(chatId, "Now I need *your* handle.")
+      handleSetUserHandlePrompt(chatId, "")
 
 # ------ Other --------
 def invalidCommand(cid, msg):
@@ -353,12 +454,12 @@ def noCommand(cid, msg):
 #-----
 def handleMessage(chatId, text):
   msgSwitch = {
+    "/start": handleStart,
     "/rating": handleRatingRequest,
     "/friend_ratings":handleFriendRatingsRequest,
     "/add_friend":handleAddFriendRequest,
-    "/set_authorization":handleSetAuthorization,
+    "/settings":handleSettings,
     "/current_standings":sendStandings,
-    "/friend_settings":sendFriendSettingsButtons,
     "/upcoming": handleUpcoming
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)

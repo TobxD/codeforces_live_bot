@@ -42,9 +42,29 @@ def setApiSecret(chatId, secret):
   query = "INSERT INTO tokens (chatId, secret) VALUES (%s, %s) ON DUPLICATE KEY UPDATE secret = %s"
   insertDB(query, (chatId, secret, secret))
 
+def setTimezone(chatId, tz):
+  query = "INSERT INTO tokens (chatId, timezone) VALUES (%s, %s) ON DUPLICATE KEY UPDATE timezone = %s"
+  insertDB(query, (chatId, tz, tz))
+
+def setUserHandle(chatId, handle):
+  query = "INSERT INTO tokens (chatId, handle) VALUES (%s, %s) ON DUPLICATE KEY UPDATE handle = %s"
+  insertDB(query, (chatId, handle, handle))
+
 def setFriendSettings(chatId, friend, column, value):
   query = "UPDATE friends SET "+column+ "= %s WHERE chatId = %s AND friend = %s"
   insertDB(query, (value, chatId, friend))
+
+def hasHandle(chatId):
+  query = "SELECT handle from tokens WHERE chatId = %s"
+  res = queryDB(query, (chatId,))
+  return res and len(res) > 0 and res[0][0]
+
+def getUserTimezone(chatId):
+  query = "SELECT timezone from tokens WHERE chatId = %s"
+  res = queryDB(query, (chatId,))
+  if res and len(res) > 0:
+    return res[0][0]
+  return "UTC"
 
 def addFriends(chatId, friends):
   query = "INSERT INTO friends (chatId, friend) VALUES "
