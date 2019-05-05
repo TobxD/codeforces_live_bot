@@ -263,7 +263,7 @@ def analyseFriendStandings(firstRead=False):
       if handle not in lastPoints:
         lastPoints[handle] = []
       if handle not in notFinal[c]:
-        notFinal[c][handle] = {}
+        notFinal[c][handle] = []
       for taski in range(len(r["problemResults"])):
         task = r["problemResults"][taski]
         flag = False
