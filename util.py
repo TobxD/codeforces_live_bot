@@ -39,10 +39,12 @@ def dateToTimezone(date, timez):
 
 def formatDate(date, f):
   months = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
+  days = ["Mon.", "Tue.", "Wen.", "Thu.", "Fri.", "Sat.", "Sun."]
   f = f.replace('#hh#', date.strftime("%H"))
   f = f.replace('#h#', date.strftime("%-H"))
   f = f.replace('#mm#', date.strftime("%M"))
   f = f.replace('#DD#', date.strftime("%d"))
+  f = f.replace('#DDD#', days[date.weekday()])
   f = f.replace('#MM#', date.strftime("%m"))
   f = f.replace('#MMM#', months[date.month -1])
   f = f.replace('#YYYY#', date.strftime("%Y"))
@@ -67,6 +69,8 @@ def displayTime(t, timez):
     else:
       outText = "today "
     outText += formatDate(t,"#hh#:#mm#")
+  elif diff < 60*60*24*14:
+    outText = formatDate(t,"#DDD# #DD# #MMM# #hh#:#mm#")
   elif diff < 60*60*24*14:
     outText = formatDate(t,"#DD#. #MMM# #hh#:#mm#")
   elif diff < 60*60*24*30*3:

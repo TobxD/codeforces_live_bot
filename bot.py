@@ -240,13 +240,15 @@ def analyseFriendStandings(firstRead=False):
 def getDescription(contest, chatId):
   timez = db.getUserTimezone(chatId)
   tim = contest['startTimeSeconds']
-  res = ""
-  res += "*" + contest['name'] + "*"
-  res += " starts at *"
-  res += util.displayTime(tim, timez)
+
   timeLeft = int(contest['startTimeSeconds'] - time.time())
   delta = datetime.timedelta(seconds=timeLeft)
-  res += '* (' + ':'.join(str(delta).split(':')[:2]) + ' hours' + ')'
+
+  timeStr = "*" + util.displayTime(tim, timez)
+  timeStr += '* (in ' + ':'.join(str(delta).split(':')[:2]) + ' hours' + ')'
+
+  res = timeStr.ljust(35)
+  res += ":\n" + contest['name'] + ""
   res += '\n'
   return res
 
