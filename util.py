@@ -203,3 +203,6 @@ def formatTable(header, rows):
 def log(msg):
   timeString = '[' + str(datetime.datetime.now()) + '] '
   print(timeString + msg)
+  of = open('log.txt', 'a')
+  of.write(timeString + msg + "\n")
+  of.close()
