@@ -16,7 +16,7 @@ def readRequestUrl():
 
 def poll():
   try:
-    r = requests.get(requestUrl + 'getUpdates?offset=' + str(lastUpdateID+1))
+    r = requests.get(requestUrl + 'getUpdates?offset=' + str(lastUpdateID+1), timeout=5)
     r = r.json()
   except Exception as e:
     traceback.print_exc()
@@ -32,7 +32,7 @@ def sendAnswerCallback(callback_query_id, text = ""):
     'text':text
   }
   try:
-    r = requests.post(requestUrl + 'answerCallbackQuery', data=params)
+    r = requests.post(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
     r = r.json()
   except Exception as e:
     traceback.print_exc()
@@ -45,7 +45,7 @@ def sendMessage(chatId, text, reply_markup = None):
   'reply_markup': reply_markup
   }
   try:
-    r = requests.post(requestUrl + 'sendMessage', data=params)
+    r = requests.post(requestUrl + 'sendMessage', data=params, timeout=5)
     r = r.json()
     if r['ok']:
       return r['result']['message_id']
@@ -63,7 +63,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
     'reply_markup': reply_markup
   }
   try:
-    r = requests.post(requestUrl + 'editMessageReplyMarkup', data=params)
+    r = requests.post(requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
     r = r.json()
   except Exception as e:
     traceback.print_exc()
@@ -79,7 +79,7 @@ def editMessageText(chatId, msgId, msg):
   }
   url = requestUrl + 'editMessageText'
   try:
-    r = requests.post(url, data=params)
+    r = requests.post(url, data=params, timeout=5)
     r = r.json()
     if not r['ok']:
       print("fehler beim editieren einer Nachricht:", r['description'])

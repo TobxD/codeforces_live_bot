@@ -28,7 +28,7 @@ def sendRequest(method, params, authorized = False, chatId = -1):
     hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + secret) # ignore last '&'
     tailPart += 'apiSig=' + rnd + hsh
   request += tailPart
-  r = requests.get(request)
+  r = requests.get(request, timeout=5)
   r = r.json()
   if r['status'] == 'OK':
     return r['result']
