@@ -20,6 +20,7 @@ def poll():
     r = r.json()
   except Exception as e:
     traceback.print_exc()
+    util.log(traceback.format_exc())
     return []
   if r['ok']:
     return r['result']
@@ -35,6 +36,7 @@ def sendAnswerCallback(callback_query_id, text = ""):
     r = requests.post(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
     r = r.json()
   except Exception as e:
+    util.log(traceback.format_exc())
     traceback.print_exc()
 
 def sendMessage(chatId, text, reply_markup = None):
@@ -54,6 +56,7 @@ def sendMessage(chatId, text, reply_markup = None):
       return False
   except Exception as e:
     traceback.print_exc()
+    util.log(traceback.format_exc())
     return False
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
@@ -67,6 +70,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
     r = r.json()
   except Exception as e:
     traceback.print_exc()
+    util.log(traceback.format_exc())
 
 def editMessageText(chatId, msgId, msg):
   #TODO escape msg???
@@ -85,6 +89,7 @@ def editMessageText(chatId, msgId, msg):
       print("fehler beim editieren einer Nachricht:", r['description'])
   except Exception as e:
     traceback.print_exc()
+    util.log(traceback.format_exc())
 
 def startPolling():
   curUpd = poll()

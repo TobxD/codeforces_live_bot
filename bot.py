@@ -488,4 +488,5 @@ def mainLoop():
           fun()
         except Exception as e:
           traceback.print_exc()
+          util.log(traceback.format_exc())
     time.sleep(0.01)

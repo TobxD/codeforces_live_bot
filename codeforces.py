@@ -18,6 +18,7 @@ def sendRequest(method, params, authorized = False, chatId = -1):
       params['apiKey'] = key
       params['time'] = str(int(time.time()))
     except Exception as e:
+      util.log(traceback.format_exc())
       return False
 
   for key in sorted(params):
