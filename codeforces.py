@@ -102,7 +102,8 @@ def selectImportantContests(contestList):
       aktuelleContests.append(c)
   if len(currentContests) == 0:
     for c in contestList:
-      if c.get('startTimeSeconds', -2) == lastStart:
+      twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
+      if c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld):
         aktuelleContests.append(c)
         currentContests.append(c['id'])
 

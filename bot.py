@@ -225,9 +225,9 @@ def analyseFriendStandings(firstRead=False):
             updateStandings(c, db.getWhoseFriends(handle, allList=True))
           lastPoints[handle].append(taski)
           flag = True
-          if task['type'] == 'PRELIMINARY':
+          if task['type'] == 'PRELIMINARY' and (taski not in notFinal[c][handle]:
             notFinal[c][handle].append(taski)
-        if task['type'] == 'FINAL' and taski in notFinal[c][handle]:
+        if task['type'] == 'FINAL' and (taski in notFinal[c][handle]):
           notFinal[c][handle].remove(taski)
           notifyTaskTested(handle, taskName, task['points'] > 0)
           updateStandings(c, db.getWhoseFriends(handle, allList=True))
