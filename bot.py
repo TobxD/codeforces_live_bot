@@ -159,7 +159,7 @@ def notifyTaskTested(handle, task, accepted):
   funnyInsults = ["%s faild on system tests for task %s. What a looser.",
                   "%s should probably look for a different hobby. He faild the system tests for task %s.",
                   "%s failed the system tests for task %s. *So sad! It's true.*"]
-
+  util.log('notifyTaskTested ' + str(task) + ' for user ' + str(handle) + ' accepted: ' + str(accepted))
   if accepted:
     msg = handle + " got accepted on system tests for task " + task
   else:
@@ -225,9 +225,11 @@ def analyseFriendStandings(firstRead=False):
             updateStandings(c, db.getWhoseFriends(handle, allList=True))
           lastPoints[handle].append(taski)
           flag = True
-          if task['type'] == 'PRELIMINARY' and (taski not in notFinal[c][handle]:
+          if task['type'] == 'PRELIMINARY' and (taski not in notFinal[c][handle]):
+            util.log('adding non-final task ' + str(taski) + ' for user ' + str(handle))
             notFinal[c][handle].append(taski)
         if task['type'] == 'FINAL' and (taski in notFinal[c][handle]):
+          util.log('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
           notFinal[c][handle].remove(taski)
           notifyTaskTested(handle, taskName, task['points'] > 0)
           updateStandings(c, db.getWhoseFriends(handle, allList=True))
