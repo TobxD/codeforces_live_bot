@@ -54,7 +54,7 @@ def formatDate(date, f):
 def displayTime(t, timez):
   if t is None:
     return "forever"
-  if timez is None:
+  if timez is None or timez == "":
     timez = "UTC"
   now = datetime.datetime.now(timezone(timez))
   t = datetime.datetime.utcfromtimestamp(t).replace(tzinfo=timezone("UTC")).astimezone(timezone(timez))

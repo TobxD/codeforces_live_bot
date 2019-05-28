@@ -173,7 +173,7 @@ def notifyTaskTested(handle, task, accepted):
     tg.sendMessage(chatId, msg)
 
 def sendStandings(chatId, msg):
-  for c in cf.getCurrentContests():
+  for c in cf.getCurrentContestsId():
     sendContestStandings(chatId, c)
 
 def updateStadingForUser(contest, user, messageId):
@@ -196,7 +196,7 @@ def analyseFriendStandings(firstRead=False):
   global points
   global notFinal
   friends = db.getAllFriends()
-  for c in cf.getCurrentContests():
+  for c in cf.getCurrentContestsId():
     if c not in points:
       points[c] = {}
     if c not in notFinal:
@@ -267,16 +267,31 @@ def notifyAllUpcoming(contest):
     description = getDescription(contest, chatId)
     tg.sendMessage(chatId, description)
     
+def sendAllSummary(contest):
+  for chatId in db.getAllChatPartners():
+    msg = contest['name'] + " has finished. Here are the final results: "
+    tg.sendMessage(chatId, msg)
+    sendContestStandings(chatId, contest['id'])
+
 notified = {}
+summarized = set()
+
 def checkUpcomingContest():
   global notified
+  global summarized
   notifyTimes = [3600*24+59, 3600*2+59, -100000000]
   for c in cf.getFutureContests():
     timeLeft = c['startTimeSeconds'] - time.time()
+    endtime = c['startTimeSeconds'] + c['durationSeconds']
     for i in range(len(notifyTimes)):
       if timeLeft <= notifyTimes[notified.get(c['id'], 0)]:
         notified[c['id']] = notified.get(c['id'], 0) + 1
         notifyAllUpcoming(c)
+  # current contests
+  for c in cf.getCurrentContests():
+    if cf.getContestStatus(c) == 'finished' and not c['id'] in summarized:
+      summarized.add(c['id'])
+      sendAllSummary(c)
 
 
 #######################################################

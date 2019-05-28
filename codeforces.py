@@ -82,6 +82,8 @@ def getContestStatus(contest):
     return 'before'
   elif contest['startTimeSeconds']+contest['durationSeconds'] >= time.time():
     return 'running'
+  elif contest['phase'] != 'FINISHED':
+    return 'testing'
   else:
     return 'finished'
 
@@ -95,8 +97,8 @@ def selectImportantContests(contestList):
     status = getContestStatus(c)
     if status == 'running':
       aktuelleContests.append(c)
-      currentContests.append(c['id'])
-    elif status == 'finished':
+      currentContests.append(c)
+    elif status == 'finished' or status == 'testing':
       lastStart = max(lastStart, c.get('startTimeSeconds', -1))
     else:
       aktuelleContests.append(c)
@@ -105,7 +107,7 @@ def selectImportantContests(contestList):
       twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
       if c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld):
         aktuelleContests.append(c)
-        currentContests.append(c['id'])
+        currentContests.append(c)
 
 def loadCurrentContests():
   util.log('loading current contests')
@@ -114,10 +116,11 @@ def loadCurrentContests():
   util.log('loding contests finished')
 
 def getCurrentContests():
-  global aktuelleContests
-  global currentContests
   selectImportantContests(aktuelleContests)
   return currentContests
+
+def getCurrentContestsId():
+  return [c['id'] for c in getCurrentContests()]
 
 def getFutureContests():
   res = []
