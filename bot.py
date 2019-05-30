@@ -239,8 +239,9 @@ def analyseFriendStandings(firstRead=False):
 
 
 
-def getDescription(contest, chatId):
-  timez = db.getUserTimezone(chatId)
+def getDescription(contest, chatId, timez = None):
+  if timez is None:
+    timez = db.getUserTimezone(chatId)
   tim = contest['startTimeSeconds']
 
   timeLeft = int(contest['startTimeSeconds'] - time.time())
@@ -255,11 +256,12 @@ def getDescription(contest, chatId):
   return res
 
 def handleUpcoming(chatId, req):
+  timez = db.getUserTimezone(chatId)
   msg = ""
   for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):
     if msg != "":
       msg += "\n"
-    msg += getDescription(c, chatId)
+    msg += getDescription(c, chatId, timez)
   tg.sendMessage(chatId, msg)
 
 def notifyAllUpcoming(contest):

@@ -52,7 +52,7 @@ def sendMessage(chatId, text, reply_markup = None):
     if r['ok']:
       return r['result']['message_id']
     else:
-      log('fehler beim senden der Nachricht: ' + r['description'])
+      util.log('fehler beim senden der Nachricht: ' + r['description'])
       return False
   except Exception as e:
     traceback.print_exc()
