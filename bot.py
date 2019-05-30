@@ -472,6 +472,7 @@ def noCommand(cid, msg):
 
 #-----
 def handleMessage(chatId, text):
+  util.log("-> " + text + " <-")
   msgSwitch = {
     "/start": handleStart,
     "/rating": handleRatingRequest,
