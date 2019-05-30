@@ -7,7 +7,7 @@ import bot
 
 requestUrl = ''
 lastUpdateID = -1
-
+RESTART = 0
 #------ Main part with bot API access ------
 
 def readRequestUrl():
@@ -40,6 +40,9 @@ def sendAnswerCallback(callback_query_id, text = ""):
     traceback.print_exc()
 
 def sendMessage(chatId, text, reply_markup = None):
+  # dont send msg 30sec after restart
+  if time.time() - RESTART < 30:
+    return
   params = {
   'parse_mode':'Markdown',
   'chat_id':str(chatId),

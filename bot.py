@@ -13,6 +13,7 @@ standingsSent = {}
 points = {}
 notFinal = {}
 
+
 #------------------------ Callback functions -----------------------------------
 #-------------------------------------------------------------------------------
 
@@ -489,6 +490,11 @@ def handleMessage(chatId, text):
 
 
 def mainLoop():
+  # with -r restart and dont send msg for 30sec
+  if len(sys.argv) >= 2 and sys.argv[1] == "-r":
+    tg.RESTART = time.time()
+  else:
+    tg.RESTART = 0
   tg.readRequestUrl()
 
   cf.loadCurrentContests()
