@@ -74,8 +74,8 @@ def getStandings(contestId, handleList):
   util.log('standings received')
   return standings
 
-aktuelleContests = []
-currentContests = []
+aktuelleContests = [] # display scoreboard + upcomming
+currentContests = [] # display scoreboard
 
 def getContestStatus(contest):
   if contest['startTimeSeconds'] >= time.time():
@@ -105,7 +105,7 @@ def selectImportantContests(contestList):
   if len(currentContests) == 0:
     for c in contestList:
       twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
-      if c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld):
+      if c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and not c in aktuelleContests):
         aktuelleContests.append(c)
         currentContests.append(c)
 
