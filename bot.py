@@ -217,9 +217,9 @@ def analyseFriendStandings(firstRead=False):
       for taski in range(len(r["problemResults"])):
         task = r["problemResults"][taski]
         flag = False
+        taskName = standings["problems"][taski]["index"]
         if task["points"] > 0 and taski not in lastPoints[handle]:
           #notify all users who have this friend
-          taskName = standings["problems"][taski]["index"]
           if not firstRead:
             notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
                  task["bestSubmissionTimeSeconds"], r["rank"] != 0)

@@ -200,9 +200,15 @@ def formatTable(header, rows):
   else:
     return formatTableNarrow(header, rows)
 
-def log(msg):
+def log(msg, isError=False):
   timeString = '[' + str(datetime.datetime.now()) + '] '
-  print(timeString + msg)
-  of = open('log.txt', 'a')
-  of.write(timeString + msg + "\n")
+  text = timeString + msg
+  print(text)
+  writeToFile("log.txt", text)
+  if isError:
+    writeToFile("error.txt", text)
+
+def writeToFile(file, text):
+  of = open(file, 'a')
+  of.write(text + "\n")
   of.close()
