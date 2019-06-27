@@ -59,6 +59,16 @@ def hasHandle(chatId):
   res = queryDB(query, (chatId,))
   return res and len(res) > 0 and res[0][0]
 
+def getHandle(chatId):
+  query = "SELECT handle from tokens WHERE chatId = %s"
+  res = queryDB(query, (chatId,))
+  return res[0][0] if res and len(res) > 0 else None
+
+def getChatId(handle):
+  query = "SELECT chatId from tokens WHERE handle = %s"
+  res = queryDB(query, (handle,))
+  return res[0][0] if res and len(res) > 0 else None
+
 def getUserTimezone(chatId):
   query = "SELECT timezone from tokens WHERE chatId = %s"
   res = queryDB(query, (chatId,))

@@ -50,7 +50,7 @@ def handleAddFriendRequestCont(chatId, req):
     tg.sendMessage(chatId, "No user with this handle!")
   else:
     db.addFriends(chatId, [handle])
-    tg.sendMessage(chatId, "User `" + userInfos[0]['handle'] + "` with rating " +
+    tg.sendMessage(chatId, "👦 User `" + userInfos[0]['handle'] + "` with rating " +
       str(userInfos[0]['rating']) + " added.")
 
 def handleAddFriendRequest(chatId, req):
@@ -85,11 +85,13 @@ def getFriendStandings(chatId, contestId):
     return
   contest = standings["contest"]
   msg = contest["name"] + " "
-  if contest["relativeTimeSeconds"] >= contest["durationSeconds"]:
-    msg += "*FINISHED*\n\n"
-  else:
+  if contest["relativeTimeSeconds"] < contest["durationSeconds"]:
     msg += "*"+ util.formatSeconds(contest["relativeTimeSeconds"]) + "* / "
     msg += util.formatSeconds(contest["durationSeconds"]) + "\n\n"
+  elif contest['phase'] != 'FINISHED':
+    msg += "*TESTING*\n\n"
+  else:
+    msg += "*FINISHED*\n\n"
 
   problems = [p["index"] for p in standings["problems"]]
   ratingChanges = getRatingChanges(contestId)
@@ -137,6 +139,27 @@ def getFriendStandings(chatId, contestId):
   msg += util.formatTable(problems, res)
   return msg
 
+def getWinnerLooser(chatId):
+  myHandle = db.getHandle(chatId)
+  standings = cf.getStandings(contestId, cf.getFriends(chatId))
+  rows = standings["rows"]
+  minRC, maxRC = 0, 0
+  minOldR, maxOldR = -1, -1
+  minHandle, maxHandle = 0, 0
+  myRC, myOldR = 0, -1
+  for row in [r for r in rows if row["rank"] != 0]: #official results onl
+    handlename = row["party"]["members"][0]["handle"]
+    if handlename in ratingChanges:
+      (oldR, newR) = ratingChanges[handlename]
+      ratingC = newR-oldR
+      if ratingC < minRC:
+        minRC, minOldR, minHandle = ratingC, oldR, handlename
+      if ratingC > maxRC:
+        maxRC, maxOldR, maxHandle = ratingC, oldR, handlename
+      if handlename == myHandle:
+        myRC, myOldR = ratingC, oldR
+  return ((minHandle, minRC, minOldR), (maxHandle, maxRC, maxOldR), (myRC, myOldR))
+
 def sendContestStandings(chatId, contestId):
   global standingsSent
   id = tg.sendMessage(chatId, getFriendStandings(chatId, contestId))
@@ -147,9 +170,9 @@ def sendContestStandings(chatId, contestId):
 
 def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
   if official:
-    msg = "*["+ util.formatSeconds(time) +"]* "
+    msg = "💡* ["+ util.formatSeconds(time) +"]* "
   else:
-    msg = "*[UPSOLVING]* "
+    msg = "💡 *[UPSOLVING]* "
   msg += "`"+handle + "` has solved task " + task
   if rejectedAttemptCount > 0:
     msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
@@ -157,21 +180,22 @@ def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
     tg.sendMessage(chatId, msg)
 
 def notifyTaskTested(handle, task, accepted):
-  funnyInsults = ["%s faild on system tests for task %s. What a looser.",
-                  "%s should probably look for a different hobby. He faild the system tests for task %s.",
-                  "%s failed the system tests for task %s. *So sad! It's true.*"]
-  util.log('notifyTaskTested ' + str(task) + ' for user ' + str(handle) + ' accepted: ' + str(accepted))
+  funnyInsults = ["%s faild on system tests for task %s. What a looser.💩",
+                  "%s should probably look for a different hobby.💁🏻‍♂️ He faild the system tests for task %s.",
+                  "📉 %s failed the system tests for task %s. *So sad! It's true.*",
+                  "Div. 3 is near for %s 👋🏻. He failed the system tests for task %s."]
   if accepted:
-    msg = handle + " got accepted on system tests for task " + task
+    msg = "✔️ You got accepted on system tests for task " + task
+    tg.sendMessage(db.getChatId(handle), msg)
   else:
-    if cf.getUserRating(handle) >= 2300:
+    if cf.getUserRating(handle) >= 1800:
       insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
       msg = insult % (handle, task)
     else:
       msg = handle + " failed on system tests for task " + task
-
-  for chatId in db.getWhoseFriends(handle):
-    tg.sendMessage(chatId, msg)
+    
+    for chatId in db.getWhoseFriends(handle):
+      tg.sendMessage(chatId, msg)
 
 def sendStandings(chatId, msg):
   for c in cf.getCurrentContestsId():
@@ -223,7 +247,8 @@ def analyseFriendStandings(firstRead=False):
           if not firstRead:
             notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
                  task["bestSubmissionTimeSeconds"], r["rank"] != 0)
-            updateStandings(c, db.getWhoseFriends(handle, allList=True))
+            # now updating every 30sec
+            #updateStandings(c, db.getWhoseFriends(handle, allList=True))
           lastPoints[handle].append(taski)
           flag = True
           if task['type'] == 'PRELIMINARY' and (taski not in notFinal[c][handle]):
@@ -234,7 +259,7 @@ def analyseFriendStandings(firstRead=False):
           notFinal[c][handle].remove(taski)
           notifyTaskTested(handle, taskName, task['points'] > 0)
           updateStandings(c, db.getWhoseFriends(handle, allList=True))
-
+    updateStandings(c, friends)
 # ------- Upcoming Contests -----
 
 
@@ -269,10 +294,50 @@ def notifyAllUpcoming(contest):
   for chatId in db.getAllChatPartners():
     description = getDescription(contest, chatId)
     tg.sendMessage(chatId, description)
+
+def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
+  msg = ""
+  if myOldR == -1: 
+    return ""
+  # took part and was rated
+  if myRC < 0:
+    msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
+    if myRC < -70:
+      msg += "You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
+    else :
+      msg += "\n"
+    if len(nowBetter) > 0:
+      l = ", ".join(["`"+n+"`" for n in nowBetter])
+      msg += l + " are now better than you."
+    msg += "\n"
+  else:
+    msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
+    if len(nowBetter) > 0:
+      l = ", ".join(["`"+n+"`" for n in nowBetter])
+      msg += "You passed " + l + "."
+    msg += "\n"
+
+def getContestAnalysis(contest, chatId):
+  msg = ""
+  ((minHandle, minRC, minOldR),
+   (maxHandle, maxRC, maxOldR),
+   (myRC, myOldR, nowBetter, nowWorse)) = getWinnerLooser(getChatId)
+  msg = contest['name'] + " has finished.\n"
+  msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
+  if minRC < 30:
+    msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % minHandle, minRC
+  elif minRC >= 0:
+    msg += "What a great contest!🎉\n"
+
+  if maxRC > 30:
+    msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % maxHandle, maxRC
+  elif minRC < 0:
+    msg += "What a terrible contest!😑\n"
     
 def sendAllSummary(contest):
   for chatId in db.getAllChatPartners():
-    msg = contest['name'] + " has finished. Here are the final results: "
+    msg = contest['name'] + " has finished.\n"
+    msg += getContestAnalysis(contest, chatId)
     tg.sendMessage(chatId, msg)
     sendContestStandings(chatId, contest['id'])
 

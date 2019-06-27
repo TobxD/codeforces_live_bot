@@ -62,12 +62,12 @@ def displayTime(t, timez):
   diff = (t - now).total_seconds()
   outText = ""
   if diff < 60*1:
-    outText = "now"
+    outText = "Now"
   elif diff < 60*60*24:
     if now.date() != t.date():
-      outText = "tomorrow "
+      outText = "Tomorrow "
     else:
-      outText = "today "
+      outText = "Today "
     outText += formatDate(t,"#hh#:#mm#")
   elif diff < 60*60*24*14:
     outText = formatDate(t,"#DDD# #DD# #MMM# #hh#:#mm#")
