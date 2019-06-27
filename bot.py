@@ -139,7 +139,7 @@ def getFriendStandings(chatId, contestId):
   msg += util.formatTable(problems, res)
   return msg
 
-def getWinnerLooser(chatId):
+def getWinnerLooser(chatId, contestId):
   myHandle = db.getHandle(chatId)
   standings = cf.getStandings(contestId, cf.getFriends(chatId))
   rows = standings["rows"]
@@ -147,7 +147,8 @@ def getWinnerLooser(chatId):
   minOldR, maxOldR = -1, -1
   minHandle, maxHandle = 0, 0
   myRC, myOldR = 0, -1
-  for row in [r for r in rows if row["rank"] != 0]: #official results onl
+  ratingChanges = getRatingChanges(contestId)
+  for row in [r for r in rows if r["rank"] != 0]: #official results onl
     handlename = row["party"]["members"][0]["handle"]
     if handlename in ratingChanges:
       (oldR, newR) = ratingChanges[handlename]
@@ -211,7 +212,7 @@ def updateStandings(contest, users):
     if user not in standingsSent:
       standingsSent[user] = {}
     util.log('update stadings for ' + str(user) + '?')
-    util.log('standingsSent: ' + str(standingsSent))
+    #util.log('standingsSent: ' + str(standingsSent))
     if contest in standingsSent[user]:
       util.log('update stadings for ' + str(user) + '!')
       updateStadingForUser(contest, user, standingsSent[user][contest])
@@ -295,7 +296,8 @@ def notifyAllUpcoming(contest):
     description = getDescription(contest, chatId)
     tg.sendMessage(chatId, description)
 
-def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
+#def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
+def getYourPerformance(myRC, myOldR):
   msg = ""
   if myOldR == -1: 
     return ""
@@ -306,33 +308,37 @@ def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
       msg += "You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
     else :
       msg += "\n"
-    if len(nowBetter) > 0:
-      l = ", ".join(["`"+n+"`" for n in nowBetter])
-      msg += l + " are now better than you."
+#    if len(nowBetter) > 0:
+#      l = ", ".join(["`"+n+"`" for n in nowBetter])
+#      msg += l + " are now better than you."
     msg += "\n"
   else:
     msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
-    if len(nowBetter) > 0:
-      l = ", ".join(["`"+n+"`" for n in nowBetter])
-      msg += "You passed " + l + "."
+#    if len(nowBetter) > 0:
+#      l = ", ".join(["`"+n+"`" for n in nowBetter])
+#      msg += "You passed " + l + "."
     msg += "\n"
 
 def getContestAnalysis(contest, chatId):
   msg = ""
   ((minHandle, minRC, minOldR),
    (maxHandle, maxRC, maxOldR),
-   (myRC, myOldR, nowBetter, nowWorse)) = getWinnerLooser(getChatId)
+#   (myRC, myOldR, nowBetter, nowWorse)) = getWinnerLooser(chatId, contest['id'])
+   (myRC, myOldR)) = getWinnerLooser(chatId, contest['id'])
   msg = contest['name'] + " has finished.\n"
-  msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
+#  msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
+  msg += getYourPerformance(myRC, myOldR)
   if minRC < 30:
-    msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % minHandle, minRC
+    msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % (minHandle, minRC)
   elif minRC >= 0:
     msg += "What a great contest!🎉\n"
 
   if maxRC > 30:
-    msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % maxHandle, maxRC
+    msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % (maxHandle, maxRC)
   elif minRC < 0:
     msg += "What a terrible contest!😑\n"
+
+  return msg
     
 def sendAllSummary(contest):
   for chatId in db.getAllChatPartners():
