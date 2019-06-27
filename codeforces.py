@@ -17,6 +17,9 @@ def sendRequest(method, params, authorized = False, chatId = -1):
       key, secret = db.getAuth(chatId)
       params['apiKey'] = key
       params['time'] = str(int(time.time()))
+      if key == None or secret == None:
+        util.log(traceback.format_exc())
+        return False
     except Exception as e:
       util.log(traceback.format_exc())
       return False
