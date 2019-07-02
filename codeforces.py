@@ -43,12 +43,11 @@ def getUserInfos(userNameArr):
   usrList = ';'.join(userNameArr)
   util.log('requesting info of ' + str(len(userNameArr)) + ' users ')
   r = sendRequest('user.info', {'handles':usrList})
-  util.log('requesting infos finished')
   return r
 
 def getUserRating(handle):
   info = getUserInfos([handle])
-  if info == False:
+  if info == False or "rating" not in info[0]:
     return 0
   return info[0]["rating"]
 
