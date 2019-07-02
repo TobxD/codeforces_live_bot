@@ -336,6 +336,7 @@ def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
       l = ", ".join(["`"+n+"`" for n in nowBetter])
       msg += "You passed " + l + "."
     msg += "\n"
+  return msg
 
 def getContestAnalysis(contest, chatId):
   msg = ""
