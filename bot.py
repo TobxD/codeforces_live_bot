@@ -143,11 +143,12 @@ def getWinnerLooser(chatId, contestId):
   myHandle = db.getHandle(chatId)
   standings = cf.getStandings(contestId, cf.getFriends(chatId))
   rows = standings["rows"]
-  myRating = cf.getUserRating(myHandle) # are changes already applied?
+  # are changes already applied?
+  myRating = -1 if myHandle is None else cf.getUserRating(myHandle) 
   minRC, maxRC = 0, 0
   minOldR, maxOldR = -1, -1
   minHandle, maxHandle = 0, 0
-  myRC, myOldR = 0, myRating
+  myRC, myOldR = None, myRating
   nowBetter, nowWorse = [], []
   ratingChanges = getRatingChanges(contestId)
   for row in [r for r in rows if r["rank"] != 0]: #official results only
@@ -343,7 +344,8 @@ def getContestAnalysis(contest, chatId):
   ((minHandle, minRC, minOldR),
    (maxHandle, maxRC, maxOldR),
    (myRC, myOldR, nowBetter, nowWorse)) = getWinnerLooser(chatId, contest['id'])
-  msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
+  if myRC is not None:
+    msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
   if minRC < -30:
     msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % (minHandle, minRC)
   elif minRC > 0:
