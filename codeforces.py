@@ -47,7 +47,7 @@ def getUserInfos(userNameArr):
   return r
 
 def getUserRating(handle):
-  info = cf.getUserInfos([handle])
+  info = getUserInfos([handle])
   if info == False:
     return 0
   return info[0]["rating"]

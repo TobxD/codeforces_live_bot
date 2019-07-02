@@ -229,8 +229,6 @@ def updateStandings(contest, users):
   for user in users:
     if user not in standingsSent:
       standingsSent[user] = {}
-    util.log('update stadings for ' + str(user) + '?')
-    #util.log('standingsSent: ' + str(standingsSent))
     if contest in standingsSent[user]:
       util.log('update stadings for ' + str(user) + '!')
       updateStadingForUser(contest, user, standingsSent[user][contest])
