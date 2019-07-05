@@ -21,7 +21,7 @@ def sendRequest(method, params, authorized = False, chatId = -1):
         util.log(traceback.format_exc())
         return False
     except Exception as e:
-      util.log(traceback.format_exc())
+      util.log(traceback.format_exc(), isError=True)
       return False
 
   for key in sorted(params):
@@ -32,7 +32,11 @@ def sendRequest(method, params, authorized = False, chatId = -1):
     hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + secret) # ignore last '&'
     tailPart += 'apiSig=' + rnd + hsh
   request += tailPart
-  r = requests.get(request, timeout=5)
+  try:
+    r = requests.get(request, timeout=5)
+  except requests.exceptions.Timeout as errt:
+    util.log("Timeout on Codeforces:",errt)
+    return False
   r = r.json()
   if r['status'] == 'OK':
     return r['result']
@@ -73,6 +77,9 @@ def getStandings(contestId, handleList):
   handleString = ";".join(handleList)
   util.log('request standings for contest ' + str(contestId) + ' for ' + str(len(handleList)) + ' users')
   standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+  if "contest" in standings:
+    contest = standings["contest"]
+    allContests = [contest if contest["id"] == c["id"] else c for c in allContests]
   util.log('standings received')
   return standings
 

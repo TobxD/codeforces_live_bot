@@ -20,7 +20,7 @@ notFinal = {}
 #------------------------- Rating request --------------------------------------
 def ratingsOfUsers(userNameArr):
   userInfos = cf.getUserInfos(userNameArr)
-  if userInfos == False:
+  if len(userInfos) == 0:
     return "Unknown user in this list"
   res = "```\n"
   maxNameLen = max([len(user['handle']) for user in userInfos])
@@ -603,5 +603,5 @@ def mainLoop():
           fun()
         except Exception as e:
           traceback.print_exc()
-          util.log(traceback.format_exc())
+          util.log(traceback.format_exc(), isError=True)
     time.sleep(0.01)
