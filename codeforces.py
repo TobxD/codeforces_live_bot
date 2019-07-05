@@ -80,7 +80,7 @@ def getStandings(contestId, handleList):
   handleString = ";".join(handleList)
   util.log('request standings for contest ' + str(contestId) + ' for ' + str(len(handleList)) + ' users')
   standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
-  if "contest" in standings:
+  if standings and "contest" in standings:
     contest = standings["contest"]
     aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
   util.log('standings received')
