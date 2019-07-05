@@ -5,6 +5,8 @@ import util
 
 codeforcesUrl = 'https://codeforces.com/api/'
 friendsLastUpdated = {}
+aktuelleContests = [] # display scoreboard + upcomming
+currentContests = [] # display scoreboard
 
 def sendRequest(method, params, authorized = False, chatId = -1):
   rnd = random.randint(0, 100000)
@@ -74,6 +76,7 @@ def getFriends(chatId):
   return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
 def getStandings(contestId, handleList):
+  global aktuelleContests
   handleString = ";".join(handleList)
   util.log('request standings for contest ' + str(contestId) + ' for ' + str(len(handleList)) + ' users')
   standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
@@ -83,8 +86,7 @@ def getStandings(contestId, handleList):
   util.log('standings received')
   return standings
 
-aktuelleContests = [] # display scoreboard + upcomming
-currentContests = [] # display scoreboard
+
 
 def getContestStatus(contest):
   if contest['startTimeSeconds'] >= time.time():
