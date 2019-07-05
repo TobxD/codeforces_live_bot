@@ -496,7 +496,7 @@ def handleSetUserHandle(chatId, handle):
     del openCommandFunc[chatId]
     db.setUserHandle(chatId, handle)
     db.addFriends(chatId, [handle])
-    db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself
+    #db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
     tg.sendMessage(chatId, "Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
       str(userInfos[0]['rating']) + ".")
     if not db.hasAuth(chatId):
