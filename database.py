@@ -29,6 +29,11 @@ def insertDB(query, params):
   db.commit()
   db.close()
 
+def hasAuth(chatId):
+  query = "SELECT apikey from tokens WHERE chatId = %s"
+  res = queryDB(query, (chatId,))
+  return res and len(res) > 0 and res[0][0]
+
 def getAuth(chatId):
   query = "SELECT apikey, secret FROM tokens WHERE chatId = %s"
   res = queryDB(query, (chatId,))

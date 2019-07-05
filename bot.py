@@ -499,6 +499,9 @@ def handleSetUserHandle(chatId, handle):
     db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself
     tg.sendMessage(chatId, "Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
       str(userInfos[0]['rating']) + ".")
+    if not db.hasAuth(chatId):
+      tg.sendMessage(chatId, "Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
+      handleSetAuthorization(getChatId, "")
 
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
