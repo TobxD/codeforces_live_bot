@@ -79,7 +79,7 @@ def getStandings(contestId, handleList):
   standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
   if "contest" in standings:
     contest = standings["contest"]
-    allContests = [contest if contest["id"] == c["id"] else c for c in allContests]
+    aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
   util.log('standings received')
   return standings
 
