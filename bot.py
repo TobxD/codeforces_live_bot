@@ -501,7 +501,7 @@ def handleSetUserHandle(chatId, handle):
       str(userInfos[0]['rating']) + ".")
     if not db.hasAuth(chatId):
       tg.sendMessage(chatId, "Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
-      handleSetAuthorization(getChatId, "")
+      handleSetAuthorization(chatId, "")
 
 # ------- Add API KEY -----
 def handleAddSecret(chatId, req):
