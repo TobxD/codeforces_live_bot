@@ -40,8 +40,8 @@ def sendAnswerCallback(callback_query_id, text = ""):
     traceback.print_exc()
 
 def sendMessage(chatId, text, reply_markup = None):
-  # dont send msg 30sec after restart
-  if time.time() - RESTART < 30:
+  # dont send msg 100sec after restart
+  if time.time() - RESTART < 100:
     return
   params = {
   'parse_mode':'Markdown',
