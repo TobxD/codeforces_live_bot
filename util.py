@@ -165,13 +165,13 @@ def formatTableWide(header, rows):
 
 def formatTableNarrow(header, rows): # 2 rows per row
   colW = 4
-  colC = (len(header)+1)//2
-  #colC = 4
+  colC = min(len(header), 6)
+  rowC = (len(header)+colC-1)//colC
   totalW = colC*(colW+1)+1
   msg = "```\n"
   msg += getDividerHead(colW, totalW)
-  for i in range(2*colC):
-    if i == colC:
+  for i in range(rowC*colC):
+    if i % colC == 0 and i > 0:
       msg += "┃\n"
     v = header[i] if i < len(header) else ""
     msg += "┃" + v.center(colW)
@@ -183,8 +183,8 @@ def formatTableNarrow(header, rows): # 2 rows per row
     msg += "┃" + row["head"].center(totalW-2) + "┃\n"
     if "head2" in row:
       msg += "┃" + row["head2"].center(totalW-2) + "┃\n"
-    for i in range(2*colC):
-      if i == colC:
+    for i in range(rowC*colC):
+      if i % colC == 0 and i > 0:
         msg += "┃\n"
       v = row["body"][i] if i < len(row["body"]) else ""
       msg += "┃" + str(v).center(colW)
