@@ -165,8 +165,8 @@ def formatTableWide(header, rows):
 
 def formatTableNarrow(header, rows): # 2 rows per row
   colW = 4
-  #colC = (len(header)+1)//2
-  colC = 4
+  colC = (len(header)+1)//2
+  #colC = 4
   totalW = colC*(colW+1)+1
   msg = "```\n"
   msg += getDividerHead(colW, totalW)
