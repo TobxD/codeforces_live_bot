@@ -327,16 +327,18 @@ def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
       msg += "You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
     else :
       msg += "\n"
-    if len(nowBetter) > 0:
-      l = ", ".join(["`"+n+"`" for n in nowBetter])
-      msg += l + " are now better than you."
-    msg += "\n"
+    
   else:
     msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
-    if len(nowBetter) > 0:
-      l = ", ".join(["`"+n+"`" for n in nowBetter])
-      msg += "You passed " + l + "."
-    msg += "\n"
+    
+  if len(nowBetter) > 0:
+    l = ", ".join(["`"+n+"`" for n in nowBetter])
+    msg += l + " are now better than you👎🏻."
+  msg += "\n"
+  if len(nowWorse) > 0:
+    l = ", ".join(["`"+n+"`" for n in nowWorse])
+    msg += "You passed " + l + "👍🏻."
+  msg += "\n"
   return msg
 
 def getContestAnalysis(contest, chatId):
