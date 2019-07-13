@@ -35,9 +35,9 @@ def sendRequest(method, params, authorized = False, chatId = -1):
     tailPart += 'apiSig=' + rnd + hsh
   request += tailPart
   try:
-    r = requests.get(request, timeout=5)
+    r = requests.get(request, timeout=15)
   except requests.exceptions.Timeout as errt:
-    util.log("Timeout on Codeforces:",errt)
+    util.log("Timeout on Codeforces.",errt)
     return False
   r = r.json()
   if r['status'] == 'OK':

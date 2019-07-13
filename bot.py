@@ -20,7 +20,7 @@ notFinal = {}
 #------------------------- Rating request --------------------------------------
 def ratingsOfUsers(userNameArr):
   userInfos = cf.getUserInfos(userNameArr)
-  if len(userInfos) == 0:
+  if userInfos is False or len(userInfos) == 0:
     return "Unknown user in this list"
   res = "```\n"
   maxNameLen = max([len(user['handle']) for user in userInfos])
