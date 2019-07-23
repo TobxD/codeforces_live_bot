@@ -77,11 +77,11 @@ def getRatingChanges(contestId):
 def getFriendStandings(chatId, contestId):
   friends = cf.getFriends(chatId)
   if len(friends) == 0:
-    tg.sendMessage(chatId, "You have no friends :(")
+    #tg.sendMessage(chatId, "You have no friends :(")
     return
   standings = cf.getStandings(contestId, friends)
   if standings == False:
-    tg.sendMessage(chatId, "Invalid contest or handle")
+    #tg.sendMessage(chatId, "Invalid contest or handle")
     return
   contest = standings["contest"]
   msg = contest["name"] + " "
