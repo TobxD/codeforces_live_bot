@@ -336,7 +336,7 @@ def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
     
   if len(nowBetter) > 0:
     l = ", ".join(["`"+n+"`" for n in nowBetter])
-    msg += l + (" is" if len(nowBetter) == 1 else " are")" now better than you👎🏻."
+    msg += l + (" is" if len(nowBetter) == 1 else " are") + " now better than you👎🏻."
   msg += "\n"
   if len(nowWorse) > 0:
     l = ", ".join(["`"+n+"`" for n in nowWorse])
