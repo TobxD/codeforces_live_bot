@@ -106,13 +106,16 @@ def getFriendStandings(chatId, contestId):
       nrow["head"] = "* " + handle
       for sub in row["problemResults"]:
         val = ""
-        if sub["points"] > 0:
-          val = "+"
-        elif sub["rejectedAttemptCount"] > 0:
-          val = "-"
+        if sub["type"] == "PRELIMINARY":
+          val = "?"
+        else:
+          if sub["points"] > 0:
+            val = "+"
+          elif sub["rejectedAttemptCount"] > 0:
+            val = "-"
 
-        if sub["rejectedAttemptCount"] > 0:
-          val += str(sub["rejectedAttemptCount"])
+          if sub["rejectedAttemptCount"] > 0:
+            val += str(sub["rejectedAttemptCount"])
         subs.append(val)
     else:   #official
       handlename = row["party"]["members"][0]["handle"]
