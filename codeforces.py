@@ -7,12 +7,12 @@ codeforcesUrl = 'https://codeforces.com/api/'
 friendsLastUpdated = {}
 aktuelleContests = [] # display scoreboard + upcomming
 currentContests = [] # display scoreboard
+globalStandings = {}
 
 def sendRequest(method, params, authorized = False, chatId = -1):
   rnd = random.randint(0, 100000)
   rnd = str(rnd).zfill(6)
   tailPart = method + '?'
-
 
   if authorized:
     try:
@@ -75,15 +75,31 @@ def getFriends(chatId):
   friends = getFriendsWithDetails(chatId)
   return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
-def getStandings(contestId, handleList):
+def updateStandings(contestId):
   global aktuelleContests
+  global globalStandings
+  handleList = db.getAllFriends()
   handleString = ";".join(handleList)
-  util.log('request standings for contest ' + str(contestId) + ' for ' + str(len(handleList)) + ' users')
+  util.log('updating standings for contest ' + str(contestId) + ' for all (' + str(len(handleList)) + ') users')
   standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
   if standings and "contest" in standings:
     contest = standings["contest"]
     aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
   util.log('standings received')
+
+  # safe standings globally
+  globalStandings[contestId] = {"time": time.time(), "standings": standings}
+
+def getStandings(contestId, handleList):
+  if not contestId in globalStandings or time.time() - globalStandings[contestId]["time"] > 30:
+    updateStandings(contestId)
+
+  allStandings = globalStandings[contestId]["standings"]
+  allRows = allStandings["rows"]
+  # filter only users from handleList
+  rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
+  standings = allStandings
+  standings["rows"] = rows
   return standings
 
 
