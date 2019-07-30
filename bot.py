@@ -106,16 +106,13 @@ def getFriendStandings(chatId, contestId):
       nrow["head"] = "* " + handle
       for sub in row["problemResults"]:
         val = ""
-        if sub["type"] == "PRELIMINARY":
-          val = "?"
-        else:
-          if sub["points"] > 0:
-            val = "+"
-          elif sub["rejectedAttemptCount"] > 0:
-            val = "-"
+        if sub["points"] > 0:
+          val = "+"
+        elif sub["rejectedAttemptCount"] > 0:
+          val = "-"
 
-          if sub["rejectedAttemptCount"] > 0:
-            val += str(sub["rejectedAttemptCount"])
+        if sub["rejectedAttemptCount"] > 0:
+          val += str(sub["rejectedAttemptCount"])
         subs.append(val)
     else:   #official
       handlename = row["party"]["members"][0]["handle"]
@@ -130,13 +127,16 @@ def getFriendStandings(chatId, contestId):
         handlename = handlename[:10] + "…"
       nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
       for sub in row["problemResults"]:
-        if sub["points"] > 0:
-          timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
-          subs.append(timeStr)
-        elif sub["rejectedAttemptCount"] > 0:
-          subs.append("-" + str(sub["rejectedAttemptCount"]))
+        if sub["type"] == "PRELIMINARY":
+          subs.append("?")
         else:
-          subs.append("")
+          if sub["points"] > 0:
+            timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
+            subs.append(timeStr)
+          elif sub["rejectedAttemptCount"] > 0:
+            subs.append("-" + str(sub["rejectedAttemptCount"]))
+          else:
+            subs.append("")
     nrow["body"] = subs
     res.append(nrow)
   msg += util.formatTable(problems, res)
