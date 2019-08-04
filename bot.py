@@ -127,16 +127,15 @@ def getFriendStandings(chatId, contestId):
         handlename = handlename[:10] + "…"
       nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
       for sub in row["problemResults"]:
-        if sub["type"] == "PRELIMINARY":
+        if sub["points"] > 0:
+          timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
+          subs.append(timeStr)
+        if sub["type"] == "PRELIMINARY" and contest['phase'] != 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
           subs.append("?")
+        elif sub["rejectedAttemptCount"] > 0:
+          subs.append("-" + str(sub["rejectedAttemptCount"]))
         else:
-          if sub["points"] > 0:
-            timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
-            subs.append(timeStr)
-          elif sub["rejectedAttemptCount"] > 0:
-            subs.append("-" + str(sub["rejectedAttemptCount"]))
-          else:
-            subs.append("")
+          subs.append("")
     nrow["body"] = subs
     res.append(nrow)
   msg += util.formatTable(problems, res)
