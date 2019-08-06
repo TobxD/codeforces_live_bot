@@ -123,6 +123,8 @@ def getFriendStandings(chatId, contestId):
         ratingC = ("+" if ratingC >= 0 else "") + str(ratingC)
         nrow["head2"] = str(oldR) + " -> " + str(newR) + " (" + ratingC + ")"
 
+      if row["party"]["participantType"] == "VIRTUAL": #mark virtual participants
+        handlename = "* " + handlename
       if len(handlename) > 11:
         handlename = handlename[:10] + "…"
       nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
@@ -130,7 +132,7 @@ def getFriendStandings(chatId, contestId):
         if sub["points"] > 0:
           timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
           subs.append(timeStr)
-        if sub["type"] == "PRELIMINARY" and contest['phase'] != 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
+        elif sub["type"] == "PRELIMINARY" and contest['phase'] != 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
           subs.append("?")
         elif sub["rejectedAttemptCount"] > 0:
           subs.append("-" + str(sub["rejectedAttemptCount"]))
