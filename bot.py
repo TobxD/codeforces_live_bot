@@ -78,10 +78,12 @@ def getFriendStandings(chatId, contestId):
   friends = cf.getFriends(chatId)
   if len(friends) == 0:
     #tg.sendMessage(chatId, "You have no friends :(")
+    util.log("user has no friends -> empty standings")
     return
   standings = cf.getStandings(contestId, friends)
   if standings == False:
     #tg.sendMessage(chatId, "Invalid contest or handle")
+    util.log("failed to get standings for " + str(friends))
     return
   contest = standings["contest"]
   msg = contest["name"] + " "
@@ -574,6 +576,7 @@ def noCommand(cid, msg):
 #-----
 def handleMessage(chatId, text):
   util.log("-> " + text + " <-")
+  text = text.replace("@codeforces_live_bot", "")
   msgSwitch = {
     "/start": handleStart,
     "/rating": handleRatingRequest,
