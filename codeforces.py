@@ -43,6 +43,7 @@ def sendRequest(method, params, authorized = False, chatId = -1):
   if r['status'] == 'OK':
     return r['result']
   else:
+    util.log("Invalid Codeforces request: " + r['comment'])
     return False
 
 def getUserInfos(userNameArr):
