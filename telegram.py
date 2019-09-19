@@ -8,6 +8,7 @@ import bot
 requestUrl = ''
 lastUpdateID = -1
 RESTART = 0
+RESTART_WAIT = 600
 #------ Main part with bot API access ------
 
 def readRequestUrl():
@@ -41,7 +42,8 @@ def sendAnswerCallback(callback_query_id, text = ""):
 
 def sendMessage(chatId, text, reply_markup = None):
   # dont send msg 100sec after restart
-  if time.time() - RESTART < 100:
+  if time.time() - RESTART < RESTART_WAIT:
+    util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text))
     return
   params = {
   'parse_mode':'Markdown',
@@ -78,6 +80,9 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 def editMessageText(chatId, msgId, msg):
   #TODO escape msg???
   #util.log("editMessageText: " + str(chatId) + " " + str(msg))
+  if time.time() - RESTART < RESTART_WAIT:
+    util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text))
+    return
   params = {
     'parse_mode':'Markdown',
     'chat_id':str(chatId),

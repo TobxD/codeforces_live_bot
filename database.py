@@ -16,6 +16,7 @@ def queryDB(query, params):
   cursor = db.cursor()
   cursor.execute(query, params)
   res = cursor.fetchall()
+  cursor.close()
   db.close()
   util.log("db query finished")
   return res
