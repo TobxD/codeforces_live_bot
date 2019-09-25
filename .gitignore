@@ -3,4 +3,3 @@ __pycache__/
 .database_creds
 .telegram_api_url
 log.txt
-error.txt
