@@ -5,14 +5,14 @@ import database as db
 import telegram as tg
 import codeforces as cf
 import util
+import AnalyseStandingsService
+import UpcomingService
+import SummarizingService
+import standings
+import upcoming
 
 
-cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 openCommandFunc = {}
-standingsSent = {}
-points = {}
-notFinal = {}
-
 
 #------------------------ Callback functions -----------------------------------
 #-------------------------------------------------------------------------------
@@ -59,339 +59,6 @@ def handleAddFriendRequest(chatId, req):
   openCommandFunc[chatId] = handleAddFriendRequestCont
   tg.sendMessage(chatId, "Codeforces handle:")
 
-# ------ Current Standings  -------
-
-def getRatingChanges(contestId):
-  util.log('request rating changes from cf-predictor')
-  r = requests.get(cfPredictorUrl + str(contestId))
-  util.log('rating changes received')
-  r = r.json()
-  if r['status'] != 'OK':
-    return {}
-  r = r['result']
-  handleToRatingChanges = {}
-  for row in r:
-    handleToRatingChanges[row['handle']] = (row['oldRating'], row['newRating'])
-  return handleToRatingChanges
-
-def getFriendStandings(chatId, contestId):
-  friends = cf.getFriends(chatId)
-  if len(friends) == 0:
-    #tg.sendMessage(chatId, "You have no friends :(")
-    util.log("user has no friends -> empty standings")
-    return
-  standings = cf.getStandings(contestId, friends)
-  if standings == False:
-    #tg.sendMessage(chatId, "Invalid contest or handle")
-    util.log("failed to get standings for " + str(friends))
-    return
-  contest = standings["contest"]
-  msg = contest["name"] + " "
-  if contest["relativeTimeSeconds"] < contest["durationSeconds"]:
-    msg += "*"+ util.formatSeconds(contest["relativeTimeSeconds"]) + "* / "
-    msg += util.formatSeconds(contest["durationSeconds"]) + "\n\n"
-  elif contest['phase'] != 'FINISHED':
-    msg += "*TESTING*\n\n"
-  else:
-    msg += "*FINISHED*\n\n"
-
-  problems = [p["index"] for p in standings["problems"]]
-  ratingChanges = getRatingChanges(contestId)
-
-  rows = standings["rows"]
-  res = []
-  for row in rows:
-    nrow = {}
-    subs = []
-    if row["rank"] == 0: #unofficial
-      handle = row["party"]["members"][0]["handle"]
-      nrow["head"] = "* " + handle
-      for sub in row["problemResults"]:
-        val = ""
-        if sub["points"] > 0:
-          val = "+"
-        elif sub["rejectedAttemptCount"] > 0:
-          val = "-"
-
-        if sub["rejectedAttemptCount"] > 0:
-          val += str(sub["rejectedAttemptCount"])
-        subs.append(val)
-    else:   #official
-      handlename = row["party"]["members"][0]["handle"]
-      #rating changes
-      if handlename in ratingChanges:
-        (oldR, newR) = ratingChanges[handlename]
-        ratingC = newR-oldR
-        ratingC = ("+" if ratingC >= 0 else "") + str(ratingC)
-        nrow["head2"] = str(oldR) + " -> " + str(newR) + " (" + ratingC + ")"
-
-      if row["party"]["participantType"] == "VIRTUAL": #mark virtual participants
-        handlename = "* " + handlename
-      if len(handlename) > 11:
-        handlename = handlename[:10] + "…"
-      nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
-      for sub in row["problemResults"]:
-        if sub["points"] > 0:
-          timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
-          subs.append(timeStr)
-        elif sub["type"] == "PRELIMINARY" and contest['phase'] != 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
-          subs.append("?")
-        elif sub["rejectedAttemptCount"] > 0:
-          subs.append("-" + str(sub["rejectedAttemptCount"]))
-        else:
-          subs.append("")
-    nrow["body"] = subs
-    res.append(nrow)
-  msg += util.formatTable(problems, res)
-  return msg
-
-def getWinnerLooser(chatId, contestId):
-  myHandle = db.getHandle(chatId)
-  standings = cf.getStandings(contestId, cf.getFriends(chatId))
-  rows = standings["rows"]
-  # are changes already applied?
-  myRating = -1 if myHandle is None else cf.getUserRating(myHandle) 
-  minRC, maxRC = 0, 0
-  minOldR, maxOldR = -1, -1
-  minHandle, maxHandle = 0, 0
-  myRC, myOldR = None, myRating
-  nowBetter, nowWorse = [], []
-  ratingChanges = getRatingChanges(contestId)
-  for row in [r for r in rows if r["rank"] != 0]: #official results only
-    handlename = row["party"]["members"][0]["handle"]
-    if handlename in ratingChanges:
-      (oldR, newR) = ratingChanges[handlename]
-      ratingC = newR-oldR
-      if ratingC < minRC:
-        minRC, minOldR, minHandle = ratingC, oldR, handlename
-      if ratingC > maxRC:
-        maxRC, maxOldR, maxHandle = ratingC, oldR, handlename
-      if handlename == myHandle:
-        myRC, myOldR = ratingC, oldR
-        if myRating == myOldR:
-          myRating += myRC
-
-  # get better and worse
-  # TODO what about people not participating which you passed?
-  for row in [r for r in rows if r["rank"] != 0]: #official results onl
-    handlename = row["party"]["members"][0]["handle"]
-    if handlename in ratingChanges:
-      (oldR, newR) = ratingChanges[handlename]
-      if oldR < myOldR and newR > myRating:
-        nowBetter.append(handlename)
-      if oldR > myOldR and newR < myRating:
-        nowWorse.append(handlename)
-
-
-  return ((minHandle, minRC, minOldR), (maxHandle, maxRC, maxOldR),
-    (myRC, myOldR, nowBetter, nowWorse))
-
-def sendContestStandings(chatId, contestId):
-  global standingsSent
-  id = tg.sendMessage(chatId, getFriendStandings(chatId, contestId))
-  if chatId not in standingsSent:
-    standingsSent[chatId] = {}
-  if id != False:
-    standingsSent[chatId][contestId] = id
-
-def notifyTaskSolved(handle, task, rejectedAttemptCount, time, official):
-  if official:
-    msg = "💡* ["+ util.formatSeconds(time) +"]* "
-  else:
-    msg = "💡 *[UPSOLVING]* "
-  msg += "`"+handle + "` has solved task " + task
-  if rejectedAttemptCount > 0:
-    msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
-  for chatId in db.getWhoseFriends(handle):
-    tg.sendMessage(chatId, msg)
-
-def notifyTaskTested(handle, task, accepted):
-  funnyInsults = ["%s faild on system tests for task %s. What a looser.💩",
-                  "%s should probably look for a different hobby.💁🏻‍♂️ He faild the system tests for task %s.",
-                  "📉 %s failed the system tests for task %s. *So sad! It's true.*",
-                  "Div. 3 is near for %s 👋🏻. He failed the system tests for task %s."]
-  if accepted:
-    msg = "✔️ You got accepted on system tests for task " + task
-    tg.sendMessage(db.getChatId(handle), msg)
-  else:
-    if cf.getUserRating(handle) >= 1800:
-      insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
-      msg = insult % (handle, task)
-    else:
-      msg = handle + " failed on system tests for task " + task
-    
-    for chatId in db.getWhoseFriends(handle):
-      tg.sendMessage(chatId, msg)
-
-def sendStandings(chatId, msg):
-  for c in cf.getCurrentContestsId():
-    sendContestStandings(chatId, c)
-
-def updateStadingForUser(contest, user, messageId):
-  msg = getFriendStandings(user, contest)
-  tg.editMessageText(user, messageId, msg)
-
-def updateStandings(contest, users):
-  global standingsSent
-  for user in users:
-    if user not in standingsSent:
-      standingsSent[user] = {}
-    if contest in standingsSent[user]:
-      util.log('update stadings for ' + str(user) + '!')
-      updateStadingForUser(contest, user, standingsSent[user][contest])
-
-def analyseFriendStandings(firstRead=False):
-  global standingsSent
-  global points
-  global notFinal
-  friends = db.getAllFriends()
-  for c in cf.getCurrentContestsId():
-    if c not in points:
-      points[c] = {}
-    if c not in notFinal:
-      notFinal[c] = {}
-    lastPoints = points[c]
-    standings = cf.getStandings(c, friends)
-    if standings == False:
-      return
-    results = standings['rows']
-    #{"handle":[0,3], }
-    for r in results:
-      handle = r["party"]["members"][0]["handle"]
-      if handle not in lastPoints:
-        lastPoints[handle] = []
-      if handle not in notFinal[c]:
-        notFinal[c][handle] = []
-      for taski in range(len(r["problemResults"])):
-        task = r["problemResults"][taski]
-        flag = False
-        taskName = standings["problems"][taski]["index"]
-        if task["points"] > 0 and taski not in lastPoints[handle]:
-          #notify all users who have this friend
-          if not firstRead:
-            notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
-                 task["bestSubmissionTimeSeconds"], r["rank"] != 0)
-            # now updating every 30sec during contest
-            # update only if after contest
-            if standings["contest"]['phase'] == 'FINISHED':
-              updateStandings(c, db.getWhoseFriends(handle, allList=True))
-          lastPoints[handle].append(taski)
-          flag = True
-          if task['type'] == 'PRELIMINARY' and (taski not in notFinal[c][handle]):
-            util.log('adding non-final task ' + str(taski) + ' for user ' + str(handle))
-            notFinal[c][handle].append(taski)
-        if task['type'] == 'FINAL' and (taski in notFinal[c][handle]):
-          util.log('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
-          notFinal[c][handle].remove(taski)
-          notifyTaskTested(handle, taskName, task['points'] > 0)
-          updateStandings(c, db.getWhoseFriends(handle, allList=True))
-    if standings["contest"]['phase'] != 'FINISHED':
-      updateStandings(c, db.getAllChatPartners())
-# ------- Upcoming Contests -----
-
-
-
-
-def getDescription(contest, chatId, timez = None):
-  if timez is None:
-    timez = db.getUserTimezone(chatId)
-  tim = contest['startTimeSeconds']
-
-  timeLeft = int(contest['startTimeSeconds'] - time.time())
-  delta = datetime.timedelta(seconds=timeLeft)
-
-  timeStr = "*" + util.displayTime(tim, timez)
-  timeStr += '* (in ' + ':'.join(str(delta).split(':')[:2]) + ' hours' + ')'
-
-  res = timeStr.ljust(35)
-  res += ":\n" + contest['name'] + ""
-  res += '\n'
-  return res
-
-def handleUpcoming(chatId, req):
-  timez = db.getUserTimezone(chatId)
-  msg = ""
-  for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):
-    if msg != "":
-      msg += "\n"
-    msg += getDescription(c, chatId, timez)
-  tg.sendMessage(chatId, msg)
-
-def notifyAllUpcoming(contest):
-  for chatId in db.getAllChatPartners():
-    description = getDescription(contest, chatId)
-    tg.sendMessage(chatId, description)
-
-def getYourPerformance(myRC, myOldR, nowBetter, nowWorse):
-  msg = ""
-  if myOldR == -1: 
-    return ""
-  # took part and was rated
-  if myRC < 0:
-    msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
-    if myRC < -70:
-      msg += " You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
-    else :
-      msg += "\n"
-    
-  else:
-    msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
-    
-  if len(nowBetter) > 0:
-    l = ", ".join(["`"+n+"`" for n in nowBetter])
-    msg += l + (" is" if len(nowBetter) == 1 else " are") + " now better than you👎🏻."
-  msg += "\n"
-  if len(nowWorse) > 0:
-    l = ", ".join(["`"+n+"`" for n in nowWorse])
-    msg += "You passed " + l + "👍🏻."
-  msg += "\n"
-  return msg
-
-def getContestAnalysis(contest, chatId):
-  msg = ""
-  ((minHandle, minRC, minOldR),
-   (maxHandle, maxRC, maxOldR),
-   (myRC, myOldR, nowBetter, nowWorse)) = getWinnerLooser(chatId, contest['id'])
-  if myRC is not None:
-    msg += getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
-  if minRC < -30:
-    msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % (minHandle, minRC)
-  elif minRC > 0:
-    msg += "What a great contest!🎉\n"
-
-  if maxRC > 30:
-    msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % (maxHandle, maxRC)
-  elif maxRC < 0:
-    msg += "What a terrible contest!😑\n"
-
-  return msg
-    
-def sendAllSummary(contest):
-  for chatId in db.getAllChatPartners():
-    msg = contest['name'] + " has finished.\n"
-    msg += getContestAnalysis(contest, chatId)
-    tg.sendMessage(chatId, msg)
-    sendContestStandings(chatId, contest['id'])
-
-notified = {}
-summarized = set()
-
-def checkUpcomingContest():
-  global notified
-  global summarized
-  notifyTimes = [3600*24+59, 3600*2+59, -100000000]
-  for c in cf.getFutureContests():
-    timeLeft = c['startTimeSeconds'] - time.time()
-    endtime = c['startTimeSeconds'] + c['durationSeconds']
-    for i in range(len(notifyTimes)):
-      if timeLeft <= notifyTimes[notified.get(c['id'], 0)]:
-        notified[c['id']] = notified.get(c['id'], 0) + 1
-        notifyAllUpcoming(c)
-  # current contests
-  for c in cf.getCurrentContests():
-    if cf.getContestStatus(c) == 'finished' and not c['id'] in summarized:
-      summarized.add(c['id'])
-      sendAllSummary(c)
 
 
 #######################################################
@@ -583,21 +250,39 @@ def handleMessage(chatId, text):
     "/friend_ratings":handleFriendRatingsRequest,
     "/add_friend":handleAddFriendRequest,
     "/settings":handleSettings,
-    "/current_standings":sendStandings,
-    "/upcoming": handleUpcoming
+    "/current_standings":standings.sendStandings,
+    "/upcoming":upcoming.handleUpcoming
   }
   func = msgSwitch.get(util.cleanString(text), noCommand)
   func(str(chatId), text)
 
+def initContestServices():
+	services = [
+		cf.ContestListService(),
+		AnalyseStandingsService.AnalyseStandingsService(),
+		UpcomingService.UpcomingService(),
+		SummarizingService.SummarizingService()
+	]
 
+	for service in services:
+		service.start()
+
+def startTestingMode():
+	tg.RESTART = 10000000000
+	tg.RESTART_WAIT = 10000000000
+	initContestServices()
+
+	while True:
+		msg = input()
+		handleMessage('0', msg)
+	time.sleep(1000);
+
+def startTelegramBot():
+	initContestServices()
+	rg.TelegramUpdateService().start()
+
+"""
 def mainLoop():
-  # with -r restart and dont send msg for 30sec
-  if len(sys.argv) >= 2 and sys.argv[1] == "-r":
-    tg.RESTART = time.time()
-  else:
-    tg.RESTART = 0
-  tg.readRequestUrl()
-
   cf.loadCurrentContests()
   analyseFriendStandings(True)
   callbacks = [
@@ -617,3 +302,4 @@ def mainLoop():
           traceback.print_exc()
           util.log(traceback.format_exc(), isError=True)
     time.sleep(0.01)
+"""

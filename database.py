@@ -40,6 +40,11 @@ def getAuth(chatId):
   res = queryDB(query, (chatId,))
   return res[0][0], res[0][1]
 
+def queryUserInfos(chatId): # returns (apikey, secret, timezone, handle)
+  query = "SELECT apikey, secret, timezone, handle FROM tokens WHERE chatId = %s"
+  res = queryDB(query, (chatId,))
+  return (res[0][0], res[0][1], res[0][2], res[0][3])
+
 def setApiKey(chatId, apikey):
   query = "INSERT INTO tokens (chatId, apikey) VALUES (%s, %s) ON DUPLICATE KEY UPDATE apikey = %s"
   insertDB(query, (chatId, apikey, apikey))
