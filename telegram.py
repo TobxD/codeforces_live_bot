@@ -5,6 +5,8 @@ import codeforces as cf
 import util
 import bot
 import UpdateService
+import settings
+import Chat
 
 requestUrl = ""
 RESTART = 0
@@ -105,7 +107,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			r = r.json()
 		except Exception as e:
 			traceback.print_exc()
-			util.log(traceback.format_exc())
+			util.log(traceback.format_exc(), True)
 			return []
 		if r['ok']:
 			return r['result']
@@ -115,9 +117,9 @@ class TelegramUpdateService (UpdateService.UpdateService):
 	def _handleUpdate(self, update):
 		self._lastUpdateID = update['update_id']
 		if 'message' in update:
-			bot.handleMessage(update['message']['chat']['id'], update['message']['text'])
+			bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
 		elif 'edited_message' in update:
-			bot.handleMessage(update['edited_message']['chat']['id'], update['edited_message']['text'])
+			bot.handleMessage(Chat.getChat(str(update['edited_message']['chat']['id'])), update['edited_message']['text'])
 		elif 'callback_query' in update:
 			#sendAnswerCallback(update['callback_query']['id'])
-			bot.handleCallbackQuery(update['callback_query'])
+			settings.handleCallbackQuery(update['callback_query'])

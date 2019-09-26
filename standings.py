@@ -94,18 +94,18 @@ def getFriendStandings(chatId, contestId):
 	msg += table.formatTable()
 	return msg
 
-def sendContestStandings(chatId, contestId):
+def sendContestStandings(chat, contestId):
 	global standingsSent
-	id = tg.sendMessage(chatId, getFriendStandings(chatId, contestId))
-	if chatId not in standingsSent:
-		standingsSent[chatId] = {}
+	id = chat.sendMessage(getFriendStandings(chat, contestId))
+	if chat.chatId not in standingsSent:
+		standingsSent[chat.chatId] = {}
 	if id != False:
-		standingsSent[chatId][contestId] = id
+		standingsSent[chat.chatId][contestId] = id
 
-def sendStandings(chatId, msg):
+def sendStandings(chat, msg):
 	for c in cf.getCurrentContestsId():
-		sendContestStandings(chatId, c)
+		sendContestStandings(chat, c)
 
-def updateStadingForUser(contest, user, messageId):
-	msg = getFriendStandings(user, contest)
-	tg.editMessageText(user, messageId, msg)
+def updateStandingsForChat(contest, chat, messageId):
+	msg = getFriendStandings(chat, contest)
+	chat.editMessageText(messageId, msg)

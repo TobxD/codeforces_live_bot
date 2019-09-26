@@ -5,6 +5,7 @@ import util
 import database as db
 import standings
 import random
+import Chat
 
 class AnalyseStandingsService (UpdateService.UpdateService):
 	def __init__(self):
@@ -22,7 +23,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		for chatId in db.getWhoseFriends(handle):
-			tg.sendMessage(chatId, msg)
+			Chat.getChat(chatId).sendMessage(msg)
 
 	def _notifyTaskTested(self, handle, task, accepted):
 		funnyInsults = ["%s faild on system tests for task %s. What a looser.💩",
@@ -31,7 +32,9 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 										"Div. 3 is near for %s 👋🏻. He failed the system tests for task %s."]
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
-			tg.sendMessage(db.getChatId(handle), msg)
+			chatIds = db.getChatIds(handle)
+			for chatId in chatIds:
+				Chat.getChat(chatId).sendMessage(msg)
 		else:
 			if cf.getUserRating(handle) >= 1800:
 				insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
@@ -40,24 +43,17 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				msg = handle + " failed on system tests for task " + task
 			
 			for chatId in db.getWhoseFriends(handle):
-				tg.sendMessage(chatId, msg)
+				Chat.getChat(chatId).sendMessage(msg)
 
-	def _sendStandings(self, chatId, msg):
-		for c in cf.getCurrentContestsId():
-			standings.sendContestStandings(chatId, c)
+	def _updateStandings(self, contest, chatIds):
+		for chatId in chatIds:
+			if chatId not in standings.standingsSent:
+				standings.standingsSent[chatId] = {}
+			if contest in standings.standingsSent[chatId]:
+				util.log('update stadings for ' + str(chatId) + '!')
+				standings.updateStandingsForChat(contest, chatId, standings.standingsSent[chatId][contest])
 
-	def _updateStadingForUser(self, contest, user, messageId):
-		msg = standings.getFriendStandings(user, contest)
-		tg.editMessageText(user, messageId, msg)
-
-	def _updateStandings(self, contest, users):
-		for user in users:
-			if user not in standings.standingsSent:
-				standings.standingsSent[user] = {}
-			if contest in standings.standingsSent[user]:
-				util.log('update stadings for ' + str(user) + '!')
-				self._updateStandingsForUser(contest, user, standings.standingsSent[user][contest])
-
+	# analyses the standings
 	def _doTask(self, firstRead=False):
 		friends = db.getAllFriends()
 		for c in cf.getCurrentContestsId():
@@ -65,12 +61,11 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				self._points[c] = {}
 			if c not in self._notFinal:
 				self._notFinal[c] = {}
-			lastPoints = self._points[c]
 			standings = cf.getStandings(c, friends)
 			if standings == False:
 				return
 			results = standings['rows']
-			#{"handle":[0,3], }
+			lastPoints = self._points[c] #{"handle":[0,3], } also handle -> list of tasks with points
 			for r in results:
 				handle = r["party"]["members"][0]["handle"]
 				if handle not in lastPoints:
@@ -82,7 +77,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 					flag = False
 					taskName = standings["problems"][taski]["index"]
 					if task["points"] > 0 and taski not in lastPoints[handle]:
-						#notify all users who have this friend
+						#notify all chats who have this friend
 						if not firstRead:
 							self._notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
 									 task["bestSubmissionTimeSeconds"], r["rank"] != 0)

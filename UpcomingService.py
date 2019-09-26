@@ -4,6 +4,7 @@ import telegram as tg
 import codeforces as cf
 import database as db
 import time
+import Chat
 
 class UpcomingService (UpdateService.UpdateService):
 	def __init__(self):
@@ -26,12 +27,12 @@ class UpcomingService (UpdateService.UpdateService):
 						self._notifyAllUpcoming(c)
 
 	def _notifyAllNewContestAdded(self, contest):
-		for chatId in db.getAllChatPartners():
+		for chatId, chat in Chat.chats.items():
 			description = "new contest added:\n"
-			description += upcoming.getDescription(contest, chatId)
-			tg.sendMessage(chatId, description)
+			description += upcoming.getDescription(contest, chat)
+			chat.sendMessage(description)
 
 	def _notifyAllUpcoming(self, contest):
-		for chatId in db.getAllChatPartners():
-			description = upcoming.getDescription(contest, chatId)
-			tg.sendMessage(chatId, description)
+		for chatId, chat in Chat.chats.items():
+			description = upcoming.getDescription(contest, chat)
+			chat.sendMessage(description)

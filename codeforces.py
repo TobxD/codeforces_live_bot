@@ -8,7 +8,7 @@ import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
 friendsLastUpdated = {}
-aktuelleContests = [] # display scoreboard + upcomming
+aktuelleContests = [] # display scoreboard + upcoming
 currentContests = [] # display scoreboard
 globalStandings = {}
 
@@ -16,19 +16,18 @@ endTimes = queue.Queue()
 for i in range(5):
 	endTimes.put(-1)
 
-def sendRequest(method, params, authorized = False, chatId = -1):
+def sendRequest(method, params, authorized = False, chat = None):
 	rnd = random.randint(0, 100000)
 	rnd = str(rnd).zfill(6)
 	tailPart = method + '?'
 
 	if authorized:
 		try:
-			key, secret = db.getAuth(chatId)
-			params['apiKey'] = key
-			params['time'] = str(int(time.time()))
-			if key == None or secret == None:
+			if chat == None or chat.apikey == None or chat.secret == None:
 				util.log(traceback.format_exc())
 				return False
+			params['apiKey'] = chat.apikey
+			params['time'] = str(int(time.time()))
 		except Exception as e:
 			util.log(traceback.format_exc(), isError=True)
 			return False
@@ -38,7 +37,7 @@ def sendRequest(method, params, authorized = False, chatId = -1):
 	request = codeforcesUrl
 
 	if authorized:
-		hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + secret) # ignore last '&'
+		hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + chat.secret) # ignore last '&'
 		tailPart += 'apiSig=' + rnd + hsh
 	request += tailPart
 	waitTime = endTimes.get() + 1 - time.time()
@@ -69,22 +68,22 @@ def getUserRating(handle):
 		return 0
 	return info[0]["rating"]
 
-def getFriendsWithDetails(chatId):
+def getFriendsWithDetails(chat):
 	global friendsLastUpdated
-	if time.time() - friendsLastUpdated.get(chatId, 0) > 1200:
+	if time.time() - friendsLastUpdated.get(chat.chatId, 0) > 1200:
 		p = {}
 		p['onlyOnline'] = 'false'
-		util.log('request friends of user with chat_id ' + str(chatId))
-		f = sendRequest("user.friends", p, True, chatId)
+		util.log('request friends of chat with chat_id ' + str(chat.chatId))
+		f = sendRequest("user.friends", p, True, chat)
 		util.log('requesting friends finished')
 		if f != False:
-			db.addFriends(chatId, f)
-			friendsLastUpdated[chatId] = time.time()
-			util.log('friends updated for user ' + str(chatId))
-	return db.getFriends(chatId)
+			db.addFriends(chat.chatId, f)
+			friendsLastUpdated[chat.chatId] = time.time()
+			util.log('friends updated for chat ' + str(chat.chatId))
+	return db.getFriends(chat.chatId)
 
-def getFriends(chatId):
-	friends = getFriendsWithDetails(chatId)
+def getFriends(chat):
+	friends = getFriendsWithDetails(chat)
 	return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
 def updateStandings(contestId):

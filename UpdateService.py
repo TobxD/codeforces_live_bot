@@ -12,7 +12,11 @@ class UpdateService (threading.Thread):
 			waitTime = lastTime + self._updateInterval - time.time()
 			if waitTime > 0:
 				time.sleep(waitTime)
-			self._doTask()
+			try:
+				self._doTask()
+			except Exception as e:
+				traceback.print_exc()
+				util.log(traceback.format_exc(), isError=True)
 			lastTime = time.time()
 
 	def _doTask(self): #to be overridden

@@ -8,25 +8,28 @@ class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 60)
 		self._summarized = set()
+		self._doTask(True)
 
-	def _doTask(self):
+	def _doTask(self, quiet=False):
 		for c in cf.getCurrentContests():
 			if cf.getContestStatus(c) == 'finished' and not c['id'] in self._summarized:
 				self._summarized.add(c['id'])
-				self._sendAllSummary(c)
+				if not quiet:
+					self._sendAllSummary(c)
 
 	def _sendAllSummary(self, contest):
 		for chatId in db.getAllChatPartners():
+			chat = Chat.getChat(chatId)
 			msg = contest['name'] + " has finished.\n"
-			msg += self._getContestAnalysis(contest, chatId)
-			tg.sendMessage(chatId, msg)
-			standings.sendContestStandings(chatId, contest['id'])
+			msg += self._getContestAnalysis(contest, chat)
+			chat.sendMessage(msg)
+			standings.sendContestStandings(chat, contest['id'])
 
-	def _getContestAnalysis(self, contest, chatId):
+	def _getContestAnalysis(self, contest, chat):
 		msg = ""
 		((minHandle, minRC, minOldR),
 		 (maxHandle, maxRC, maxOldR),
-		 (myRC, myOldR, nowBetter, nowWorse)) = self._getWinnerLooser(chatId, contest['id'])
+		 (myRC, myOldR, nowBetter, nowWorse)) = self._getWinnerLooser(chat, contest['id'])
 		if myRC is not None:
 			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
 		if minRC < -30:
@@ -66,12 +69,11 @@ class SummarizingService (UpdateService.UpdateService):
 		msg += "\n"
 		return msg
 
-	def _getWinnerLooser(self, chatId, contestId):
-		myHandle = db.getHandle(chatId)
+	def _getWinnerLooser(self, chat, contestId):
 		curStandings = cf.getStandings(contestId, cf.getFriends(chatId))
 		rows = curStandings["rows"]
 		# are changes already applied?
-		myRating = -1 if myHandle is None else cf.getUserRating(myHandle) 
+		myRating = -1 if chat.handle is None else cf.getUserRating(chat.handle) 
 		minRC, maxRC = 0, 0
 		minOldR, maxOldR = -1, -1
 		minHandle, maxHandle = 0, 0
@@ -87,7 +89,7 @@ class SummarizingService (UpdateService.UpdateService):
 					minRC, minOldR, minHandle = ratingC, oldR, handlename
 				if ratingC > maxRC:
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename
-				if handlename == myHandle:
+				if handlename == chat.handle:
 					myRC, myOldR = ratingC, oldR
 					if myRating == myOldR:
 						myRating += myRC
