@@ -110,7 +110,7 @@ def getStandings(contestId, handleList):
 	allStandings = globalStandings[contestId]["standings"]
 	allRows = allStandings["rows"]
 	# filter only users from handleList
-	rows = [r for r in allRows if util.cleanString(r["party"]["members"][0]["handle"]) in handleList]
+	rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
 	standings = allStandings
 	standings["rows"] = rows
 	return standings

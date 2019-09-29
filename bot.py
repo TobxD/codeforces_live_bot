@@ -53,7 +53,7 @@ def handleAddFriendRequestCont(chat, req):
 	if userInfos == False:
 		chat.sendMessage("No user with this handle!")
 	else:
-		db.addFriends(chat.chatId, [handle])
+		db.addFriends(chat.chatId, [userInfos[0]['handle']])
 		chat.sendMessage("👦 User `" + userInfos[0]['handle'] + "` with rating " +
 			str(userInfos[0]['rating']) + " added.")
 

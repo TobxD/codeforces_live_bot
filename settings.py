@@ -60,7 +60,7 @@ def getButtons(handle, ratingWatch, contestWatch):
 
 def getButtonRows(chat):
 	buttons = []
-	friends = cf.getFriendsWithDetails(chat.chatId)
+	friends = cf.getFriendsWithDetails(chat)
 	if friends == None:
 		chat.sendMessage("You don't have any friends :(")
 		return
@@ -109,9 +109,9 @@ def handleSetUserHandle(chat, handle):
 		chat.sendMessage("No user with this handle! Try again:")
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
-		chat.handle = handle
-		db.addFriends(chatId, [handle])
-		# db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
+		chat.handle = userInfos[0]['handle']
+		db.addFriends(chatId, [userInfos[0]['handle']])
+		# db.setFriendSettings(chat.chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
 		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
 			str(userInfos[0]['rating']) + ".")
 		if chat.apikey is None:
@@ -128,7 +128,7 @@ def handleAddSecret(chat, secret):
 def handleAddKey(chat, key):
 	chat.apikey = key
 	bot.setOpenCommandFunc(chatId, handleAddSecret)
-	tg.sendMessage(chatId, "Enter your secret:")
+	chat.sendMessage("Enter your secret:")
 
 def handleSetAuthorization(chat, req):
 	#offenes Request adden
