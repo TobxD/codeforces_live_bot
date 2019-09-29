@@ -49,7 +49,7 @@ def handleAddFriendRequestCont(chatId, req):
   if userInfos == False:
     tg.sendMessage(chatId, "No user with this handle!")
   else:
-    db.addFriends(chatId, [handle])
+    db.addFriends(chatId, [userInfos[0]['handle']])
     tg.sendMessage(chatId, "👦 User `" + userInfos[0]['handle'] + "` with rating " +
       str(userInfos[0]['rating']) + " added.")
 
@@ -502,8 +502,8 @@ def handleSetUserHandle(chatId, handle):
     tg.sendMessage(chatId, "No user with this handle! Try again:")
   else:
     del openCommandFunc[chatId]
-    db.setUserHandle(chatId, handle)
-    db.addFriends(chatId, [handle])
+    db.setUserHandle(chatId, userInfos[0]['handle'])
+    db.addFriends(chatId, [userInfos[0]['handle']])
     #db.setFriendSettings(chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
     tg.sendMessage(chatId, "Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
       str(userInfos[0]['rating']) + ".")
