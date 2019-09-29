@@ -1,5 +1,7 @@
 import threading
 import time
+import traceback
+import util
 
 class UpdateService (threading.Thread):
 	def __init__(self, updateInterval):

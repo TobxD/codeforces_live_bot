@@ -22,13 +22,14 @@ def getRatingChanges(contestId):
 		handleToRatingChanges[row['handle']] = (row['oldRating'], row['newRating'])
 	return handleToRatingChanges
 
-def getFriendStandings(chatId, contestId):
-	friends = cf.getFriends(chatId)
+def getFriendStandings(chat, contestId):
+	friends = cf.getFriends(chat)
 	if len(friends) == 0:
 		#tg.sendMessage(chatId, "You have no friends :(")
 		util.log("user has no friends -> empty standings")
 		return
 	standings = cf.getStandings(contestId, friends)
+	util.log('standings received: ' + str(standings))
 	if standings == False:
 		#tg.sendMessage(chatId, "Invalid contest or handle")
 		util.log("failed to get standings for " + str(friends))

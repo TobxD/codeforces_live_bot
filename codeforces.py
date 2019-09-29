@@ -80,7 +80,9 @@ def getFriendsWithDetails(chat):
 			db.addFriends(chat.chatId, f)
 			friendsLastUpdated[chat.chatId] = time.time()
 			util.log('friends updated for chat ' + str(chat.chatId))
-	return db.getFriends(chat.chatId)
+	friends = db.getFriends(chat.chatId)
+	util.log('friends returned: ' + str(friends))
+	return friends
 
 def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
@@ -108,7 +110,7 @@ def getStandings(contestId, handleList):
 	allStandings = globalStandings[contestId]["standings"]
 	allRows = allStandings["rows"]
 	# filter only users from handleList
-	rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
+	rows = [r for r in allRows if util.cleanString(r["party"]["members"][0]["handle"]) in handleList]
 	standings = allStandings
 	standings["rows"] = rows
 	return standings
@@ -169,5 +171,8 @@ class ContestListService (UpdateService.UpdateService):
 	def _doTask(self):
 		util.log('loading current contests')
 		allContests = sendRequest('contest.list', {'gym':'false'})
-		selectImportantContests(allContests)
+		if allContests is False:
+			util.log('failed to load current contest - maybe cf is not up', True)
+		else:
+			selectImportantContests(allContests)
 		util.log('loding contests finished')

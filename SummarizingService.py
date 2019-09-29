@@ -3,6 +3,7 @@ import database as db
 import telegram as tg
 import standings
 import UpdateService
+import Chat
 
 class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
@@ -70,7 +71,7 @@ class SummarizingService (UpdateService.UpdateService):
 		return msg
 
 	def _getWinnerLooser(self, chat, contestId):
-		curStandings = cf.getStandings(contestId, cf.getFriends(chatId))
+		curStandings = cf.getStandings(contestId, cf.getFriends(chat))
 		rows = curStandings["rows"]
 		# are changes already applied?
 		myRating = -1 if chat.handle is None else cf.getUserRating(chat.handle) 
