@@ -12,5 +12,5 @@ else:
 # which only communicates over stdin/stdout instead of telegram
 if "-t" in sys.argv:
 	bot.startTestingMode()
-
-#bot.mainLoop()
+else if "--production" in sys.argv:
+	bot.startTelegramBot()

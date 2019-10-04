@@ -1,12 +1,14 @@
 import codeforces as cf
 import telegram as tg
 import util
-import requests
 from Table import Table
+
+import requests
+from collections import defaultdict
 
 # ------ Current Standings	-------
 
-standingsSent = {}
+standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId, msg)
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 
 def getRatingChanges(contestId):
@@ -29,7 +31,6 @@ def getFriendStandings(chat, contestId):
 		util.log("user has no friends -> empty standings")
 		return
 	standings = cf.getStandings(contestId, friends)
-	util.log('standings received: ' + str(standings))
 	if standings == False:
 		#chat.sendMessage("Invalid contest or handle")
 		util.log("failed to get standings for " + str(friends))
@@ -97,16 +98,19 @@ def getFriendStandings(chat, contestId):
 
 def sendContestStandings(chat, contestId):
 	global standingsSent
-	id = chat.sendMessage(getFriendStandings(chat, contestId))
-	if chat.chatId not in standingsSent:
-		standingsSent[chat.chatId] = {}
+	msg = getFriendStandings(chat, contestId)
+	id = chat.sendMessage(msg)
 	if id != False:
-		standingsSent[chat.chatId][contestId] = id
+		standingsSent[chat.chatId][contestId] = (id, msg)
 
 def sendStandings(chat, msg):
 	for c in cf.getCurrentContestsId():
 		sendContestStandings(chat, c)
 
-def updateStandingsForChat(contest, chat, messageId):
+# updates only, if the standings-message has changed
+def updateStandingsForChat(contest, chat):
+	msgId, oldMsg = standingsSent[chat.chatId][contest]
 	msg = getFriendStandings(chat, contest)
-	chat.editMessageText(messageId, msg)
+	if oldMsg != msg:
+		standingsSent[chat.chatId][contest] = (msgId, msg)
+		chat.editMessageText(msgId, msg)

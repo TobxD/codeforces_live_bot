@@ -116,7 +116,6 @@ def getStandings(contestId, handleList):
 	return standings
 
 
-
 def getContestStatus(contest):
 	if contest['startTimeSeconds'] >= time.time():
 		return 'before'
@@ -135,19 +134,15 @@ def selectImportantContests(contestList):
 	aktuelleContests = []
 	for c in contestList:
 		status = getContestStatus(c)
-		if status == 'running':
-			aktuelleContests.append(c)
-			currentContests.append(c)
-		elif status == 'finished' or status == 'testing':
+		if status != 'before':
 			lastStart = max(lastStart, c.get('startTimeSeconds', -1))
-		else:
+	for c in contestList:
+		twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
+		status = getContestStatus(c)
+		if not twoDaysOld:
 			aktuelleContests.append(c)
-	if len(currentContests) == 0:
-		for c in contestList:
-			twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
-			if c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and not c in aktuelleContests):
-				aktuelleContests.append(c)
-				currentContests.append(c)
+		if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
+			currentContests.append(c)
 
 def getCurrentContests():
 	selectImportantContests(aktuelleContests)

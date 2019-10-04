@@ -45,7 +45,7 @@ def updateChatInfos(chatId, apikey, secret, timezone, handle):
 					"VALUES "
 							"(%s, %s, %s, %s, %s) "
 					"ON DUPLICATE KEY UPDATE "
-							"apikey = %s , seret = %s , timezone = %s , handle = %s")
+							"apikey = %s , secret = %s , timezone = %s , handle = %s")
 	insertDB(query, (chatId, apikey, secret, timezone, handle, apikey, secret, timezone, handle))
 
 def getChatIds(handle):

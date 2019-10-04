@@ -3,6 +3,7 @@ import datetime
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from pytz import timezone, utc
+import threading
 
 def cleanString(s):
 	return s.lower().strip()
@@ -89,7 +90,8 @@ def formatSeconds(s, useExcl = False):
 	return out.replace(":", "!") if useExcl else out
 
 def log(msg, isError=False):
-	timeString = '[' + str(datetime.datetime.now()) + '] '
+	threadName = threading.currentThread().name
+	timeString = '[' + str(datetime.datetime.now()) + ' at ' + threadName + '] '
 	text = timeString + msg
 	print(text)
 	writeToFile("log.txt", text)

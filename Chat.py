@@ -91,6 +91,6 @@ class Chat:
 
 	def editMessageText(self, msgId, msg):
 		if self.chatId == '0':
-			print('message sent: ----------\n' + text + "\n -------- End Message ----------")
+			print('message edited to: ----------\n' + msg + "\n -------- End Message ----------")
 		else:
 			tg.editMessageText(self.chatId, msgId, msg)
