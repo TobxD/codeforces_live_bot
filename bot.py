@@ -121,7 +121,7 @@ def startTestingMode():
 
 def startTelegramBot():
 	initContestServices()
-	rg.TelegramUpdateService().start()
+	telegram.TelegramUpdateService().start()
 	while True:
 		msg = input()
 		if msg == 'quit':
