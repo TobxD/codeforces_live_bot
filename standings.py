@@ -34,7 +34,7 @@ def getFriendStandings(chat, contestId):
 	if standings == False:
 		#chat.sendMessage("Invalid contest or handle")
 		util.log("failed to get standings for " + str(friends))
-		return
+		return False
 	contest = standings["contest"]
 	msg = contest["name"] + " "
 	if contest["relativeTimeSeconds"] < contest["durationSeconds"]:
@@ -99,6 +99,8 @@ def getFriendStandings(chat, contestId):
 def sendContestStandings(chat, contestId):
 	global standingsSent
 	msg = getFriendStandings(chat, contestId)
+	if msg is False:
+		return
 	id = chat.sendMessage(msg)
 	if id != False:
 		standingsSent[chat.chatId][contestId] = (id, msg)
@@ -111,6 +113,8 @@ def sendStandings(chat, msg):
 def updateStandingsForChat(contest, chat):
 	msgId, oldMsg = standingsSent[chat.chatId][contest]
 	msg = getFriendStandings(chat, contest)
+	if msg is False:
+		return
 	if oldMsg != msg:
 		standingsSent[chat.chatId][contest] = (msgId, msg)
 		chat.editMessageText(msgId, msg)

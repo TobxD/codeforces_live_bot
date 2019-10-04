@@ -76,7 +76,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 
 	def _analyseContest(self, contestId, friends, firstRead):
 		standings = cf.getStandings(contestId, friends)
-		if standings == False:
+		if standings is False:
 			return
 		results = standings['rows']
 		for row in results:

@@ -121,8 +121,9 @@ def startTestingMode():
 
 def startTelegramBot():
 	initContestServices()
-	telegram.TelegramUpdateService().start()
+	tg.TelegramUpdateService().start()
 	while True:
 		msg = input()
 		if msg == 'quit':
+			#TODO halt all threads
 			return

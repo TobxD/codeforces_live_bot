@@ -92,14 +92,10 @@ def editMessageText(chatId, msgId, msg):
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
+		global requestUrl
 		UpdateService.UpdateService.__init__(self, 1)
 		requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 		self._lastUpdateID = -1
-
-	def startPolling(self):
-		curUpd = self._poll()
-		for u in curUpd:
-			self._handleUpdate(u)
 
 	def _poll(self):
 		try:
@@ -123,3 +119,8 @@ class TelegramUpdateService (UpdateService.UpdateService):
 		elif 'callback_query' in update:
 			#sendAnswerCallback(update['callback_query']['id'])
 			settings.handleCallbackQuery(update['callback_query'])
+	
+	def _doTask(self):
+		curUpd = self._poll()
+		for u in curUpd:
+			self._handleUpdate(u)

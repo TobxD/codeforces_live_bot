@@ -98,15 +98,19 @@ def updateStandings(contestId):
 	if standings and "contest" in standings:
 		contest = standings["contest"]
 		aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
-	util.log('standings received')
-
-	# safe standings globally
-	globalStandings[contestId] = {"time": time.time(), "standings": standings}
+		globalStandings[contestId] = {"time": time.time(), "standings": standings}
+		util.log('standings received')
+	else:
+		util.log('standings not updated', isError=True)
+		if contestId not in globalStandings:
+			globalStangins[contestId] = False
 
 def getStandings(contestId, handleList):
-	if not contestId in globalStandings or time.time() - globalStandings[contestId]["time"] > 30:
+	if not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30:
 		updateStandings(contestId)
 
+	if globalStandings[contestId] is False:
+		return False
 	allStandings = globalStandings[contestId]["standings"]
 	allRows = allStandings["rows"]
 	# filter only users from handleList
