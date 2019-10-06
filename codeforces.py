@@ -13,7 +13,7 @@ currentContests = [] # display scoreboard
 globalStandings = {}
 
 endTimes = queue.Queue()
-for i in range(5):
+for i in range(1):
 	endTimes.put(-1)
 
 def sendRequest(method, params, authorized = False, chat = None):
@@ -48,7 +48,15 @@ def sendRequest(method, params, authorized = False, chat = None):
 	except requests.exceptions.Timeout as errt:
 		util.log("Timeout on Codeforces.",errt)
 		return False
-	endTimes.put(time.time())
+	finally:
+		endTimes.put(time.time())
+	if r.status_code != requests.codes.ok:
+		util.log("status code for cf request: " + str(r.status_code), isError=True)
+		if(r.status_code == 429):
+			util.log("too many cf requests... trying again")
+			return sendRequest(method, params, authorized, chat)
+		else:
+			return False
 	r = r.json()
 	if r['status'] == 'OK':
 		return r['result']

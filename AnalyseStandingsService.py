@@ -27,7 +27,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		for chatId in db.getWhoseFriends(handle):
-			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg), name="sendMsg").start()
+			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 
 	def _notifyTaskTested(self, handle, task, accepted):
 		funnyInsults = ["%s faild on system tests for task %s. What a looser.💩",
@@ -43,7 +43,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			else:
 				msg = handle + " failed on system tests for task " + task
 		for chatId in db.getChatIds(handle):
-			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg), name="sendMsg").start()
+			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 
 	def _updateStandings(self, contest, chatIds):
 		for chatId in chatIds:
