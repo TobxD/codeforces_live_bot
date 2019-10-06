@@ -94,6 +94,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
 		global requestUrl
 		UpdateService.UpdateService.__init__(self, 1)
+		self.name = "telegramService"
 		requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 		self._lastUpdateID = -1
 

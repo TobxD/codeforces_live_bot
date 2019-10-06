@@ -13,7 +13,7 @@ cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServl
 
 def getRatingChanges(contestId):
 	util.log('request rating changes from cf-predictor')
-	r = requests.get(cfPredictorUrl + str(contestId))
+	r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
 	util.log('rating changes received')
 	r = r.json()
 	if r['status'] != 'OK':

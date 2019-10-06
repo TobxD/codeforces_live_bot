@@ -8,6 +8,7 @@ import Chat
 class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 60)
+		self.name = "summarizeService"
 		self._summarized = set()
 		self._doTask(True)
 

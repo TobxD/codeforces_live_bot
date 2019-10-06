@@ -51,18 +51,18 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			if contest in standings.standingsSent[chatId]:
 				util.log('update stadings for ' + str(chatId) + '!')
 				standings.updateStandingsForChat(contest, chat)
-	
-	def _analyseRow(self, contestId, row, firstRead):
+
+	def _analyseRow(self, contestId, row, ranking, firstRead):
 		handle = row["party"]["members"][0]["handle"]
 		pointsList = self._points[contestId][handle]
 		for taski in range(len(row["problemResults"])):
 			task = row["problemResults"][taski]
-			taskName = standings["problems"][taski]["index"]
+			taskName = ranking["problems"][taski]["index"]
 			if task["points"] > 0 and taski not in pointsList:
 				if not firstRead:
 					Thread(target=self._notifyTaskSolved, args=(handle, taskName, task["rejectedAttemptCount"],
 							 task["bestSubmissionTimeSeconds"], row["rank"] != 0), name="notifySolved").start()
-					if standings["contest"]['phase'] == 'FINISHED':
+					if ranking["contest"]['phase'] == 'FINISHED':
 						Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
 				pointsList.append(taski)
 				if task['type'] == 'PRELIMINARY' and (taski not in self._notFinal[contestId][handle]):
@@ -75,15 +75,15 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
 
 	def _analyseContest(self, contestId, friends, firstRead):
-		standings = cf.getStandings(contestId, friends)
-		if standings is False:
+		ranking = cf.getStandings(contestId, friends)
+		if ranking is False:
 			return
-		results = standings['rows']
+		results = ranking['rows']
 		for row in results:
-			self._analyseRow(contestId, row, firstRead)
-		if standings["contest"]['phase'] != 'FINISHED' and not firstRead:
+			self._analyseRow(contestId, row, ranking, firstRead)
+		if ranking['contest']['phase'] != 'FINISHED' and not firstRead:
 			Thread(target=self._updateStandings, args=(contestId, db.getAllChatPartners()), name="updStandings").start()
-	
+
 	# analyses the standings
 	def _doTask(self, firstRead=False):
 		friends = db.getAllFriends()

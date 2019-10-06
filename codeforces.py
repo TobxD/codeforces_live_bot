@@ -81,7 +81,6 @@ def getFriendsWithDetails(chat):
 			friendsLastUpdated[chat.chatId] = time.time()
 			util.log('friends updated for chat ' + str(chat.chatId))
 	friends = db.getFriends(chat.chatId)
-	util.log('friends returned: ' + str(friends))
 	return friends
 
 def getFriends(chat):
@@ -103,7 +102,7 @@ def updateStandings(contestId):
 	else:
 		util.log('standings not updated', isError=True)
 		if contestId not in globalStandings:
-			globalStangins[contestId] = False
+			globalStandings[contestId] = False
 
 def getStandings(contestId, handleList):
 	if not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30:
@@ -165,6 +164,7 @@ def getFutureContests():
 class ContestListService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 3600)
+		self.name = "contestListService"
 		self._doTask()
 
 	def _doTask(self):
