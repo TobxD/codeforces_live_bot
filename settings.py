@@ -143,7 +143,7 @@ def handleChangeTimezone(chat, text):
 
 def handleSetTimezone(chat, tzstr):
 	tzstr = tzstr.lstrip().rstrip()
-	tz = util.getTimeZone(req)
+	tz = util.getTimeZone(tzstr)
 	if not tz:
 		chat.sendMessage("Name lookup failed. Please use a different city:")
 	else:
