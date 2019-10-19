@@ -1,9 +1,8 @@
-import json, requests, time
-import sys, traceback, random, hashlib
+import json, requests, urllib
+import sys, traceback, random, hashlib, time
+import queue, threading
 import database as db
 import util
-import threading
-import queue
 import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
@@ -26,14 +25,15 @@ def sendRequest(method, params, authorized = False, chat = None):
 			if chat == None or chat.apikey == None or chat.secret == None:
 				util.log(traceback.format_exc())
 				return False
-			params['apiKey'] = chat.apikey
+			params['apiKey'] = str(chat.apikey)
 			params['time'] = str(int(time.time()))
 		except Exception as e:
 			util.log(traceback.format_exc(), isError=True)
 			return False
 
-	for key in sorted(params):
-		tailPart += key + '=' + str(params[key]) + '&'
+	for key in params:
+		params[key] = str(params[key])
+	tailPart += urllib.parse.urlencode(params)
 	request = codeforcesUrl
 
 	if authorized:
@@ -95,13 +95,34 @@ def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
 	return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
+def mergeStandings(s1, s2):
+	if s1 == True:
+		return s2
+	if s1 and "contest" in s1: 
+		if s2 and "contest" in s2: 
+			s1['rows'].extend(s2['rows'])
+			return s1
+		else:
+			return False
+	else:
+		return False
+
 def updateStandings(contestId):
 	global aktuelleContests
 	global globalStandings
 	handleList = db.getAllFriends()
-	handleString = ";".join(handleList)
-	util.log('updating standings for contest ' + str(contestId) + ' for all (' + str(len(handleList)) + ') users')
-	standings = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+	standings = True
+	l = 0 
+	r = 1 
+	while r < len(handleList):
+		handleString = ";".join(handleList[l:r])
+		while r < len(handleList) and len(";".join(handleList[l:r+1])) < 6000:
+			r += 1
+			handleString = ";".join(handleList[l:r+1])
+		util.log('updating standings for contest ' + str(contestId) + ' for ' + str(r-l) + ' of ' + str(len(handleList)) + ' users')
+		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+		standings = mergeStandings(standings, stNew)
+		l = r 
 	if standings and "contest" in standings:
 		contest = standings["contest"]
 		aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
