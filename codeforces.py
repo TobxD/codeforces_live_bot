@@ -6,9 +6,14 @@ import util
 import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
+friendUpdLock = threading.Lock()
 friendsLastUpdated = {}
+
+contestListLock = threading.Lock()
 aktuelleContests = [] # display scoreboard + upcoming
 currentContests = [] # display scoreboard
+
+standingsLock = threading.Lock()
 globalStandings = {}
 
 endTimes = queue.Queue()
@@ -78,16 +83,17 @@ def getUserRating(handle):
 
 def getFriendsWithDetails(chat):
 	global friendsLastUpdated
-	if time.time() - friendsLastUpdated.get(chat.chatId, 0) > 1200:
-		p = {}
-		p['onlyOnline'] = 'false'
-		util.log('request friends of chat with chat_id ' + str(chat.chatId))
-		f = sendRequest("user.friends", p, True, chat)
-		util.log('requesting friends finished')
-		if f != False:
-			db.addFriends(chat.chatId, f)
-			friendsLastUpdated[chat.chatId] = time.time()
-			util.log('friends updated for chat ' + str(chat.chatId))
+	with friendUpdLock:
+		if time.time() - friendsLastUpdated.get(chat.chatId, 0) > 1200:
+			p = {}
+			p['onlyOnline'] = 'false'
+			util.log('request friends of chat with chat_id ' + str(chat.chatId))
+			f = sendRequest("user.friends", p, True, chat)
+			util.log('requesting friends finished')
+			if f != False:
+				db.addFriends(chat.chatId, f)
+				friendsLastUpdated[chat.chatId] = time.time()
+				util.log('friends updated for chat ' + str(chat.chatId))
 	friends = db.getFriends(chat.chatId)
 	return friends
 
@@ -125,27 +131,33 @@ def updateStandings(contestId):
 		l = r 
 	if standings and "contest" in standings:
 		contest = standings["contest"]
-		aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
-		globalStandings[contestId] = {"time": time.time(), "standings": standings}
+		with contestListLock:
+			aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
+		with standingsLock:
+			globalStandings[contestId] = {"time": time.time(), "standings": standings}
 		util.log('standings received')
 	else:
 		util.log('standings not updated', isError=True)
-		if contestId not in globalStandings:
-			globalStandings[contestId] = False
+		with standingsLock:
+			if contestId not in globalStandings:
+				globalStandings[contestId] = False
 
 def getStandings(contestId, handleList):
-	if not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30:
+	with standingsLock:
+		toUpd = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30
+	if toUpd:
 		updateStandings(contestId)
 
-	if globalStandings[contestId] is False:
-		return False
-	allStandings = globalStandings[contestId]["standings"]
-	allRows = allStandings["rows"]
-	# filter only users from handleList
-	rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
-	standings = allStandings
-	standings["rows"] = rows
-	return standings
+	with standingsLock:
+		if globalStandings[contestId] is False:
+			return False
+		allStandings = globalStandings[contestId]["standings"]
+		allRows = allStandings["rows"]
+		# filter only users from handleList
+		rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
+		standings = allStandings
+		standings["rows"] = rows
+		return standings
 
 
 def getContestStatus(contest):
@@ -161,33 +173,38 @@ def getContestStatus(contest):
 def selectImportantContests(contestList):
 	global aktuelleContests
 	global currentContests
-	lastStart = 0
-	currentContests = []
-	aktuelleContests = []
-	for c in contestList:
-		status = getContestStatus(c)
-		if status != 'before':
-			lastStart = max(lastStart, c.get('startTimeSeconds', -1))
-	for c in contestList:
-		twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
-		status = getContestStatus(c)
-		if not twoDaysOld:
-			aktuelleContests.append(c)
-		if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
-			currentContests.append(c)
+	with contestListLock:
+		lastStart = 0
+		currentContests = []
+		aktuelleContests = []
+		for c in contestList:
+			status = getContestStatus(c)
+			if status != 'before':
+				lastStart = max(lastStart, c.get('startTimeSeconds', -1))
+		for c in contestList:
+			twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
+			status = getContestStatus(c)
+			if not twoDaysOld:
+				aktuelleContests.append(c)
+			if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
+				currentContests.append(c)
 
 def getCurrentContests():
-	selectImportantContests(aktuelleContests)
-	return currentContests
+	with contestListLock:
+		curC = aktuelleContests
+	selectImportantContests(curC)
+	with contestListLock:
+		return currentContests
 
 def getCurrentContestsId():
 	return [c['id'] for c in getCurrentContests()]
 
 def getFutureContests():
 	res = []
-	for c in aktuelleContests:
-		if c.get('startTimeSeconds', -1) > time.time():
-			res.append(c)
+	with contestListLock:
+		for c in aktuelleContests:
+			if c.get('startTimeSeconds', -1) > time.time():
+				res.append(c)
 	return res
 
 class ContestListService (UpdateService.UpdateService):

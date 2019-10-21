@@ -10,6 +10,8 @@ import upcoming
 import settings
 import Chat
 
+import threading
+
 # chatId -> function
 openCommandFunc = {}
 
@@ -55,7 +57,7 @@ def handleAddFriendRequestCont(chat, req):
 	else:
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
 		chat.sendMessage("👦 User `" + userInfos[0]['handle'] + "` with rating " +
-			str(userInfos[0]['rating']) + " added.")
+			str(userInfos[0].get('rating', 0)) + " added.")
 
 def handleAddFriendRequest(chat, req):
 	#offenes Request adden
