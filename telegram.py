@@ -114,7 +114,10 @@ class TelegramUpdateService (UpdateService.UpdateService):
 	def _handleUpdate(self, update):
 		self._lastUpdateID = update['update_id']
 		if 'message' in update:
-			bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
+			if 'text' in update['message']:
+				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
+			else:
+				util.log("no text in message: " + str(update['message']), isError=True)
 		elif 'edited_message' in update:
 			bot.handleMessage(Chat.getChat(str(update['edited_message']['chat']['id'])), update['edited_message']['text'])
 		elif 'callback_query' in update:
