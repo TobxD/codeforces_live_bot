@@ -22,7 +22,7 @@ def sendAnswerCallback(callback_query_id, text = ""):
 		r = requests.post(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
 		r = r.json()
 	except Exception as e:
-		util.log(traceback.format_exc())
+		util.log(traceback.format_exc(), isError=True)
 		traceback.print_exc()
 
 def sendMessage(chatId, text, reply_markup = None):
@@ -45,11 +45,11 @@ def sendMessage(chatId, text, reply_markup = None):
 		if r['ok']:
 			return r['result']['message_id']
 		else:
-			util.log('!!!!!Fehler beim senden der Nachricht: ' + r['description']+ " !!!!!")
+			util.log('Fehler beim senden der Nachricht: ' + r['description']+ "!", isError=True)
 			return False
 	except Exception as e:
 		traceback.print_exc()
-		util.log(traceback.format_exc())
+		util.log(traceback.format_exc(), isError=True)
 		return False
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
@@ -63,7 +63,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		r = r.json()
 	except Exception as e:
 		traceback.print_exc()
-		util.log(traceback.format_exc())
+		util.log(traceback.format_exc(), isError=True)
 
 def editMessageText(chatId, msgId, msg):
 	#TODO escape msg???
@@ -88,7 +88,7 @@ def editMessageText(chatId, msgId, msg):
 			print("fehler beim editieren einer Nachricht:", r['description'])
 	except Exception as e:
 		traceback.print_exc()
-		util.log(traceback.format_exc())
+		util.log(traceback.format_exc(), isError=True)
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):

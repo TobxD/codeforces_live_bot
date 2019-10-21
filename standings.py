@@ -33,7 +33,7 @@ def getFriendStandings(chat, contestId):
 	standings = cf.getStandings(contestId, friends)
 	if standings == False:
 		#chat.sendMessage("Invalid contest or handle")
-		util.log("failed to get standings for " + str(friends))
+		util.log("failed to get standings for " + str(friends), isError=True)
 		return False
 	contest = standings["contest"]
 	msg = contest["name"] + " "

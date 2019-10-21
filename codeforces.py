@@ -28,7 +28,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 	if authorized:
 		try:
 			if chat == None or chat.apikey == None or chat.secret == None:
-				util.log(traceback.format_exc())
+				util.log(traceback.format_exc(), isError=True)
 				return False
 			params['apiKey'] = str(chat.apikey)
 			params['time'] = str(int(time.time()))
@@ -51,14 +51,15 @@ def sendRequest(method, params, authorized = False, chat = None):
 	try:
 		r = requests.get(request, timeout=15)
 	except requests.exceptions.Timeout as errt:
-		util.log("Timeout on Codeforces.",errt)
+		util.log("Timeout on Codeforces.", isError=True)
 		return False
 	finally:
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
-		util.log("status code for cf request: " + str(r.status_code), isError=True)
+		util.log("status code for cf request: " + str(r.status_code) + "\n" +
+						 "error appeared with stack: " + repr(traceback.extract_stack()), isError=True)
 		if(r.status_code == 429):
-			util.log("too many cf requests... trying again")
+			util.log("too many cf requests... trying again", isError=True)
 			return sendRequest(method, params, authorized, chat)
 		else:
 			return False
@@ -66,7 +67,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 	if r['status'] == 'OK':
 		return r['result']
 	else:
-		util.log("Invalid Codeforces request: " + r['comment'])
+		util.log("Invalid Codeforces request: " + r['comment'], isError=True)
 		return False
 
 def getUserInfos(userNameArr):
@@ -217,7 +218,7 @@ class ContestListService (UpdateService.UpdateService):
 		util.log('loading current contests')
 		allContests = sendRequest('contest.list', {'gym':'false'})
 		if allContests is False:
-			util.log('failed to load current contest - maybe cf is not up', True)
+			util.log('failed to load current contest - maybe cf is not up', isError=True)
 		else:
 			selectImportantContests(allContests)
 		util.log('loding contests finished')
