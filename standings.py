@@ -29,7 +29,7 @@ def getFriendStandings(chat, contestId):
 	if len(friends) == 0:
 		#chat.sendMessage("You have no friends :(")
 		util.log("user has no friends -> empty standings")
-		return
+		return False
 	standings = cf.getStandings(contestId, friends)
 	if standings == False:
 		#chat.sendMessage("Invalid contest or handle")

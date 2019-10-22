@@ -27,7 +27,7 @@ def handleCallbackQuery(callback):
 	data = callback['data']
 
 	if not ":" in data:
-		log("Invalid callback data: "+ data)
+		util.log("Invalid callback data: "+ data, isError=True)
 		return
 
 	pref, data = data.split(":", 1)
@@ -37,7 +37,7 @@ def handleCallbackQuery(callback):
 	elif pref == "friend_notf":
 		handleFriendNotSettingsCallback(chat, data, callback)
 	else:
-		log("Invalid callback prefix: "+ pref + ", data: "+ data)
+		util.log("Invalid callback prefix: "+ pref + ", data: "+ data, isError=True)
 
 def handleSettingsCallback(chat, data, callback):
 	funs = {
@@ -59,12 +59,11 @@ def getButtons(handle, ratingWatch, contestWatch):
 	return [{"text":text1, "callback_data":data1}, {"text":text2, "callback_data":data2}]
 
 def getButtonRows(chat):
-	buttons = []
 	friends = cf.getFriendsWithDetails(chat)
 	if friends == None:
 		chat.sendMessage("You don't have any friends :(")
-		return
-
+		return []
+	buttons = []
 	for [handle, ratingWatch, contestWatch] in friends:
 		buttons.append(getButtons(handle, ratingWatch == 1, contestWatch == 1))
 	return buttons
