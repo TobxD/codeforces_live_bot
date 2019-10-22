@@ -36,12 +36,12 @@ def sendRequest(method, params, authorized = False, chat = None):
 			util.log(traceback.format_exc(), isError=True)
 			return False
 
-	for key in params:
-		params[key] = str(params[key])
-	tailPart += urllib.parse.urlencode(params)
+	for key,val in sorted(params.items()):
+		tailPart += str(key) + "=" + urllib.parse.quote(str(val)) + "&"
+	tailPart = tailPart[:-1]
 
 	if authorized:
-		hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + chat.secret) # ignore last '&'
+		hsh = util.sha512Hex(rnd + '/' + tailPart + '#' + chat.secret)
 		tailPart += '&apiSig=' + rnd + hsh
 	request = codeforcesUrl + tailPart
 	waitTime = endTimes.get() + 1 - time.time()
@@ -56,7 +56,9 @@ def sendRequest(method, params, authorized = False, chat = None):
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
 		util.log("status code for cf request: " + str(r.status_code) + "\n" +
-						 "error appeared with stack: " + repr(traceback.extract_stack()), isError=True)
+						 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+						 "this request caused the error:\n" + str(request),
+						 isError=True)
 		if(r.status_code == 429):
 			util.log("too many cf requests... trying again", isError=True)
 			return sendRequest(method, params, authorized, chat)
