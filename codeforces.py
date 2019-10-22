@@ -134,20 +134,18 @@ def updateStandings(contestId):
 		contest = standings["contest"]
 		with contestListLock:
 			aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
-		with standingsLock:
-			globalStandings[contestId] = {"time": time.time(), "standings": standings}
+		globalStandings[contestId] = {"time": time.time(), "standings": standings}
 		util.log('standings received')
 	else:
 		util.log('standings not updated', isError=True)
-		with standingsLock:
-			if contestId not in globalStandings:
-				globalStandings[contestId] = False
+		if contestId not in globalStandings:
+			globalStandings[contestId] = False
 
 def getStandings(contestId, handleList):
 	with standingsLock:
 		toUpd = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30
-	if toUpd:
-		updateStandings(contestId)
+		if toUpd:
+			updateStandings(contestId)
 
 	with standingsLock:
 		if globalStandings[contestId] is False:

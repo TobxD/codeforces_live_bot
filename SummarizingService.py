@@ -34,12 +34,12 @@ class SummarizingService (UpdateService.UpdateService):
 		 (myRC, myOldR, nowBetter, nowWorse)) = self._getWinnerLooser(chat, contest['id'])
 		if myRC is not None:
 			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
-		if minRC < -30:
+		if minRC <= -30:
 			msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % (minHandle, minRC)
 		elif minRC > 0:
 			msg += "What a great contest!🎉\n"
 
-		if maxRC > 30:
+		if maxRC >= 30:
 			msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % (maxHandle, maxRC)
 		elif maxRC < 0:
 			msg += "What a terrible contest!😑\n"
@@ -53,7 +53,7 @@ class SummarizingService (UpdateService.UpdateService):
 		# took part and was rated
 		if myRC < 0:
 			msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
-			if myRC < -70:
+			if myOldR >= 2000 and myRC < -70:
 				msg += " You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
 			else :
 				msg += "\n"
@@ -87,7 +87,7 @@ class SummarizingService (UpdateService.UpdateService):
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
 				ratingC = newR-oldR
-				if ratingC < minRC:
+				if ratingC < minRC and oldR >= 2000:
 					minRC, minOldR, minHandle = ratingC, oldR, handlename
 				if ratingC > maxRC:
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename

@@ -37,7 +37,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
 		else:
-			if cf.getUserRating(handle) >= 1800:
+			if cf.getUserRating(handle) >= 2000:
 				insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
 				msg = insult % (handle, task)
 			else:
