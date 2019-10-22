@@ -39,12 +39,11 @@ def sendRequest(method, params, authorized = False, chat = None):
 	for key in params:
 		params[key] = str(params[key])
 	tailPart += urllib.parse.urlencode(params)
-	request = codeforcesUrl
 
 	if authorized:
 		hsh = util.sha512Hex(rnd + '/' + tailPart[:-1] + '#' + chat.secret) # ignore last '&'
-		tailPart += 'apiSig=' + rnd + hsh
-	request += tailPart
+		tailPart += '&apiSig=' + rnd + hsh
+	request = codeforcesUrl + tailPart
 	waitTime = endTimes.get() + 1 - time.time()
 	if waitTime > 0:
 		time.sleep(waitTime)
