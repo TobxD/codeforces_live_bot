@@ -28,7 +28,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 	if authorized:
 		try:
 			if chat == None or chat.apikey == None or chat.secret == None:
-				util.log(traceback.format_exc(), isError=True)
+				# maybe we don't have apikey so we cannot request friends or smt
 				return False
 			params['apiKey'] = str(chat.apikey)
 			params['time'] = str(int(time.time()))

@@ -25,6 +25,9 @@ def setOpenCommandFunc(chatId, func):
 
 #------------------------- Rating request --------------------------------------
 def ratingsOfUsers(userNameArr):
+	if len(userNameArr) == 0:
+		return ("You have no friends :(\n"
+				"Please add your API key in the settings or add friends with `/add_friend`.")
 	userInfos = cf.getUserInfos(userNameArr)
 	if userInfos is False or len(userInfos) == 0:
 		return "Unknown user in this list"
