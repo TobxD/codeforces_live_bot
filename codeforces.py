@@ -1,4 +1,4 @@
-import json, requests, urllib
+import json, requests, urllib, simplejson
 import sys, traceback, random, hashlib, time
 import queue, threading
 import database as db
@@ -55,14 +55,22 @@ def sendRequest(method, params, authorized = False, chat = None):
 	finally:
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
-		util.log("status code for cf request: " + str(r.status_code) + "\n" +
-						 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
-						 "this request caused the error:\n" + str(request),
-						 isError=True)
 		if(r.status_code == 429):
 			util.log("too many cf requests... trying again", isError=True)
 			return sendRequest(method, params, authorized, chat)
 		else:
+			try:
+				r = r.json()
+				handleCFError(r)
+				util.log("codeforces error: " + str(r['comment']) +
+								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+								 "this request caused the error:\n" + str(request),
+								 isError=True)
+			except simplejson.errors.JSONDecodeError as jsonErr:
+				util.log("status code for cf request: " + str(r.status_code) + "\n" +
+								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+								 "this request caused the error:\n" + str(request),
+								 isError=True)
 			return False
 	r = r.json()
 	if r['status'] == 'OK':
@@ -70,6 +78,9 @@ def sendRequest(method, params, authorized = False, chat = None):
 	else:
 		util.log("Invalid Codeforces request: " + r['comment'], isError=True)
 		return False
+
+def handleCFError(r):
+	pass
 
 def getUserInfos(userNameArr):
 	usrList = ';'.join(userNameArr)
@@ -173,27 +184,25 @@ def getContestStatus(contest):
 def selectImportantContests(contestList):
 	global aktuelleContests
 	global currentContests
-	with contestListLock:
-		lastStart = 0
-		currentContests = []
-		aktuelleContests = []
-		for c in contestList:
-			status = getContestStatus(c)
-			if status != 'before':
-				lastStart = max(lastStart, c.get('startTimeSeconds', -1))
-		for c in contestList:
-			twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
-			status = getContestStatus(c)
-			if not twoDaysOld:
-				aktuelleContests.append(c)
-			if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
-				currentContests.append(c)
+	lastStart = 0
+	currentContests = []
+	aktuelleContests = []
+	for c in contestList:
+		status = getContestStatus(c)
+		if status != 'before':
+			lastStart = max(lastStart, c.get('startTimeSeconds', -1))
+	for c in contestList:
+		twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
+		status = getContestStatus(c)
+		if not twoDaysOld:
+			aktuelleContests.append(c)
+		if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
+			currentContests.append(c)
 
 def getCurrentContests():
 	with contestListLock:
 		curC = aktuelleContests
-	selectImportantContests(curC)
-	with contestListLock:
+		selectImportantContests(curC)
 		return currentContests
 
 def getCurrentContestsId():
@@ -219,5 +228,6 @@ class ContestListService (UpdateService.UpdateService):
 		if allContests is False:
 			util.log('failed to load current contest - maybe cf is not up', isError=True)
 		else:
-			selectImportantContests(allContests)
+			with contestListLock:
+				selectImportantContests(allContests)
 		util.log('loding contests finished')
