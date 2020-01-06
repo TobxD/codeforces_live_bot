@@ -8,7 +8,7 @@ import Chat
 
 class UpcomingService (UpdateService.UpdateService):
 	def __init__(self):
-		UpdateService.UpdateService.__init__(self, 50)
+		UpdateService.UpdateService.__init__(self, 30)
 		self._notified = {}
 		self._notifyTimes = [3600*24+59, 3600*2+59, -100000000]
 		self._doTask(True) #initializes notified
