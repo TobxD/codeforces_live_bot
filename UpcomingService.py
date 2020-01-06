@@ -18,13 +18,16 @@ class UpcomingService (UpdateService.UpdateService):
 			timeLeft = c['startTimeSeconds'] - time.time()
 			if c['id'] not in self._notified:
 				self._notified[c['id']] = 0
-				if not quiet:
-					self._notifyAllNewContestAdded(c)
+				#if not quiet:
+				#	self._notifyAllNewContestAdded(c)
 			for i in range(len(self._notifyTimes)):
 				if timeLeft <= self._notifyTimes[self._notified[c['id']]]:
-					self._notified[c['id']] = self._notified[c['id']] + 1
+					self._notified[c['id']] += 1
 					if not quiet:
-						self._notifyAllUpcoming(c)
+						# in the IOI-group only notify once
+						if not (self._notified[c['id']] > 1 
+							 and int(c['id']) in [-376765970, -1001417835798]):
+							self._notifyAllUpcoming(c)
 
 	def _notifyAllNewContestAdded(self, contest):
 		for chatId, chat in Chat.chats.items():

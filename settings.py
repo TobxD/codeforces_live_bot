@@ -109,7 +109,7 @@ def handleSetUserHandle(chat, handle):
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.handle = userInfos[0]['handle']
-		db.addFriends(chatId, [userInfos[0]['handle']])
+		db.addFriends(chat.chatId, [userInfos[0]['handle']])
 		# db.setFriendSettings(chat.chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
 		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
 			str(userInfos[0]['rating']) + ".")
@@ -126,7 +126,7 @@ def handleAddSecret(chat, secret):
 
 def handleAddKey(chat, key):
 	chat.apikey = key
-	bot.setOpenCommandFunc(chatId, handleAddSecret)
+	bot.setOpenCommandFunc(chat.chatId, handleAddSecret)
 	chat.sendMessage("Enter your secret:")
 
 def handleSetAuthorization(chat, req):

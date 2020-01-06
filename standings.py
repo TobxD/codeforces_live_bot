@@ -24,7 +24,8 @@ def getRatingChanges(contestId):
 		handleToRatingChanges[row['handle']] = (row['oldRating'], row['newRating'])
 	return handleToRatingChanges
 
-def getFriendStandings(chat, contestId):
+# if !sendIfEmpty and standings are empty then False is returned
+def getFriendStandings(chat, contestId, sendIfEmpty=True):
 	friends = cf.getFriends(chat)
 	if len(friends) == 0:
 		#chat.sendMessage("You have no friends :(")
@@ -92,14 +93,16 @@ def getFriendStandings(chat, contestId):
 					subs.append("")
 		nrow["body"] = subs
 		res.append(nrow)
+	if not sendIfEmpty and len(res) == 0:
+		return False
 	table = Table(problems, res)
 	msg += table.formatTable()
 	return msg
 
-def sendContestStandings(chat, contestId):
+def sendContestStandings(chat, contestId, sendIfEmpty=True):
 	global standingsSent
-	msg = getFriendStandings(chat, contestId)
-	if msg is False:
+	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
+	if msg is False: # CF is down or (standings are emtpy and !sendIfEmpty)
 		return
 	id = chat.sendMessage(msg)
 	if id != False:

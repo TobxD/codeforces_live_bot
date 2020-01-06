@@ -79,18 +79,18 @@ class Chat:
 
 	def sendMessage(self, text, reply_markup = None):
 		if self.chatId == '0':
-			print('message sent: ----------\n' + text + "\n -------- End Message ----------")
+			print('\n----- message sent: ------------\n' + text + "\n--------- End Message ----------\n")
 		else:
 			return tg.sendMessage(self.chatId, text, reply_markup)
 
 	def editMessageReplyMarkup(self, msgId, reply_markup):
 		if self.chatId == '0':
-			print('message edited to: ----------\n' + reply_markup + "\n -------- End Message ----------")
+			print('\n----- message edited to: ---------\n' + reply_markup + "\n--------- End Message ----------\n")
 		else:
 			tg.editMessageReplyMarkup(self.chatId, msgId, reply_markup)
 
 	def editMessageText(self, msgId, msg):
 		if self.chatId == '0':
-			print('message edited to: ----------\n' + msg + "\n -------- End Message ----------")
+			print('\n----- message edited to: ---------\n' + msg + "\n--------- End Message ----------\n")
 		else:
 			tg.editMessageText(self.chatId, msgId, msg)

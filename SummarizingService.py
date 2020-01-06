@@ -22,10 +22,11 @@ class SummarizingService (UpdateService.UpdateService):
 	def _sendAllSummary(self, contest):
 		for chatId in db.getAllChatPartners():
 			chat = Chat.getChat(chatId)
-			msg = contest['name'] + " has finished.\n"
-			msg += self._getContestAnalysis(contest, chat)
-			chat.sendMessage(msg)
-			standings.sendContestStandings(chat, contest['id'])
+			msg = self._getContestAnalysis(contest, chat)
+			if len(msg) > 0:  # only send if analysis is not empty
+				msg = contest['name'] + " has finished:\n" + msg
+				chat.sendMessage(msg)
+			standings.sendContestStandings(chat, contest['id'], sendIfEmpty=False)
 
 	def _getContestAnalysis(self, contest, chat):
 		msg = ""
@@ -87,7 +88,7 @@ class SummarizingService (UpdateService.UpdateService):
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
 				ratingC = newR-oldR
-				if ratingC < minRC and oldR >= 2000:
+				if ratingC < minRC and oldR >= 2000: # looser of the day has to have rating >= 2000
 					minRC, minOldR, minHandle = ratingC, oldR, handlename
 				if ratingC > maxRC:
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename

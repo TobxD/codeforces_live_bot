@@ -136,14 +136,14 @@ def updateStandings(contestId):
 	global globalStandings
 	handleList = db.getAllFriends()
 	standings = True
-	l = 0 
+	l = 0
 	r = 0
 	while r < len(handleList):
 		handleString = ";".join(handleList[l:r])
 		while r < len(handleList) and len(";".join(handleList[l:r+1])) < 6000:
 			r += 1
 			handleString = ";".join(handleList[l:r+1])
-		util.log('updating standings for contest ' + str(contestId) + ' for ' + str(r-l) + ' of ' + str(len(handleList)) + ' users')
+		util.log(f'updating standings for contest {contestId} for {r-l} of {len(handleList)} users')
 		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
 		standings = mergeStandings(standings, stNew)
 		l = r 
