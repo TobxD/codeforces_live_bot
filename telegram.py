@@ -45,12 +45,20 @@ def sendMessage(chatId, text, reply_markup = None):
 		if r['ok']:
 			return r['result']['message_id']
 		else:
-			util.log('Fehler beim senden der Nachricht: ' + r['description']+ "!", isError=True)
+			util.log('Fehler beim senden der Nachricht an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
+			handleSendError(r['description'], chatId)
 			return False
 	except Exception as e:
 		traceback.print_exc()
 		util.log(traceback.format_exc(), isError=True)
 		return False
+
+def handleSendError(errMsg, chatId):
+	if (errMsg == "Forbidden: bot was blocked by the user" or
+		 errMsg == "Forbidden: bot was kicked from the group chat" or
+		 errMsg == "Bad Request: chat not found" or
+		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
+		db.deleteUser(chatId)
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	params = {

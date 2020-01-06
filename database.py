@@ -53,6 +53,20 @@ def getChatIds(handle):
 	res = queryDB(query, (handle,))
 	return [r[0] for r in res]
 
+def deleteFriend(handle):
+	util.log("deleting friends with handle " + handle)
+	query = "DELETE FROM friends WHERE friend = %s"
+	insertDB(query, (handle,))
+
+def deleteUser(chatId):
+	util.log("deleting all data of user with chatId " + str(chatId))
+	query = "DELETE FROM friends WHERE chatId = %s"
+	util.log("deleting all friend entries: " + query)
+	insertDB(query, (chatId,))
+	query = "DELETE FROM tokens WHERE chatId = %s"
+	util.log("deleting all token entries: " + query)
+	insertDB(query, (chatId,))
+
 def addFriends(chatId, friends):
 	query = "INSERT INTO friends (chatId, friend) VALUES "
 	for f in friends:

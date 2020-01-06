@@ -61,11 +61,11 @@ def sendRequest(method, params, authorized = False, chat = None):
 		else:
 			try:
 				r = r.json()
-				handleCFError(r)
-				util.log("codeforces error: " + str(r['comment']) +
+				util.log("codeforces error: " + str(r['comment']) + "\n" +
 								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
 								 "this request caused the error:\n" + str(request),
 								 isError=True)
+				handleCFError(r)
 			except simplejson.errors.JSONDecodeError as jsonErr:
 				util.log("status code for cf request: " + str(r.status_code) + "\n" +
 								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
@@ -80,7 +80,12 @@ def sendRequest(method, params, authorized = False, chat = None):
 		return False
 
 def handleCFError(r):
-	pass
+	if r['status'] == 'FAILED':
+		startS = "handles: User with handle "
+		endS = " not found"
+		if r['comment'].startswith(startS) and r['comment'].endswith(endS):
+			handle = r['comment'][len(startS):-len(endS)]
+			db.deleteFriend(handle)
 
 def getUserInfos(userNameArr):
 	usrList = ';'.join(userNameArr)
@@ -132,7 +137,7 @@ def updateStandings(contestId):
 	handleList = db.getAllFriends()
 	standings = True
 	l = 0 
-	r = 1 
+	r = 0
 	while r < len(handleList):
 		handleString = ";".join(handleList[l:r])
 		while r < len(handleList) and len(";".join(handleList[l:r+1])) < 6000:

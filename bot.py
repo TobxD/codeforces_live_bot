@@ -88,6 +88,7 @@ def noCommand(chat, msg):
 def handleMessage(chat, text):
 	util.log("-> " + text + " <-")
 	text = text.replace("@codeforces_live_bot", "")
+	text = text.replace("@codeforces_live_testbot", "")
 	msgSwitch = {
 		"/start": handleStart,
 		"/rating": handleRatingRequest,
