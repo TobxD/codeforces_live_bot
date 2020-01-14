@@ -35,6 +35,6 @@ class UpcomingService (UpdateService.UpdateService):
 	def _notifyAllUpcoming(self, contest):
 		for chatId, chat in Chat.chats.items():
 			if not (self._notified[contest['id']] > 1 
-				 and int(chatId) in [-376765970, -1001417835798]):
+				 and int(chatId) == -1001417835798):
 				description = upcoming.getDescription(contest, chat)
 				chat.sendMessage(description)
