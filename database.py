@@ -11,14 +11,12 @@ def openDB():
 	return db
 
 def queryDB(query, params):
-	util.log("start db query: " + query)
 	db = openDB()
 	cursor = db.cursor()
 	cursor.execute(query, params)
 	res = cursor.fetchall()
 	cursor.close()
 	db.close()
-	util.log("db query finished")
 	return res
 
 def insertDB(query, params):

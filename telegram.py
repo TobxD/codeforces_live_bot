@@ -29,7 +29,7 @@ def sendMessage(chatId, text, reply_markup = None):
 	if chatId == '0':
 		print('message sent: ' + text + "\n -------- End Message ----------")
 		return
-	# dont send msg 100sec after restart
+	# dont send msg RESTART_WAIT seconds after restart
 	if time.time() - RESTART < RESTART_WAIT:
 		util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text))
 		return
@@ -45,12 +45,11 @@ def sendMessage(chatId, text, reply_markup = None):
 		if r['ok']:
 			return r['result']['message_id']
 		else:
-			util.log('Fehler beim senden der Nachricht an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
+			util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
 			handleSendError(r['description'], chatId)
 			return False
 	except Exception as e:
-		traceback.print_exc()
-		util.log(traceback.format_exc(), isError=True)
+		util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + '\noccurred at: ' + traceback.format_exc(), isError=True)
 		return False
 
 def handleSendError(errMsg, chatId):
@@ -108,8 +107,11 @@ class TelegramUpdateService (UpdateService.UpdateService):
 
 	def _poll(self):
 		try:
-			r = requests.get(requestUrl + 'getUpdates?offset=' + str(self._lastUpdateID + 1), timeout=5)
+			r = requests.get(requestUrl + 'getUpdates?offset=' + str(self._lastUpdateID + 1), timeout=10)
 			r = r.json()
+		except requests.exceptions.Timeout as errt:
+			util.log("Timeout on Telegram polling.", isError=True)
+			return False
 		except Exception as e:
 			traceback.print_exc()
 			util.log(traceback.format_exc(), True)
