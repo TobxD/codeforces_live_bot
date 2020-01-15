@@ -111,7 +111,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			r = r.json()
 		except requests.exceptions.Timeout as errt:
 			util.log("Timeout on Telegram polling.", isError=True)
-			return False
+			return []
 		except Exception as e:
 			traceback.print_exc()
 			util.log(traceback.format_exc(), True)
