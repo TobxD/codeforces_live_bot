@@ -65,7 +65,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
 								 "this request caused the error:\n" + str(request),
 								 isError=True)
-				handleCFError(r)
+				handleCFError(r, chat)
 			except simplejson.errors.JSONDecodeError as jsonErr:
 				util.log("status code for cf request: " + str(r.status_code) + "\n" +
 								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
@@ -79,13 +79,19 @@ def sendRequest(method, params, authorized = False, chat = None):
 		util.log("Invalid Codeforces request: " + r['comment'], isError=True)
 		return False
 
-def handleCFError(r):
+def handleCFError(r, chat):
 	if r['status'] == 'FAILED':
+		#delete nonexisting friends
 		startS = "handles: User with handle "
 		endS = " not found"
 		if r['comment'].startswith(startS) and r['comment'].endswith(endS):
 			handle = r['comment'][len(startS):-len(endS)]
 			db.deleteFriend(handle)
+		#remove wrong authentification
+		if r['comment'] == 'apiKey: Incorrect API key;onlyOnline: You have to be authenticated to use this method':
+			chat.apikey = None
+			chat.secret = None
+
 
 def getUserInfos(userNameArr):
 	usrList = ';'.join(userNameArr)
