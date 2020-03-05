@@ -25,7 +25,17 @@ def sendAnswerCallback(callback_query_id, text = ""):
 		util.log(traceback.format_exc(), isError=True)
 		traceback.print_exc()
 
+def shortenMessage(text):
+	if len(text) > 4000: # Telegram doesn't allow longer messages
+		cutof = text[4000:]
+		text = text[:4000]
+		if cutof.count("```") % 2 == 1:
+			text += "```"
+		text += "…"
+	return text
+
 def sendMessage(chatId, text, reply_markup = None):
+	text = shortenMessage(text)
 	if chatId == '0':
 		print('message sent: ' + text + "\n -------- End Message ----------")
 		return
