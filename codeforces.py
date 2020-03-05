@@ -61,13 +61,9 @@ def sendRequest(method, params, authorized = False, chat = None):
 		else:
 			try:
 				r = r.json()
-				util.log("codeforces error: " + str(r['comment']) + "\n" +
-								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
-								 "this request caused the error:\n" + str(request),
-								 isError=True)
-				handleCFError(r, chat)
+				handleCFError(request, r, chat)
 			except simplejson.errors.JSONDecodeError as jsonErr:
-				util.log("status code for cf request: " + str(r.status_code) + "\n" +
+				util.log("no valid json; status code for cf request: " + str(r.status_code) + "\n" +
 								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
 								 "this request caused the error:\n" + str(request),
 								 isError=True)
@@ -79,7 +75,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 		util.log("Invalid Codeforces request: " + r['comment'], isError=True)
 		return False
 
-def handleCFError(r, chat):
+def handleCFError(request, r, chat):
 	if r['status'] == 'FAILED':
 		#delete nonexisting friends
 		startS = "handles: User with handle "
@@ -87,10 +83,16 @@ def handleCFError(r, chat):
 		if r['comment'].startswith(startS) and r['comment'].endswith(endS):
 			handle = r['comment'][len(startS):-len(endS)]
 			db.deleteFriend(handle)
+			return
 		#remove wrong authentification
 		if r['comment'] == 'apiKey: Incorrect API key;onlyOnline: You have to be authenticated to use this method':
 			chat.apikey = None
 			chat.secret = None
+			return
+	util.log("codeforces error: " + str(r['comment']) + "\n" +
+					 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+					 "this request caused the error:\n" + str(request),
+					 isError=True)
 
 
 def getUserInfos(userNameArr):
@@ -125,23 +127,24 @@ def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
 	return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
-def mergeStandings(s1, s2):
-	if s1 == True:
-		return s2
-	if s1 and "contest" in s1: 
-		if s2 and "contest" in s2: 
-			s1['rows'].extend(s2['rows'])
-			return s1
-		else:
-			return False
-	else:
-		return False
+def mergeStandings(rowDict, newSt):
+	if newSt:
+		if "contest" in newSt: 
+			for row in newSt['rows']:
+				rowDict[row['party']['members'][0]] = row
+	return rowDict
 
 def updateStandings(contestId):
 	global aktuelleContests
 	global globalStandings
 	handleList = db.getAllFriends()
-	standings = True
+	if contestId not in globalStandings:
+		globalStandings[contestId] = False
+	standings = globalStandings[contestId]
+	rowDict = {}
+	if standings:
+		for row in standings['rows']:
+			rowDict[row['party']['members'][0]] = row
 	l = 0
 	r = 0
 	while r < len(handleList):
@@ -151,8 +154,11 @@ def updateStandings(contestId):
 			handleString = ";".join(handleList[l:r+1])
 		util.log('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
 		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
-		standings = mergeStandings(standings, stNew)
+		rowDict = mergeStandings(rowDict, stNew)
 		l = r 
+	standings['rows'] = []
+	for key in rowDict:
+		standings['rows'].append(rowDict[key])
 	if standings and "contest" in standings:
 		contest = standings["contest"]
 		with contestListLock:
@@ -161,8 +167,6 @@ def updateStandings(contestId):
 		util.log('standings received')
 	else:
 		util.log('standings not updated', isError=True)
-		if contestId not in globalStandings:
-			globalStandings[contestId] = False
 
 def getStandings(contestId, handleList):
 	with standingsLock:

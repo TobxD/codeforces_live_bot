@@ -45,13 +45,18 @@ def sendMessage(chatId, text, reply_markup = None):
 		if r['ok']:
 			return r['result']['message_id']
 		else:
-			util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
-			handleSendError(r['description'], chatId)
+			#only print if error not handled yet
+			if not handleSendError(r['description'], chatId):
+				util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
 			return False
+	except requests.Timeout as e:
+		util.log('Timeout beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId), isError=True)
+		return False
 	except Exception as e:
 		util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + '\noccurred at: ' + traceback.format_exc(), isError=True)
 		return False
 
+#returns if error could be handled
 def handleSendError(errMsg, chatId):
 	if (errMsg == "Forbidden: bot was blocked by the user" or
 		 errMsg == "Forbidden: bot was kicked from the group chat" or
@@ -59,6 +64,9 @@ def handleSendError(errMsg, chatId):
 		 errMsg == "Forbidden: user is deactivated" or
 		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
 		db.deleteUser(chatId)
+		return True
+	else:
+		return False
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	params = {
@@ -108,7 +116,8 @@ class TelegramUpdateService (UpdateService.UpdateService):
 
 	def _poll(self):
 		try:
-			r = requests.get(requestUrl + 'getUpdates?offset=' + str(self._lastUpdateID + 1), timeout=10)
+			t = 10
+			r = requests.get(requestUrl + 'getUpdates?offset=' + str(self._lastUpdateID + 1) + ';timeout=' + str(t), timeout=2*t)
 			r = r.json()
 		except requests.exceptions.Timeout as errt:
 			util.log("Timeout on Telegram polling.", isError=True)
