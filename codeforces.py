@@ -166,6 +166,8 @@ def updateStandings(contestId):
 		standings['rows'] = []
 		for key in rowDict:
 			standings['rows'].append(rowDict[key])
+		# sort: first official (rank > 0), then unoffical with desc by points
+		standings['rows'].sort(key= lambda row: row["rank"] if row["rank"] != 0 else 10000000 - row["points"])
 
 		contest = standings["contest"]
 		with contestListLock:
