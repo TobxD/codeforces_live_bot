@@ -127,24 +127,25 @@ def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
 	return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
 
-def mergeStandings(rowDict, newSt):
+def mergeStandings(rowDict, newSt, oldSt):
 	if newSt:
 		if "contest" in newSt: 
 			for row in newSt['rows']:
-				rowDict[row['party']['members'][0]] = row
-	return rowDict
+				rowDict[row['party']['members'][0]['handle']] = row
+			return newSt, rowDict
+	return oldSt, rowDict
 
 def updateStandings(contestId):
 	global aktuelleContests
 	global globalStandings
 	handleList = db.getAllFriends()
 	if contestId not in globalStandings:
-		globalStandings[contestId] = False
-	standings = globalStandings[contestId]
+		globalStandings[contestId] = {"time": 0, "standings": False}
+	standings = globalStandings[contestId]["standings"]
 	rowDict = {}
 	if standings:
 		for row in standings['rows']:
-			rowDict[row['party']['members'][0]] = row
+			rowDict[row['party']['members'][0]['handle']] = row
 	l = 0
 	r = 0
 	while r < len(handleList):
@@ -154,12 +155,14 @@ def updateStandings(contestId):
 			handleString = ";".join(handleList[l:r+1])
 		util.log('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
 		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
-		rowDict = mergeStandings(rowDict, stNew)
+		standings, rowDict = mergeStandings(rowDict, stNew, standings)
 		l = r 
-	standings['rows'] = []
-	for key in rowDict:
-		standings['rows'].append(rowDict[key])
+
 	if standings and "contest" in standings:
+		standings['rows'] = []
+		for key in rowDict:
+			standings['rows'].append(rowDict[key])
+
 		contest = standings["contest"]
 		with contestListLock:
 			aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
