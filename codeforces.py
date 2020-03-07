@@ -131,7 +131,9 @@ def mergeStandings(rowDict, newSt, oldSt):
 	if newSt:
 		if "contest" in newSt: 
 			for row in newSt['rows']:
-				rowDict[row['party']['members'][0]['handle']] = row
+				handle = row['party']['members'][0]['handle'] 
+				pType = row["party"]["participantType"]
+				rowDict[(handle, pType)] = row
 			return newSt, rowDict
 	return oldSt, rowDict
 
@@ -145,7 +147,9 @@ def updateStandings(contestId):
 	rowDict = {}
 	if standings:
 		for row in standings['rows']:
-			rowDict[row['party']['members'][0]['handle']] = row
+			handle = row['party']['members'][0]['handle'] 
+			pType = row["party"]["participantType"]
+			rowDict[(handle, pType)] = row
 	l = 0
 	r = 0
 	while r < len(handleList):
