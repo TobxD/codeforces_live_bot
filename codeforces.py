@@ -159,6 +159,8 @@ def updateStandings(contestId):
 			handleString = ";".join(handleList[l:r+1])
 		util.log('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
 		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
+		# debug logging:
+		util.debug(str(stNew))
 		standings, rowDict = mergeStandings(rowDict, stNew, standings)
 		l = r 
 
@@ -176,6 +178,7 @@ def updateStandings(contestId):
 		util.log('standings received')
 	else:
 		util.log('standings not updated', isError=True)
+	util.debug("merged standings:\n" + str(globalStandings[contestId]))
 
 def getStandings(contestId, handleList):
 	with standingsLock:

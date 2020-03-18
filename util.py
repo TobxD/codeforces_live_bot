@@ -98,6 +98,11 @@ def log(msg, isError=False):
 	if isError:
 		writeToFile("error.txt", text)
 
+def debug(msg, fileName="debug.txt"):
+	s = '[' + str(datetime.datetime.now()) + ']:\n' + msg
+	writeToFile(fileName, s)
+
+
 def writeToFile(file, text):
 	of = open(file, 'a')
 	of.write(text + "\n")
