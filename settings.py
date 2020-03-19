@@ -112,7 +112,7 @@ def handleSetUserHandle(chat, handle):
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
 		# db.setFriendSettings(chat.chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
 		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
-			str(userInfos[0]['rating']) + ".")
+			str(userInfos[0].get('rating', 0)) + ".")
 		if chat.apikey is None:
 			chat.sendMessage("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
 			handleSetAuthorization(chat, "")

@@ -55,9 +55,11 @@ def sendRequest(method, params, authorized = False, chat = None):
 	finally:
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
-		if(r.status_code == 429):
+		if r.status_code == 429:
 			util.log("too many cf requests... trying again", isError=True)
 			return sendRequest(method, params, authorized, chat)
+		elif r.status_code//100 == 5:
+			util.log("Codeforces Http error " + str(r.reason) + " (" + str(r.status_code) + ")", isError=True)
 		else:
 			try:
 				r = r.json()
@@ -91,9 +93,8 @@ def handleCFError(request, r, chat):
 			return
 	util.log("codeforces error: " + str(r['comment']) + "\n" +
 					 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
-					 "this request caused the error:\n" + str(request),
+					 "this request caused the error:\n" + (str(request)[:200]),
 					 isError=True)
-
 
 def getUserInfos(userNameArr):
 	usrList = ';'.join(userNameArr)

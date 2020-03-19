@@ -129,6 +129,8 @@ def editMessageText(chatId, msgId, msg):
 		r = r.json()
 		if not r['ok']:
 			print("fehler beim editieren einer Nachricht:", r['description'])
+	except requests.exceptions.Timeout as errt:
+		util.log("Timeout on edit message text (" + str(msg) + ") to chatId: " + str(chatId), isError=True)
 	except Exception as e:
 		traceback.print_exc()
 		util.log(traceback.format_exc(), isError=True)
@@ -150,8 +152,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			util.log("Timeout on Telegram polling.", isError=True)
 			return []
 		except Exception as e:
-			traceback.print_exc()
-			util.log(traceback.format_exc(), True)
+			util.log("Error on Telegram polling: " + str(e), True)
 			return []
 		if r['ok']:
 			return r['result']
@@ -164,7 +165,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			if 'text' in update['message']:
 				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
 			else:
-				util.log("no text in message: " + str(update['message']), isError=True)
+				util.log("no text in message: " + str(update['message']))
 		elif 'edited_message' in update:
 			bot.handleMessage(Chat.getChat(str(update['edited_message']['chat']['id'])), update['edited_message']['text'])
 		elif 'callback_query' in update:
