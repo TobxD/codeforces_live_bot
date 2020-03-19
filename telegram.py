@@ -1,5 +1,5 @@
 import json, requests, time, urllib.parse
-import sys, traceback, random, hashlib
+import sys, traceback, random, hashlib, queue
 import database as db
 import codeforces as cf
 import util
@@ -11,7 +11,24 @@ import Chat
 requestUrl = ""
 RESTART = 0
 RESTART_WAIT = 600
+
+endTimes = queue.Queue() # 30 msg per second to telegram
+for i in range(30):
+	endTimes.put(-1)
+
 #------ Main part with bot API access ------
+# wrap this method to ensure timing
+def requestPost(url, **kwargs):
+	waitTime = endTimes.get() + 1 - time.time()
+	if waitTime > 0:
+		time.sleep(waitTime)
+	try:
+		requests.post(url, **kwargs)
+	except Exception as e:
+		raise e
+	finally:
+		endTimes.put(time.time())
+
 
 def sendAnswerCallback(callback_query_id, text = ""):
 	params = {
@@ -19,7 +36,7 @@ def sendAnswerCallback(callback_query_id, text = ""):
 		'text':text
 	}
 	try:
-		r = requests.post(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
+		r = requestPost(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
 		r = r.json()
 	except Exception as e:
 		util.log(traceback.format_exc(), isError=True)
@@ -50,7 +67,7 @@ def sendMessage(chatId, text, reply_markup = None):
 	'reply_markup': reply_markup
 	}
 	try:
-		r = requests.post(requestUrl + 'sendMessage', data=params, timeout=5)
+		r = requestPost(requestUrl + 'sendMessage', data=params, timeout=5)
 		r = r.json()
 		if r['ok']:
 			return r['result']['message_id']
@@ -85,7 +102,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		'reply_markup': reply_markup
 	}
 	try:
-		r = requests.post(requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
+		r = requestPost(requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
 		r = r.json()
 	except Exception as e:
 		traceback.print_exc()
@@ -108,7 +125,7 @@ def editMessageText(chatId, msgId, msg):
 	}
 	url = requestUrl + 'editMessageText'
 	try:
-		r = requests.post(url, data=params, timeout=5)
+		r = requestPost(url, data=params, timeout=5)
 		r = r.json()
 		if not r['ok']:
 			print("fehler beim editieren einer Nachricht:", r['description'])
