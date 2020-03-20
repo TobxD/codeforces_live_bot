@@ -23,7 +23,7 @@ def requestPost(url, **kwargs):
 	if waitTime > 0:
 		time.sleep(waitTime)
 	try:
-		requests.post(url, **kwargs)
+		return requests.post(url, **kwargs)
 	except Exception as e:
 		raise e
 	finally:
@@ -104,6 +104,8 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	try:
 		r = requestPost(requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
 		r = r.json()
+		if not r['ok']:
+			print("Failed to edit reply markup: ", r['description'])
 	except Exception as e:
 		traceback.print_exc()
 		util.log(traceback.format_exc(), isError=True)
