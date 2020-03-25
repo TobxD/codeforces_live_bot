@@ -23,17 +23,19 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			msg = "💡* ["+ util.formatSeconds(time) +"]* "
 		else:
 			msg = "💡 *[UPSOLVING]* "
-		msg += "`"+handle + "` has solved task " + task
+		msg += "`" + handle + "` has solved task " + task
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		for chatId in db.getWhoseFriends(handle):
 			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 
 	def _notifyTaskTested(self, handle, task, accepted):
-		funnyInsults = ["%s faild on system tests for task %s. What a looser.💩",
+		funnyInsults = ["%s failed on system tests for task %s. What a looser.💩",
 										"%s should probably look for a different hobby.💁🏻‍♂️ He failed the system tests for task %s.",
 										"📉 %s failed the system tests for task %s. *So sad! It's true.*",
-										"Div. 3 is near for %s 👋🏻. He failed the system tests for task %s."]
+										"%s didn't manage to solve task %s. She failed on system tests. You can remove this friend using the command `/remove_friend`👋🏻",
+										"Hmmm...🤔 Probably the Codeblocks debugger did not work for %s. The solution for task %s was not good enough. It failed on system tests.",
+										"Div. 3 is near for %s 👋🏻. She failed the system tests for task %s."]
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
 		else:

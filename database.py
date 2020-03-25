@@ -57,7 +57,7 @@ def deleteFriend(handle):
 	insertDB(query, (handle,))
 
 def deleteFriendOfUser(handle, chatId):
-	util.log("deleting friend with handle " + handle + " from user " + str(userId))
+	util.log("deleting friend with handle " + handle + " from user " + str(chatId))
 	query = "DELETE FROM friends WHERE friend = %s AND chatId = %s"
 	insertDB(query, (handle,chatId))
 

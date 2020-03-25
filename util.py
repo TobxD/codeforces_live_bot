@@ -89,6 +89,23 @@ def formatSeconds(s, useExcl = False):
 		out = str(s//60) + ":" + str(s%60).zfill(2)
 	return out.replace(":", "!") if useExcl else out
 
+def getUserSmiley(rating):
+	rating = int(rating)
+	if rating < 1200:
+		return "🧟"
+	elif rating < 1400:
+		return "👷🏻"
+	elif rating < 1600:
+		return "🧑🏻‍🎓"
+	elif rating < 1900:
+		return "🧑🏻‍🔬"
+	elif rating < 2100:
+		return "🧑🏻‍🚀"
+	elif rating < 2400:
+		return "🧙🏻"
+	else:
+		return "🦸🏻"
+
 def log(msg, isError=False):
 	threadName = threading.currentThread().name
 	timeString = '[' + str(datetime.datetime.now()) + ' at ' + threadName + '] '

@@ -26,7 +26,7 @@ def setOpenCommandFunc(chatId, func):
 #------------------------- Rating request --------------------------------------
 def ratingsOfUsers(userNameArr):
 	if len(userNameArr) == 0:
-		return ("You have no friends :(\n"
+		return ("You have no friends 😭\n"
 				"Please add your API key in the settings to add codeforces friends automatically or add friends manually with `/add_friend`.")
 	userInfos = cf.getUserInfos(userNameArr)
 	if userInfos is False or len(userInfos) == 0:
@@ -55,11 +55,11 @@ def handleAddFriendRequestCont(chat, req):
 	handle = util.cleanString(req)
 	userInfos = cf.getUserInfos([handle])
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
-		chat.sendMessage("No user with this handle! Please try again:")
+		chat.sendMessage("👻 No user with this handle! Please try again:")
 	else:
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
-		chat.sendMessage("👦 User `" + userInfos[0]['handle'] + "` with rating " +
-			str(userInfos[0].get('rating', 0)) + " added.")
+		rating = userInfos[0].get('rating', 0)
+		chat.sendMessage(util.getUserSmiley(rating) + " User `" + userInfos[0]['handle'] + "` with rating " + str(rating) + " added.")
 		setOpenCommandFunc(chat.chatId, None)
 
 def handleAddFriendRequest(chat, req):
@@ -71,10 +71,10 @@ def handleRemoveFriendRequestCont(chat, req):
 	handle = util.cleanString(req)
 	userInfos = cf.getUserInfos([handle])
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
-		chat.sendMessage("No user with this handle!")
+		chat.sendMessage("👻 No user with this handle!")
 	else:
 		db.deleteFriendOfUser(userInfos[0]['handle'], chat.chatId)
-		chat.sendMessage("💀 User `" + userInfos[0]['handle'] + " was removed from your friends. If this is one of your Codeforces friends, they will be added automatically again in case you added your API-key. If so, just disable notifications for this user in the settings.")
+		chat.sendMessage("💀 User `" + userInfos[0]['handle'] + "` was removed from your friends. If this is one of your Codeforces friends, they will be added automatically again in case you added your API-key. If so, just disable notifications for this user in the settings.")
 	setOpenCommandFunc(chat.chatId, None)
 
 def handleRemoveFriendRequest(chat, req):
@@ -84,7 +84,7 @@ def handleRemoveFriendRequest(chat, req):
 #------ Start -------------
 def handleStart(chat, text):
 	setOpenCommandFunc(chat.chatId, settings.handleSetTimezone)
-	chat.sendMessage("*Welcome to the Codeforces Live Bot!*\n\n"
+	chat.sendMessage("🔥*Welcome to the Codeforces Live Bot!*🔥\n\n"
 	+ "You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
 	+ "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "
 	+ "'Munich'.")

@@ -87,10 +87,10 @@ def handleFriendNotSettingsCallback(chat, data, callback):
 	[handle, button, gesetzt] = data.split(';')
 	gesetzt = (gesetzt == '1')
 	if button == "0":
-		notf = "You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
+		notf = ("✅" if gesetzt else "❌") + " You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
 		db.setFriendSettings(chat.chatId, handle, 'ratingWatch', gesetzt)
 	else:
-		notf = "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
+		notf = ("🔔" if gesetzt else "🔕") + "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
 		db.setFriendSettings(chat.chatId, handle, 'contestWatch', gesetzt)
 	tg.sendAnswerCallback(callback['id'], notf)
 
@@ -105,13 +105,13 @@ def handleSetUserHandle(chat, handle):
 	handle = util.cleanString(handle)
 	userInfos = cf.getUserInfos([handle])
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
-		chat.sendMessage("No user with this handle! Try again:")
+		chat.sendMessage("👻 No user with this handle! Try again:")
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.handle = userInfos[0]['handle']
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
-		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
-			str(userInfos[0].get('rating', 0)) + ".")
+		rating = userInfos[0].get('rating', 0)
+		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
 		if chat.apikey is None:
 			chat.sendMessage("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
 			handleSetAuthorization(chat, "")
