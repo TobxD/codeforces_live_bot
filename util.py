@@ -102,11 +102,11 @@ def getUserSmiley(rating):
 	elif rating < 1400:
 		return "👷🏻"
 	elif rating < 1600:
-		return "🧑🏻‍🎓"
+		return "🧑🏻‍🚀"
 	elif rating < 1900:
 		return "🧑🏻‍🔬"
 	elif rating < 2100:
-		return "🧑🏻‍🚀"
+		return "🧑🏻‍🎓"
 	elif rating < 2400:
 		return "🧙🏻"
 	else:

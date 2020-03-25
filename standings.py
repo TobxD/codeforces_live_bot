@@ -123,7 +123,7 @@ def sendStandings(chat, msg):
 		for c in contestIds:
 			sendContestStandings(chat, c)
 	else:
-		chat.sendMessage("No current in the last two days contests 🤷🏻")
+		chat.sendMessage("No contests in the last two days 🤷🏻")
 
 # updates only, if the standings-message has changed
 def updateStandingsForChat(contest, chat):
