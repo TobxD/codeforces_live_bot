@@ -7,6 +7,7 @@ import bot
 import UpdateService
 import settings
 import Chat
+from util import logger
 
 requestUrl = ""
 RESTART = 0
@@ -39,8 +40,7 @@ def sendAnswerCallback(callback_query_id, text = ""):
 		r = requestPost(requestUrl + 'answerCallbackQuery', data=params, timeout=5)
 		r = r.json()
 	except Exception as e:
-		util.log(traceback.format_exc(), isError=True)
-		traceback.print_exc()
+		logger.critical('Sending answer call back failed: %s', e, exc_info=True)
 
 def shortenMessage(text):
 	if len(text) > 4000: # Telegram doesn't allow longer messages
@@ -56,10 +56,6 @@ def sendMessage(chatId, text, reply_markup = None):
 	if chatId == '0':
 		print('message sent: ' + text + "\n -------- End Message ----------")
 		return
-	# dont send msg RESTART_WAIT seconds after restart
-	if time.time() - RESTART < RESTART_WAIT:
-		util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text))
-		return
 	params = {
 	'parse_mode':'Markdown',
 	'chat_id':str(chatId),
@@ -74,13 +70,13 @@ def sendMessage(chatId, text, reply_markup = None):
 		else:
 			#only print if error not handled yet
 			if not handleSendError(r['description'], chatId):
-				util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'], isError=True)
+				logger.critical('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'])
 			return False
 	except requests.Timeout as e:
-		util.log('Timeout beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId), isError=True)
+		logger.error('Timeout beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId))
 		return False
 	except Exception as e:
-		util.log('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + '\noccurred at: ' + traceback.format_exc(), isError=True)
+		logger.critical('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + '\noccurred at: %s', e,exc_info=True)
 		return False
 
 #returns if error could be handled
@@ -107,16 +103,12 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		if not r['ok']:
 			print("Failed to edit reply markup: ", r['description'])
 	except Exception as e:
-		traceback.print_exc()
-		util.log(traceback.format_exc(), isError=True)
+		logger.critical('Edit Msg Reply Markup failed: %s', e, exc_info=True)
 
 def editMessageText(chatId, msgId, msg):
 	msg = shortenMessage(msg)
 	if chatId == '0':
 		print(str(msgId) + ' edited to: ' + msg + "\n -------- End Message ----------")
-		return
-	if time.time() - RESTART < RESTART_WAIT:
-		util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text), isError=True)
 		return
 	params = {
 		'parse_mode':'Markdown',
@@ -131,9 +123,9 @@ def editMessageText(chatId, msgId, msg):
 		if not r['ok']:
 			print("fehler beim editieren einer Nachricht:", r['description'])
 	except requests.exceptions.Timeout as errt:
-		util.log("Timeout on edit message text (" + str(msg) + ") to chatId: " + str(chatId), isError=True)
+		logger.error("Timeout on edit message text (" + str(msg) + ") to chatId: " + str(chatId))
 	except Exception as e:
-		util.log(traceback.format_exc(), isError=True)
+		logger.critical('Edit msg text failed: %s', e, exc_info=True)
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
@@ -149,10 +141,10 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			r = requests.get(requestUrl + 'getUpdates?offset=' + str(self._lastUpdateID + 1) + ';timeout=' + str(t), timeout=2*t)
 			r = r.json()
 		except requests.exceptions.Timeout as errt:
-			util.log("Timeout on Telegram polling.", isError=True)
+			logger.error("Timeout on Telegram polling.")
 			return []
 		except Exception as e:
-			util.log("Error on Telegram polling: " + str(e), True)
+			logger.critical("Error on Telegram polling: " + str(e))
 			return []
 		if r['ok']:
 			return r['result']
@@ -165,7 +157,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 			if 'text' in update['message']:
 				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
 			else:
-				util.log("no text in message: " + str(update['message']))
+				logger.debug("no text in message: " + str(update['message']))
 		elif 'edited_message' in update:
 			bot.handleMessage(Chat.getChat(str(update['edited_message']['chat']['id'])), update['edited_message']['text'])
 		elif 'callback_query' in update:

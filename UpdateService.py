@@ -2,6 +2,7 @@ import threading
 import time
 import traceback
 import util
+from util import logger
 
 class UpdateService (threading.Thread):
 	def __init__(self, updateInterval):
@@ -17,8 +18,7 @@ class UpdateService (threading.Thread):
 			try:
 				self._doTask()
 			except Exception as e:
-				traceback.print_exc()
-				util.log(traceback.format_exc(), isError=True)
+				logger.critical('Run error %s', e, exc_info=True)
 			lastTime = time.time()
 
 	def _doTask(self): #to be overridden

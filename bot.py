@@ -131,8 +131,6 @@ def initContestServices():
 		service.start()
 
 def startTestingMode():
-	tg.RESTART = 10000000000
-	tg.RESTART_WAIT = 10000000000
 	initContestServices()
 
 	while True:

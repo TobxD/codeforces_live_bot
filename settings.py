@@ -5,6 +5,7 @@ import codeforces as cf
 import util
 import bot
 import Chat
+from util import logger
 
 def handleSettings(chat, req):
 	buttons = getButtonSettings(chat)
@@ -27,7 +28,7 @@ def handleCallbackQuery(callback):
 	data = callback['data']
 
 	if not ":" in data:
-		util.log("Invalid callback data: "+ data, isError=True)
+		logger.critical("Invalid callback data: "+ data)
 		return
 
 	pref, data = data.split(":", 1)
@@ -37,7 +38,7 @@ def handleCallbackQuery(callback):
 	elif pref == "friend_notf":
 		handleFriendNotSettingsCallback(chat, data, callback)
 	else:
-		util.log("Invalid callback prefix: "+ pref + ", data: "+ data, isError=True)
+		logger.debug("Invalid callback prefix: "+ pref + ", data: "+ data)
 
 def handleSettingsCallback(chat, data, callback):
 	funs = {
@@ -120,7 +121,7 @@ def handleSetUserHandle(chat, handle):
 def handleAddSecret(chat, secret):
 	chat.secret = secret
 	bot.setOpenCommandFunc(chat.chatId, None)
-	util.log('new secret added for user ' + str(chat.chatId))
+	logger.debug('new secret added for user ' + str(chat.chatId))
 	chat.sendMessage("Key added. Your friends are now added.")
 
 def handleAddKey(chat, key):
