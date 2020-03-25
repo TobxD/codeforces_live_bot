@@ -91,12 +91,13 @@ def getFriendStandings(chat, contestId, sendIfEmpty=True):
 				if sub["points"] > 0:
 					timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
 					subs.append(timeStr)
-				elif sub["type"] == "PRELIMINARY" and contest['phase'] != 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
-					subs.append("?")
-				elif sub["rejectedAttemptCount"] > 0:
-					subs.append("-" + str(sub["rejectedAttemptCount"]))
 				else:
-					subs.append("")
+					status = ""
+					if sub["type"] == "PRELIMINARY" and contest['phase'] == 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
+						status = "?"
+					if sub["rejectedAttemptCount"] > 0:
+						status += "-" + str(sub["rejectedAttemptCount"])
+					subs.append(status)
 		nrow["body"] = subs
 		res.append(nrow)
 	if not sendIfEmpty and len(res) == 0:

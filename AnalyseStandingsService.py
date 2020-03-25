@@ -62,7 +62,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				if not firstRead:
 					Thread(target=self._notifyTaskSolved, args=(handle, taskName, task["rejectedAttemptCount"],
 							 task["bestSubmissionTimeSeconds"], row["rank"] != 0), name="notifySolved").start()
-					if ranking["contest"]['phase'] == 'FINISHED':
+					if ranking["contest"]['phase'] == 'FINISHED': # if contest is running, standings are updated automatically
 						Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
 				pointsList.append(taski)
 				if task['type'] == 'PRELIMINARY' and (taski not in self._notFinal[contestId][handle]):
