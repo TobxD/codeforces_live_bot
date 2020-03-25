@@ -36,7 +36,8 @@ def ratingsOfUsers(userNameArr):
 	maxNameLen = max([len(user['handle']) for user in userInfos])
 	userInfos = sorted(userInfos, key= lambda k: k.get('rating', 0), reverse=True)
 	for user in userInfos:
-		res += user['handle'].ljust(maxNameLen) + ': ' + str(user.get('rating', 0)) + '\n'
+		rating = user.get('rating', 0)
+		res += util.getUserSmiley(rating) + " " + user['handle'].ljust(maxNameLen) + ': ' + str(rating) + '\n'
 	res += "```"
 	return res
 
@@ -49,6 +50,7 @@ def handleRatingRequest(chat, req):
 	chat.sendMessage("Codeforces handle:")
 
 def handleFriendRatingsRequest(chat, req):
+	setOpenCommandFunc(chat.chatId, None)
 	chat.sendMessage(ratingsOfUsers(cf.getFriends(chat)))
 
 # ----- Add Friend -----

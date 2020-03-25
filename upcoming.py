@@ -1,3 +1,4 @@
+import bot
 import util
 import database as db
 import time, datetime
@@ -21,6 +22,7 @@ def getDescription(contest, chat, timez = None):
 	return res
 
 def handleUpcoming(chat, req):
+	bot.setOpenCommandFunc(chat.chatId, None)
 	timez = chat.timezone
 	msg = ""
 	for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):

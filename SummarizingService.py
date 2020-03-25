@@ -36,12 +36,12 @@ class SummarizingService (UpdateService.UpdateService):
 		if myRC is not None:
 			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
 		if minRC <= -30:
-			msg += "📉 The looser of the day is `%s` with a rating loss of %s!\n" % (minHandle, minRC)
+			msg += "📉 The looser of the day is %s `%s` with a rating loss of %s!\n" % (util.getUserSmiley(minRC+minOldR), minHandle, minRC)
 		elif minRC > 0:
 			msg += "What a great contest!🎉\n"
 
 		if maxRC >= 30:
-			msg += "🏆 Today's king is 👑`%s`👑 with a stunning rating win of +%s!\n" % (maxHandle, maxRC)
+			msg += "🏆 Today's king is 👑 %s`%s` 👑 with a stunning rating win of +%s!\n" % (util.getUserSmiley(maxRC+maxOldR), maxHandle, maxRC)
 		elif maxRC < 0:
 			msg += "What a terrible contest!😑\n"
 
@@ -61,13 +61,15 @@ class SummarizingService (UpdateService.UpdateService):
 			
 		else:
 			msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
+		if util.getUserSmiley(myOldR) != util.getUserSmiley(myOldR+myRC):
+			msg += "You are now a " + util.getUserSmiley(myOldR+myRC) + ".\n"
 			
 		if len(nowBetter) > 0:
-			l = ", ".join(["`"+n+"`" for n in nowBetter])
+			l = ", ".join([util.getUserSmiley(rating) + "`" + name + "`" for (name,rating) in nowBetter])
 			msg += l + (" is" if len(nowBetter) == 1 else " are") + " now better than you👎🏻."
 		msg += "\n"
 		if len(nowWorse) > 0:
-			l = ", ".join(["`"+n+"`" for n in nowWorse])
+			l = ", ".join([util.getUserSmiley(rating) + "`" + n + "`" for (name,rating) in nowWorse])
 			msg += "You passed " + l + "👍🏻."
 		msg += "\n"
 		return msg
@@ -104,9 +106,9 @@ class SummarizingService (UpdateService.UpdateService):
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
 				if oldR < myOldR and newR > myRating:
-					nowBetter.append(handlename)
+					nowBetter.append((handlename, newR))
 				if oldR > myOldR and newR < myRating:
-					nowWorse.append(handlename)
+					nowWorse.append((handlename, newR))
 
 
 		return ((minHandle, minRC, minOldR), (maxHandle, maxRC, maxOldR),

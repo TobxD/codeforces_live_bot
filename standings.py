@@ -1,3 +1,4 @@
+import bot
 import codeforces as cf
 import telegram as tg
 import util
@@ -116,8 +117,13 @@ def sendContestStandings(chat, contestId, sendIfEmpty=True):
 		standingsSent[chat.chatId][contestId] = (id, msg)
 
 def sendStandings(chat, msg):
-	for c in cf.getCurrentContestsId():
-		sendContestStandings(chat, c)
+	bot.setOpenCommandFunc(chat.chatId, None)
+	contestIds = cf.getCurrentContestsId()
+	if len(contestIds) > 0:
+		for c in contestIds:
+			sendContestStandings(chat, c)
+	else:
+		chat.sendMessage("No current in the last two days contests 🤷🏻")
 
 # updates only, if the standings-message has changed
 def updateStandingsForChat(contest, chat):

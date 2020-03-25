@@ -8,6 +8,7 @@ import Chat
 from util import logger
 
 def handleSettings(chat, req):
+	bot.setOpenCommandFunc(chat.chatId, None)
 	buttons = getButtonSettings(chat)
 	replyMarkup = {"inline_keyboard": buttons}
 	replyMarkup = json.dumps(replyMarkup)
