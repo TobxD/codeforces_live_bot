@@ -10,6 +10,7 @@ from logging.handlers import TimedRotatingFileHandler
 # global and exported (init at initLogging)
 logger = logging.getLogger()
 
+
 def cleanString(s):
 	return s.lower().strip()
 

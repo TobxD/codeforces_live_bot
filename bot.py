@@ -93,6 +93,27 @@ def handleStart(chat, text):
 	+ "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "
 	+ "'Munich'.")
 
+#-------- HELP ------------
+def handleHelp(chat, text):
+	chat.sendMessage("🔥*Codeforces Live Bot*🔥\n\n"
+	+ "With this bot you can:\n"
+	+ "• receive reminders about upcoming _Codeforces_ contest via /upcoming,\n"
+	+ "• see the current contest standings via /current_standings,\n"
+	+ "• receive notifications if your friends solve tasks - during the contest or in the upsolving, \n"
+	+ "• look at the leaderboard of your friends via /friend_ratings,\n"
+	+ "• get the current rating of a specific user with /rating,\n"
+	+ "• manage your friends with /add_friend and /remove_friend,\n"
+	+ "• import your Codeforces friends by adding a Codeforces API key in /settings,\n"
+	+ "• set your time zone and notification setting in /settings.\n"
+	+ "\n\n We use the following ranking system:\n"
+	+ "• " + util.getUserSmiley(2400) + ": rating ≥ 2400\n"
+	+ "• " + util.getUserSmiley(2100) + ": rating ≥ 2100\n"
+	+ "• " + util.getUserSmiley(1900) + ": rating ≥ 1900\n"
+	+ "• " + util.getUserSmiley(1600) + ": rating ≥ 1600\n"
+	+ "• " + util.getUserSmiley(1400) + ": rating ≥ 1400\n"
+	+ "• " + util.getUserSmiley(1199) + ": rating < 1200\n"
+	)
+
 # ------ Other --------
 def invalidCommand(chat, msg):
 	chat.sendMessage("Invalid command!")
@@ -116,7 +137,8 @@ def handleMessage(chat, text):
 		"/remove_friend": handleRemoveFriendRequest,
 		"/settings": settings.handleSettings,
 		"/current_standings": standings.sendStandings,
-		"/upcoming": upcoming.handleUpcoming
+		"/upcoming": upcoming.handleUpcoming,
+		"/help": handleHelp
 	}
 	func = msgSwitch.get(util.cleanString(text), noCommand)
 	func(chat, text)
