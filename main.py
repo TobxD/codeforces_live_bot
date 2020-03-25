@@ -1,6 +1,9 @@
 import sys, time
 import bot
 import telegram as tg
+import util
+
+util.initLogging()
 
 # with -r restart and dont send msg for 30sec
 if "-r" in sys.argv:

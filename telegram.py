@@ -111,13 +111,12 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		util.log(traceback.format_exc(), isError=True)
 
 def editMessageText(chatId, msgId, msg):
-	#TODO escape msg???
-	#util.log("editMessageText: " + str(chatId) + " " + str(msg))
+	msg = shortenMessage(msg)
 	if chatId == '0':
 		print(str(msgId) + ' edited to: ' + msg + "\n -------- End Message ----------")
 		return
 	if time.time() - RESTART < RESTART_WAIT:
-		util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text))
+		util.log("message that would have been sent to chat " + str(chatId) + ": \n" + str(text), isError=True)
 		return
 	params = {
 		'parse_mode':'Markdown',
@@ -134,7 +133,6 @@ def editMessageText(chatId, msgId, msg):
 	except requests.exceptions.Timeout as errt:
 		util.log("Timeout on edit message text (" + str(msg) + ") to chatId: " + str(chatId), isError=True)
 	except Exception as e:
-		traceback.print_exc()
 		util.log(traceback.format_exc(), isError=True)
 
 class TelegramUpdateService (UpdateService.UpdateService):

@@ -2,9 +2,10 @@ import codeforces as cf
 import telegram as tg
 import util
 from Table import Table
-
+from util import logger
 import requests
 from collections import defaultdict
+from util import logger
 
 # ------ Current Standings	-------
 
@@ -12,13 +13,13 @@ standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 
 def getRatingChanges(contestId):
-	util.log('request rating changes from cf-predictor')
+	logger.debug('request rating changes from cf-predictor')
 	try:
 		r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
 	except requests.exceptions.Timeout as errt:
-		util.log("Timeout on CF-predictor.", isError=True)
+		logger.error("Timeout on CF-predictor.")
 		return {}
-	util.log('rating changes received')
+	logger.debug('rating changes received')
 	r = r.json()
 	if r['status'] != 'OK':
 		return {}
@@ -35,12 +36,11 @@ def getFriendStandings(chat, contestId, sendIfEmpty=True):
 		if sendIfEmpty:
 			chat.sendMessage(("You have no friends :(\n"
 				"Please add your API key in the settings or add friends with `/add_friend`."))
-			util.log("user has no friends -> empty standings")
+			logger.debug("user has no friends -> empty standings")
 		return False
 	standings = cf.getStandings(contestId, friends)
 	if standings == False:
-		#chat.sendMessage("Invalid contest or handle")
-		util.log("failed to get standings for " + str(friends), isError=True)
+		logger.debug("failed to get standings for " + str(friends))
 		return False
 	contest = standings["contest"]
 	msg = contest["name"] + " "

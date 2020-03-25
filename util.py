@@ -4,6 +4,12 @@ from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from pytz import timezone, utc
 import threading
+import logging, os
+from logging.handlers import TimedRotatingFileHandler
+
+# global and exported (init at initLogging)
+logger = None
+
 
 def cleanString(s):
 	return s.lower().strip()
@@ -106,16 +112,29 @@ def getUserSmiley(rating):
 	else:
 		return "🦸🏻"
 
-def log(msg, isError=False):
-	threadName = threading.currentThread().name
-	timeString = '[' + str(datetime.datetime.now()) + ' at ' + threadName + '] '
-	text = timeString + msg
-	print(text)
-	writeToFile("log.txt", text)
-	if isError:
-		writeToFile("error.txt", text)
+def initLogging():
+	global logger
+	if not os.path.exists("log"):
+		os.mkdir("log")
+	logger = logging.getLogger()
+	logger.setLevel(logging.DEBUG)
+	hConsole = logging.StreamHandler()
+	# rotating every wednesday at 04:00
+	rotSettings = {"when": "W2", "interval" : 1, "atTime": datetime.time(4, 0), 
+								"backupCount": 10}
+	formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(threadName)s: %(message)s')
 
-def writeToFile(file, text):
-	of = open(file, 'a')
-	of.write(text + "\n")
-	of.close()
+	hDebug = TimedRotatingFileHandler("log/debug.txt", **rotSettings)
+	hInfo  = TimedRotatingFileHandler("log/info.txt",  **rotSettings)
+	hError = TimedRotatingFileHandler("log/error.txt", **rotSettings)
+	hCrit  = TimedRotatingFileHandler("log/crit.txt",  **rotSettings)
+	
+	hConsole.setLevel(logging.INFO)
+	hDebug.setLevel(logging.DEBUG)
+	hInfo.setLevel(logging.INFO)
+	hError.setLevel(logging.ERROR)
+	hCrit.setLevel(logging.CRITICAL)
+
+	for h in [hConsole, hDebug, hInfo, hError, hCrit]:
+		h.setFormatter(formatter)
+		logger.addHandler(h)
