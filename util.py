@@ -8,8 +8,7 @@ import logging, os
 from logging.handlers import TimedRotatingFileHandler
 
 # global and exported (init at initLogging)
-logger = None
-
+logger = logging.getLogger()
 
 def cleanString(s):
 	return s.lower().strip()
@@ -116,7 +115,6 @@ def initLogging():
 	global logger
 	if not os.path.exists("log"):
 		os.mkdir("log")
-	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
 	hConsole = logging.StreamHandler()
 	# rotating every wednesday at 04:00

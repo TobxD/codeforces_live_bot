@@ -19,7 +19,8 @@ openCommandFunc = {}
 def setOpenCommandFunc(chatId, func):
 	global openCommandFunc
 	if func is None:
-		del openCommandFunc[chatId]
+		if chatId in openCommandFunc:
+			del openCommandFunc[chatId]
 	else:
 		openCommandFunc[chatId] = func
 
