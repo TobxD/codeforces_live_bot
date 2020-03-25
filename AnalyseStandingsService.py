@@ -2,6 +2,7 @@ import UpdateService
 import telegram as tg
 import codeforces as cf
 import util
+from util import logger
 import database as db
 import standings
 import Chat
@@ -51,7 +52,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		for chatId in chatIds:
 			chat = Chat.getChat(chatId)
 			if contest in standings.standingsSent[chatId]:
-				util.log('update stadings for ' + str(chatId) + '!')
+				logger.debug('update stadings for ' + str(chatId) + '!')
 				standings.updateStandingsForChat(contest, chat)
 
 	def _analyseRow(self, contestId, row, ranking, firstRead):
@@ -68,10 +69,10 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 						Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
 				pointsList.append(taski)
 				if task['type'] == 'PRELIMINARY' and (taski not in self._notFinal[contestId][handle]):
-					util.log('adding non-final task ' + str(taski) + ' for user ' + str(handle))
+					logger.debug('adding non-final task ' + str(taski) + ' for user ' + str(handle))
 					self._notFinal[contestId][handle].append(taski)
 			if task['type'] == 'FINAL' and (taski in self._notFinal[contestId][handle]):
-				util.log('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
+				logger.debug('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
 				self._notFinal[contestId][handle].remove(taski)
 				Thread(target=self._notifyTaskTested, args=(handle, taskName, task['points'] > 0), name="notifyTested").start()
 				Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()

@@ -2,6 +2,7 @@ import database as db
 import telegram as tg
 import codeforces as cf
 import util
+from util import logger
 import AnalyseStandingsService
 import UpcomingService
 import SummarizingService
@@ -101,7 +102,7 @@ def noCommand(chat, msg):
 
 #-----
 def handleMessage(chat, text):
-	util.log("-> " + text + " <-")
+	logger.info("-> " + text + " <-")
 	text = text.replace("@codeforces_live_bot", "")
 	text = text.replace("@codeforces_live_testbot", "")
 	msgSwitch = {

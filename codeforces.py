@@ -3,6 +3,7 @@ import sys, traceback, random, hashlib, time
 import queue, threading
 import database as db
 import util
+from util import logger
 import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
@@ -33,7 +34,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 			params['apiKey'] = str(chat.apikey)
 			params['time'] = str(int(time.time()))
 		except Exception as e:
-			util.log(traceback.format_exc(), isError=True)
+			logger.critical("%s", e, exc_info=True)
 			return False
 
 	for key,val in sorted(params.items()):
@@ -50,31 +51,30 @@ def sendRequest(method, params, authorized = False, chat = None):
 	try:
 		r = requests.get(request, timeout=15)
 	except requests.exceptions.Timeout as errt:
-		util.log("Timeout on Codeforces.", isError=True)
+		logger.error("Timeout on Codeforces.")
 		return False
 	finally:
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
 		if r.status_code == 429:
-			util.log("too many cf requests... trying again", isError=True)
+			logger.error("too many cf requests... trying again")
 			return sendRequest(method, params, authorized, chat)
 		elif r.status_code//100 == 5:
-			util.log("Codeforces Http error " + str(r.reason) + " (" + str(r.status_code) + ")", isError=True)
+			logger.critical("Codeforces Http error " + str(r.reason) + " (" + str(r.status_code) + ")")
 		else:
 			try:
 				r = r.json()
 				handleCFError(request, r, chat)
 			except simplejson.errors.JSONDecodeError as jsonErr:
-				util.log("no valid json; status code for cf request: " + str(r.status_code) + "\n" +
-								 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+				logger.critical("no valid json; status code for cf request: " + str(r.status_code) + "\n" +
 								 "this request caused the error:\n" + str(request),
-								 isError=True)
+								 exc_info=True)
 			return False
 	r = r.json()
 	if r['status'] == 'OK':
 		return r['result']
 	else:
-		util.log("Invalid Codeforces request: " + r['comment'], isError=True)
+		logger.critical("Invalid Codeforces request: " + r['comment'])
 		return False
 
 def handleCFError(request, r, chat):
@@ -91,14 +91,13 @@ def handleCFError(request, r, chat):
 			chat.apikey = None
 			chat.secret = None
 			return
-	util.log("codeforces error: " + str(r['comment']) + "\n" +
-					 "error appeared with stack: " + repr(traceback.extract_stack()) + "\n" +
+	logger.critical("codeforces error: " + str(r['comment']) + "\n" +
 					 "this request caused the error:\n" + (str(request)[:200]),
-					 isError=True)
+					 exc_info=True)
 
 def getUserInfos(userNameArr):
 	usrList = ';'.join(userNameArr)
-	util.log('requesting info of ' + str(len(userNameArr)) + ' users ')
+	logger.debug('requesting info of ' + str(len(userNameArr)) + ' users ')
 	r = sendRequest('user.info', {'handles':usrList})
 	return r
 
@@ -114,13 +113,13 @@ def getFriendsWithDetails(chat):
 		if time.time() - friendsLastUpdated.get(chat.chatId, 0) > 1200:
 			p = {}
 			p['onlyOnline'] = 'false'
-			util.log('request friends of chat with chat_id ' + str(chat.chatId))
+			logger.debug('request friends of chat with chat_id ' + str(chat.chatId))
 			f = sendRequest("user.friends", p, True, chat)
-			util.log('requesting friends finished')
+			logger.debug('requesting friends finished')
 			if f != False:
 				db.addFriends(chat.chatId, f)
 				friendsLastUpdated[chat.chatId] = time.time()
-				util.log('friends updated for chat ' + str(chat.chatId))
+				logger.debug('friends updated for chat ' + str(chat.chatId))
 	friends = db.getFriends(chat.chatId)
 	return friends
 
@@ -158,7 +157,7 @@ def updateStandings(contestId):
 		while r < len(handleList) and len(";".join(handleList[l:r+1])) < 6000:
 			r += 1
 			handleString = ";".join(handleList[l:r+1])
-		util.log('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
+		logger.debug('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
 		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
 		standings, rowDict = mergeStandings(rowDict, stNew, standings)
 		l = r 
@@ -174,9 +173,9 @@ def updateStandings(contestId):
 		with contestListLock:
 			aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
 		globalStandings[contestId] = {"time": time.time(), "standings": standings}
-		util.log('standings received')
+		logger.debug('standings received')
 	else:
-		util.log('standings not updated', isError=True)
+		logger.error('standings not updated')
 
 def getStandings(contestId, handleList):
 	with standingsLock:
@@ -250,11 +249,11 @@ class ContestListService (UpdateService.UpdateService):
 		self._doTask()
 
 	def _doTask(self):
-		util.log('loading current contests')
+		logger.debug('loading current contests')
 		allContests = sendRequest('contest.list', {'gym':'false'})
 		if allContests is False:
-			util.log('failed to load current contest - maybe cf is not up', isError=True)
+			logger.error('failed to load current contest - maybe cf is not up')
 		else:
 			with contestListLock:
 				selectImportantContests(allContests)
-		util.log('loding contests finished')
+		logger.debug('loding contests finished')
