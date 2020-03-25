@@ -111,6 +111,7 @@ def handleHelp(chat, text):
 	+ "• " + util.getUserSmiley(1900) + ": rating ≥ 1900\n"
 	+ "• " + util.getUserSmiley(1600) + ": rating ≥ 1600\n"
 	+ "• " + util.getUserSmiley(1400) + ": rating ≥ 1400\n"
+	+ "• " + util.getUserSmiley(1200) + ": rating ≥ 1200\n"
 	+ "• " + util.getUserSmiley(1199) + ": rating < 1200\n"
 	)
 
