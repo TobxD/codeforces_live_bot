@@ -27,7 +27,7 @@ def setOpenCommandFunc(chatId, func):
 def ratingsOfUsers(userNameArr):
 	if len(userNameArr) == 0:
 		return ("You have no friends :(\n"
-				"Please add your API key in the settings or add friends with `/add_friend`.")
+				"Please add your API key in the settings to add codeforces friends automatically or add friends manually with `/add_friend`.")
 	userInfos = cf.getUserInfos(userNameArr)
 	if userInfos is False or len(userInfos) == 0:
 		return "Unknown user in this list"
@@ -41,11 +41,10 @@ def ratingsOfUsers(userNameArr):
 
 def handleRatingRequestCont(chat, handle):
 	chat.sendMessage(ratingsOfUsers([util.cleanString(handle)]))
+	setOpenCommandFunc(chat.chatId, None)
 
 def handleRatingRequest(chat, req):
-	#offenes Request adden
-	global openCommandFunc
-	openCommandFunc[chat.chatId] = handleRatingRequestCont
+	setOpenCommandFunc(chat.chatId, handleRatingRequestCont)
 	chat.sendMessage("Codeforces handle:")
 
 def handleFriendRatingsRequest(chat, req):
@@ -55,23 +54,21 @@ def handleFriendRatingsRequest(chat, req):
 def handleAddFriendRequestCont(chat, req):
 	handle = util.cleanString(req)
 	userInfos = cf.getUserInfos([handle])
-	if userInfos == False:
-		chat.sendMessage("No user with this handle!")
+	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
+		chat.sendMessage("No user with this handle! Please try again:")
 	else:
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
 		chat.sendMessage("👦 User `" + userInfos[0]['handle'] + "` with rating " +
 			str(userInfos[0].get('rating', 0)) + " added.")
+		setOpenCommandFunc(chat.chatId, None)
 
 def handleAddFriendRequest(chat, req):
-	#offenes Request adden
-	global openCommandFunc
-	openCommandFunc[chat.chatId] = handleAddFriendRequestCont
+	setOpenCommandFunc(chat.chatId, handleAddFriendRequestCont)
 	chat.sendMessage("Codeforces handle:")
 
 #------ Start -------------
 def handleStart(chat, text):
-	global openCommandFunc
-	openCommandFunc[chat.chatId] = settings.handleSetTimezone
+	setOpenCommandFunc(chat.chatId, settings.handleSetTimezone)
 	chat.sendMessage("*Welcome to the Codeforces Live Bot!*\n\n"
 	+ "You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
 	+ "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "

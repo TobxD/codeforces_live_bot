@@ -104,7 +104,7 @@ def getUserInfos(userNameArr):
 
 def getUserRating(handle):
 	info = getUserInfos([handle])
-	if info == False or "rating" not in info[0]:
+	if info == False or len(info) == 0 or "rating" not in info[0]:
 		return 0
 	return info[0]["rating"]
 

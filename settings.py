@@ -104,13 +104,12 @@ def handleSetUserHandlePrompt(chat, msg):
 def handleSetUserHandle(chat, handle):
 	handle = util.cleanString(handle)
 	userInfos = cf.getUserInfos([handle])
-	if userInfos == False:
+	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
 		chat.sendMessage("No user with this handle! Try again:")
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.handle = userInfos[0]['handle']
 		db.addFriends(chat.chatId, [userInfos[0]['handle']])
-		# db.setFriendSettings(chat.chatId, handle, "contestWatch", 0) #no solved notifications for yourself --YES
 		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " +
 			str(userInfos[0].get('rating', 0)) + ".")
 		if chat.apikey is None:
@@ -130,7 +129,6 @@ def handleAddKey(chat, key):
 	chat.sendMessage("Enter your secret:")
 
 def handleSetAuthorization(chat, req):
-	#offenes Request adden
 	bot.setOpenCommandFunc(chat.chatId, handleAddKey)
 	chat.sendMessage("Go to https://codeforces.com/settings/api and generate a key.\n"
 	+ "Then text me two seperate messages - the first one containing the key and the second one containing the secret")
