@@ -66,6 +66,21 @@ def handleAddFriendRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, handleAddFriendRequestCont)
 	chat.sendMessage("Codeforces handle:")
 
+# ----- Remove Friend -----
+def handleRemoveFriendRequestCont(chat, req):
+	handle = util.cleanString(req)
+	userInfos = cf.getUserInfos([handle])
+	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
+		chat.sendMessage("No user with this handle!")
+	else:
+		db.deleteFriendOfUser(userInfos[0]['handle'], chat.chatId)
+		chat.sendMessage("💀 User `" + userInfos[0]['handle'] + " was removed from your friends. If this is one of your Codeforces friends, they will be added automatically again in case you added your API-key. If so, just disable notifications for this user in the settings.")
+	setOpenCommandFunc(chat.chatId, None)
+
+def handleRemoveFriendRequest(chat, req):
+	setOpenCommandFunc(chat.chatId, handleRemoveFriendRequestCont)
+	chat.sendMessage("Codeforces handle:")
+
 #------ Start -------------
 def handleStart(chat, text):
 	setOpenCommandFunc(chat.chatId, settings.handleSetTimezone)
@@ -94,6 +109,7 @@ def handleMessage(chat, text):
 		"/rating": handleRatingRequest,
 		"/friend_ratings": handleFriendRatingsRequest,
 		"/add_friend": handleAddFriendRequest,
+		"/remove_friend": handleRemoveFriendRequest,
 		"/settings": settings.handleSettings,
 		"/current_standings": standings.sendStandings,
 		"/upcoming": upcoming.handleUpcoming
