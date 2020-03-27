@@ -60,7 +60,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 			logger.error("too many cf requests... trying again")
 			return sendRequest(method, params, authorized, chat)
 		elif r.status_code//100 == 5:
-			logger.critical("Codeforces Http error " + str(r.reason) + " (" + str(r.status_code) + ")")
+			logger.error("Codeforces Http error " + str(r.reason) + " (" + str(r.status_code) + ")")
 		else:
 			try:
 				r = r.json()
