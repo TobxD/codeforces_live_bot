@@ -70,7 +70,7 @@ class SummarizingService (UpdateService.UpdateService):
 			msg += l + (" is" if len(nowBetter) == 1 else " are") + " now better than you👎🏻."
 		msg += "\n"
 		if len(nowWorse) > 0:
-			l = ", ".join([util.getUserSmiley(rating) + "`" + n + "`" for (name,rating) in nowWorse])
+			l = ", ".join([util.getUserSmiley(rating) + "`" + name + "`" for (name,rating) in nowWorse])
 			msg += "You passed " + l + "👍🏻."
 		msg += "\n"
 		return msg
