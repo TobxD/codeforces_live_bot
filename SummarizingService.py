@@ -55,8 +55,8 @@ class SummarizingService (UpdateService.UpdateService):
 		# took part and was rated
 		if myRC < 0:
 			msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
-			if myOldR >= 2000 and myRC < -70:
-				msg += " You should maybe look for a different hobby.💁🏻‍♂️👋🏻\n"
+			if myRC < -70:
+				msg += " Maybe you should look for a different hobby.💁🏻‍♂️👋🏻\n"
 			else :
 				msg += "\n"
 			
@@ -91,7 +91,7 @@ class SummarizingService (UpdateService.UpdateService):
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
 				ratingC = newR-oldR
-				if ratingC < minRC and oldR >= 2000: # looser of the day has to have rating >= 2000
+				if ratingC < minRC and int(chat.chatId) != -1001417835798: # not IOI group
 					minRC, minOldR, minHandle = ratingC, oldR, handlename
 				if ratingC > maxRC:
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename

@@ -32,21 +32,20 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 
 	def _notifyTaskTested(self, handle, task, accepted):
 		funnyInsults = ["%s failed on system tests for task %s. What a looser.💩",
-										"%s should probably look for a different hobby.💁🏻‍♂️ He failed the system tests for task %s.",
+										"%s should probably look for a different hobby.💁🏻‍♂️ The system tests failed for task %s.",
 										"📉 %s failed the system tests for task %s. *So sad! It's true.*",
-										"%s didn't manage to solve task %s. She failed on system tests. You can remove this friend using the command `/remove_friend`👋🏻",
+										"%s didn't manage to solve task %s. The system tests failed. You can remove this friend using the command `/remove_friend`👋🏻",
 										"Hmmm...🤔 Probably the Codeblocks debugger did not work for %s. The solution for task %s was not good enough. It failed on system tests.",
-										"Div. 3 is near for %s 👋🏻. She failed the system tests for task %s."]
+										"Div. 4 is near for %s 👋🏻. The system tests failed for task %s."]
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
+			for chatId in Chat.getChatIds(handle): # only to user with this handle
+				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 		else:
-			if cf.getUserRating(handle) >= 2000:
-				insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
-				msg = insult % (handle, task)
-			else:
-				msg = handle + " failed on system tests for task " + task
-		for chatId in db.getChatIds(handle):
-			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
+			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
+			msg = insult % (handle, task)
+			for chatId in db.getWhoseFriends(handle): # to all users with this friend
+				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 
 	def _updateStandings(self, contest, chatIds):
 		for chatId in chatIds:

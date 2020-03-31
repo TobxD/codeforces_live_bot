@@ -127,7 +127,7 @@ def noCommand(chat, msg):
 
 #-----
 def handleMessage(chat, text):
-	logger.info("-> " + text + " <-")
+	logger.info("-> " + text + " <- (" + ((chat.handle + ": ") if chat.handle else "") + str(chat.chatId) + ")")
 	text = text.replace("@codeforces_live_bot", "")
 	text = text.replace("@codeforces_live_testbot", "")
 	msgSwitch = {
