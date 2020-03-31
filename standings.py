@@ -94,7 +94,7 @@ def getFriendStandings(chat, contestId, sendIfEmpty=True):
 					subs.append(timeStr)
 				else:
 					status = ""
-					if sub["type"] == "PRELIMINARY" and contest['phase'] == 'SYSTEM_TEST' and "bestSubmissionTimeSeconds" in sub:
+					if sub["type"] == "PRELIMINARY" and contest['phase'] == 'SYSTEM_TEST':
 						status = "?"
 					if sub["rejectedAttemptCount"] > 0:
 						status += "-" + str(sub["rejectedAttemptCount"])
