@@ -49,7 +49,7 @@ def handleSettingsCallback(chat, data, callback):
 		"notf": sendFriendSettingsButtons,
 	}
 	funs[data](chat, "")
-	tg.sendAnswerCallback(callback['id'])
+	tg.sendAnswerCallback(chat.chatId, callback['id'])
 
 #------ Notification Settings------
 
@@ -94,7 +94,7 @@ def handleFriendNotSettingsCallback(chat, data, callback):
 	else:
 		notf = ("🔔" if gesetzt else "🔕") + "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
 		db.setFriendSettings(chat.chatId, handle, 'contestWatch', gesetzt)
-	tg.sendAnswerCallback(callback['id'], notf)
+	tg.sendAnswerCallback(chat.chatId, callback['id'], notf)
 
 	updateButtons(chat, callback['message'])
 

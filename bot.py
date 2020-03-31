@@ -157,8 +157,8 @@ def initContestServices():
 		service.start()
 
 def startTestingMode():
+	tg.testFlag = True
 	initContestServices()
-
 	while True:
 		msg = input()
 		handleMessage(Chat.getChat('0'), msg)
@@ -168,6 +168,4 @@ def startTelegramBot():
 	tg.TelegramUpdateService().start()
 	while True:
 		msg = input()
-		if msg == 'quit':
-			#TODO halt all threads
-			return
+		handleMessage(Chat.getChat('0'), msg)
