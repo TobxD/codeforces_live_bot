@@ -38,6 +38,11 @@ class Chat:
 	def chatId(self):
 		return self._chatId
 
+	@chatId.setter
+	def chatId(self, chatId):
+		self._chatId = chatId
+		self._updateDB()
+
 	@property
 	def apikey(self):
 		return self._apikey

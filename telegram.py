@@ -69,7 +69,7 @@ def sendMessage(chatId, text, reply_markup = None):
 			return r['result']['message_id']
 		else:
 			#only print if error not handled yet
-			if not handleSendError(r['description'], chatId):
+			if not handleSendError(chatId, r):
 				logger.critical('Fehler beim senden der Nachricht: ( ' + str(text) + ' ) an chatId ' + str(chatId) + ': ' + r['description'])
 			return False
 	except requests.Timeout as e:
@@ -80,13 +80,17 @@ def sendMessage(chatId, text, reply_markup = None):
 		return False
 
 #returns if error could be handled
-def handleSendError(errMsg, chatId):
+def handleSendError(chatId, req):
+	errMsg = req['description']
 	if (errMsg == "Forbidden: bot was blocked by the user" or
 		 errMsg == "Forbidden: bot was kicked from the group chat" or
 		 errMsg == "Bad Request: chat not found" or
 		 errMsg == "Forbidden: user is deactivated" or
 		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
 		db.deleteUser(chatId)
+		return True
+	elif errMsg == "Bad Request: group chat was upgraded to a supergroup chat":
+		Chat.getChat(chatId).chatId = req['parameters']['migrate_to_chat_id']
 		return True
 	else:
 		return False
