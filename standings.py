@@ -131,6 +131,6 @@ def updateStandingsForChat(contest, chat):
 	msg = getFriendStandings(chat, contest)
 	if msg is False:
 		return
-	if oldMsg != msg:
+	if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
 		standingsSent[chat.chatId][contest] = (msgId, msg)
 		chat.editMessageText(msgId, msg)
