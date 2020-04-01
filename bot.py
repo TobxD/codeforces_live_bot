@@ -10,11 +10,22 @@ import standings
 import upcoming
 import settings
 import Chat
+import queue, time
 
 import threading
 
 # chatId -> function
 openCommandFunc = {}
+# Change emoji after serveral invalid commands in last 5h
+invalidComTimes = queue.Queue()
+invalidComTimesLock = threading.Lock()
+
+def invalidCommandCount():   # how often was 'invalid command' used in last 5h
+	with invalidComTimesLock:
+		invalidComTimes.put(time.time())
+		while invalidComTimes.queue[0] > time.time() - 5*60*60:
+			invalidComTimes.get()
+		return invalidComTimes.qsize()
 
 def setOpenCommandFunc(chatId, func):
 	global openCommandFunc
@@ -117,12 +128,14 @@ def handleHelp(chat, text):
 
 # ------ Other --------
 def invalidCommand(chat, msg):
-	chat.sendMessage("Invalid command!")
+	emoji = ["😅", "😬", "😑", "😠", "😡", "🤬"]
+	c = invalidCommandCount()
+	chat.sendMessage("Invalid command!" + emoji[min(len(emoji)-1, c)])
 
 def noCommand(chat, msg):
 	if chat.chatId in openCommandFunc:
 		openCommandFunc[chat.chatId](chat, msg)
-	else:
+	elif int(chat.chatId) >= 0 or msg.startswith("/"):
 		invalidCommand(chat, msg)
 
 #-----
