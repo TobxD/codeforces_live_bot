@@ -53,6 +53,9 @@ def sendRequest(method, params, authorized = False, chat = None):
 	except requests.exceptions.Timeout as errt:
 		logger.error("Timeout on Codeforces.")
 		return False
+	except Exception as e:
+		logger.critical('Failed to request codeforces: \nexception: %s\n', e, exc_info=True)
+		return False
 	finally:
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
