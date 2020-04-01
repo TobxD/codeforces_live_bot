@@ -26,7 +26,7 @@ def invalidCommandCount(chatId):   # how often was 'invalid command' used in las
 		invalidComTimes[chatId].put(time.time())
 		while invalidComTimes[chatId].queue[0] < time.time() - 5*60*60:
 			invalidComTimes[chatId].get()
-		return invalidComTimes[chatId].qsize()
+		return invalidComTimes[chatId].qsize() - 1
 
 def setOpenCommandFunc(chatId, func):
 	global openCommandFunc

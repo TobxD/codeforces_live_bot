@@ -19,7 +19,7 @@ for i in range(30):
 #------ Main part with bot API access ------
 # wrap this method to ensure timing
 def requestPost(chatId, url, **kwargs):
-	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + kwargs['data'].get('text')
+	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + str(kwargs['data'].get('text'))
 	if testFlag:
 		logger.info("telegram object that would have been sent: " + errorTxt)
 		r = {'ok':True, 'result':{'message_id':1}}
@@ -35,7 +35,7 @@ def requestPost(chatId, url, **kwargs):
 		else:
 			#only print if error not handled yet
 			if not handleRequestError(chatId, r):
-				logger.critical('Failed to request telegram. Error: ' + r['description'] + '\n' + errorTxt)
+				logger.critical('Failed to request telegram. Error: ' + r.get('description', "No description available.") + '\n' + errorTxt)
 			return False
 	except requests.Timeout as e:
 		logger.error('Timeout at telegram request: ' + errorTxt)
