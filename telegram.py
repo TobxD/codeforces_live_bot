@@ -66,6 +66,9 @@ def shortenMessage(text):
 	if len(text) > 4000: # Telegram doesn't allow longer messages
 		cutof = text[4000:]
 		text = text[:4000]
+		while text[-1] == '`': 			# don't split on "```"
+			cutof = text[-1] + cutof
+			text = text[:-1]
 		if cutof.count("```") % 2 == 1:
 			text += "```"
 		text += "…"

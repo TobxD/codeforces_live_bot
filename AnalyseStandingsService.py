@@ -24,7 +24,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			msg = "💡* ["+ util.formatSeconds(time) +"]* "
 		else:
 			msg = "💡 *[UPSOLVING]* "
-		msg += "`" + handle + "` has solved task " + task
+		msg += util.formatHandle(handle) + " has solved task " + task
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		for chatId in db.getWhoseFriends(handle):
@@ -43,7 +43,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 		else:
 			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
-			msg = insult % (handle, task)
+			msg = insult % (util.formatHandle(handle), task)
 			for chatId in db.getWhoseFriends(handle): # to all users with this friend
 				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 

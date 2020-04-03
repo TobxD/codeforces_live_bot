@@ -37,12 +37,12 @@ class SummarizingService (UpdateService.UpdateService):
 		if myRC is not None:
 			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
 		if minRC <= -30:
-			msg += "📉 The looser of the day is %s `%s` with a rating loss of %s!\n" % (util.getUserSmiley(minRC+minOldR), minHandle, minRC)
+			msg += "📉 The looser of the day is %s with a rating loss of %s!\n" % (util.formatHandle(minHandle, minRC+minOldR), minRC)
 		elif minRC > 0:
 			msg += "What a great contest!🎉\n"
 
 		if maxRC >= 30:
-			msg += "🏆 Today's king is 👑 %s`%s` 👑 with a stunning rating win of +%s!\n" % (util.getUserSmiley(maxRC+maxOldR), maxHandle, maxRC)
+			msg += "🏆 Today's king is 👑 %s 👑 with a stunning rating win of +%s!\n" % (util.formatHandle(maxHandle, maxRC+maxOldR), maxRC)
 		elif maxRC < 0:
 			msg += "What a terrible contest!😑\n"
 
@@ -66,11 +66,11 @@ class SummarizingService (UpdateService.UpdateService):
 			msg += "You are now a " + util.getUserSmiley(myOldR+myRC) + ".\n"
 			
 		if len(nowBetter) > 0:
-			l = ", ".join([util.getUserSmiley(rating) + "`" + name + "`" for (name,rating) in nowBetter])
+			l = ", ".join([util.formatHandle(name, rating) for (name,rating) in nowBetter])
 			msg += l + (" is" if len(nowBetter) == 1 else " are") + " now better than you👎🏻."
 		msg += "\n"
 		if len(nowWorse) > 0:
-			l = ", ".join([util.getUserSmiley(rating) + "`" + name + "`" for (name,rating) in nowWorse])
+			l = ", ".join([util.formatHandle(name, rating) for (name,rating) in nowWorse])
 			msg += "You passed " + l + "👍🏻."
 		msg += "\n"
 		return msg

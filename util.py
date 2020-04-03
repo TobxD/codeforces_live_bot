@@ -112,6 +112,12 @@ def getUserSmiley(rating):
 	else:
 		return "🦸🏻"
 
+def formatHandle(handle, rating=-1): # format as fixed width, add emoji if rating is provided
+	res = "`" + handle + "`"
+	if rating != -1:
+		return getUserSmiley(rating) + res
+	return res
+
 def initLogging():
 	global logger
 	if not os.path.exists("log"):
