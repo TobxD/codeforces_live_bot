@@ -53,6 +53,8 @@ def sendRequest(method, params, authorized = False, chat = None):
 	except requests.exceptions.Timeout as errt:
 		logger.error("Timeout on Codeforces.")
 		return False
+	except requests.exceptions.ChunkedEncodingError as e:
+		logger.error("ChunkedEncodingError on CF: %s", e)
 	except Exception as e:
 		logger.critical('Failed to request codeforces: \nexception: %s\n', e, exc_info=True)
 		return False
