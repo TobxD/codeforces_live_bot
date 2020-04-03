@@ -7,9 +7,11 @@ from util import logger
 import requests
 from collections import defaultdict
 from util import logger
+import threading
 
 # ------ Current Standings	-------
 
+standingsSentLock = threading.Lock()
 standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId, msg)
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 
@@ -114,7 +116,8 @@ def sendContestStandings(chat, contestId, sendIfEmpty=True):
 		return
 	id = chat.sendMessage(msg)
 	if id != False:
-		standingsSent[chat.chatId][contestId] = (id, msg)
+		with standingsSentLock:
+			standingsSent[chat.chatId][contestId] = (id, msg)
 
 def sendStandings(chat, msg):
 	bot.setOpenCommandFunc(chat.chatId, None)
@@ -127,10 +130,14 @@ def sendStandings(chat, msg):
 
 # updates only, if the standings-message has changed
 def updateStandingsForChat(contest, chat):
-	msgId, oldMsg = standingsSent[chat.chatId][contest]
 	msg = getFriendStandings(chat, contest)
 	if msg is False:
 		return
-	if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
-		standingsSent[chat.chatId][contest] = (msgId, msg)
+	edit = False
+	with standingsSentLock:
+		msgId, oldMsg = standingsSent[chat.chatId][contest]
+		if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
+			standingsSent[chat.chatId][contest] = (msgId, msg)
+			edit = True
+	if edit:
 		chat.editMessageText(msgId, msg)

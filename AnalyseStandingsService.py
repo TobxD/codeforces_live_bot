@@ -39,7 +39,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 										"Div. 4 is near for %s 👋🏻. The system tests failed for task %s."]
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
-			for chatId in Chat.getChatIds(handle): # only to user with this handle
+			for chatId in db.getChatIds(handle): # only to user with this handle
 				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 		else:
 			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
@@ -75,6 +75,8 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				self._notFinal[contestId][handle].remove(taski)
 				Thread(target=self._notifyTaskTested, args=(handle, taskName, task['points'] > 0), name="notifyTested").start()
 				Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
+				if int(task['points']) == 0: #failed on system tests, now not solved
+					pointsList.remove(taski)
 
 	def _analyseContest(self, contestId, friends, firstRead):
 		ranking = cf.getStandings(contestId, friends)

@@ -85,6 +85,7 @@ class Chat:
 	def sendMessage(self, text, reply_markup = None):
 		if self.chatId == '0':
 			print('\n----- message sent: ------------\n' + text + "\n--------- End Message ----------\n")
+			return 0
 		else:
 			return tg.sendMessage(self.chatId, text, reply_markup)
 
