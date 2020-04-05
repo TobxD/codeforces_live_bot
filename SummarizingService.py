@@ -5,6 +5,7 @@ import standings
 import util
 import UpdateService
 import Chat
+import random
 
 class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
@@ -49,6 +50,13 @@ class SummarizingService (UpdateService.UpdateService):
 		return msg
 
 	def _getYourPerformance(self, myRC, myOldR, nowBetter, nowWorse):
+		funnyInsults = ["Maybe you should look for a different hobby.💁🏻‍♂️👋🏻",
+										"Have you thought about actually solving the tasks next time?🤨",
+										"Are you trying to get your rating below 0?🧐",
+										"Tip for next time: solve more problems.☝🏻",
+										"Fun fact: Continue like this and you have negative rating in " + str(-myOldR//(myRC if myRC != 0 else 1)) + " contests.📉",
+										"My machine learning algorithm has found the perfect training problem for your level: Check out [this problem](https://codeforces.com/problemset/problem/1030/A) on CF.🤯",
+										"Check out [this article](https://www.learnpython.org/en/Hello%2C_World%21), you can learn a lot from it!🐍"]
 		msg = ""
 		if myOldR == -1: 
 			return ""
@@ -56,9 +64,8 @@ class SummarizingService (UpdateService.UpdateService):
 		if myRC < 0:
 			msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
 			if myRC < -70:
-				msg += " Maybe you should look for a different hobby.💁🏻‍♂️👋🏻\n"
-			else :
-				msg += "\n"
+				msg += " " + funnyInsults[random.randint(0,len(funnyInsults)-1)]
+			msg += "\n"
 			
 		else:
 			msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
