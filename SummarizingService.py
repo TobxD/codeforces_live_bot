@@ -57,6 +57,9 @@ class SummarizingService (UpdateService.UpdateService):
 										"Fun fact: Continue like this and you have negative rating in " + str(-myOldR//(myRC if myRC != 0 else 1)) + " contests.📉",
 										"My machine learning algorithm has found the perfect training problem for your level: Check out [this problem](https://codeforces.com/problemset/problem/1030/A) on CF.🤯",
 										"Check out [this article](https://www.learnpython.org/en/Hello%2C_World%21), you can learn a lot from it!🐍"]
+		funnyCompliments = ["Now you have more rating to loose in the next contest.😬",
+												"`tourist` would be proud of you.☺️",
+												str((2999-myOldR)//myRC) + " more contest and you are a 👑Legendary Grandmaster."]
 		msg = ""
 		if myOldR == -1: 
 			return ""
@@ -65,10 +68,12 @@ class SummarizingService (UpdateService.UpdateService):
 			msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
 			if myRC < -70:
 				msg += " " + funnyInsults[random.randint(0,len(funnyInsults)-1)]
-			msg += "\n"
-			
 		else:
-			msg += "🎉 Nice! You gained *+%s* rating points.🎉\n" % myRC
+			msg += "🎉 Nice! You gained *+%s* rating points.🎉" % myRC
+			if myRC > 70:
+				msg += " " + funnyCompliments[random.randint(0, len(funnyCompliments)-1)]
+		msg += "\n"
+
 		if util.getUserSmiley(myOldR) != util.getUserSmiley(myOldR+myRC):
 			msg += "You are now a " + util.getUserSmiley(myOldR+myRC) + ".\n"
 			
