@@ -7,30 +7,38 @@ from util import logger
 import requests
 from collections import defaultdict
 from util import logger
-import threading
+import threading, time
 
 # ------ Current Standings	-------
 
 standingsSentLock = threading.Lock()
 standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId, msg)
+
+cfPredictorLock = threading.Lock()
+handleToRatingChanges = defaultdict(lambda : {})
+cfPredictorLastRequest = 0
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 
 def getRatingChanges(contestId):
-	logger.debug('request rating changes from cf-predictor')
-	try:
-		r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
-	except requests.exceptions.Timeout as errt:
-		logger.error("Timeout on CF-predictor.")
-		return {}
-	logger.debug('rating changes received')
-	r = r.json()
-	if r['status'] != 'OK':
-		return {}
-	r = r['result']
-	handleToRatingChanges = {}
-	for row in r:
-		handleToRatingChanges[row['handle']] = (row['oldRating'], row['newRating'])
-	return handleToRatingChanges
+	global cfPredictorLastRequest
+	with cfPredictorLock:
+		if time.time() > cfPredictorLastRequest + 20:
+			logger.debug('request rating changes from cf-predictor')
+			try:
+				r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
+			except requests.exceptions.Timeout as errt:
+				logger.error("Timeout on CF-predictor.")
+				return handleToRatingChanges[contestId]
+			logger.debug('rating changes received')
+			r = r.json()
+			if r['status'] != 'OK':
+				return handleToRatingChanges[contestId]
+			r = r['result']
+			handleToRatingChanges[contestId] = {}
+			for row in r:
+				handleToRatingChanges[contestId][row['handle']] = (row['oldRating'], row['newRating'])
+			cfPredictorLastRequest = time.time()
+		return handleToRatingChanges[contestId]
 
 # if !sendIfEmpty and standings are empty then False is returned
 def getFriendStandings(chat, contestId, sendIfEmpty=True):
