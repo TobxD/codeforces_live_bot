@@ -97,6 +97,8 @@ def handleCFError(request, r, chat):
 			chat.apikey = None
 			chat.secret = None
 			return
+		if "contestId: Contest with id" in r['comment'] and "has not started" in r['comment']:
+			return # TODO fetch new contest start time
 	logger.critical("codeforces error: " + str(r['comment']) + "\n" +
 					 "this request caused the error:\n" + (str(request)[:200]),
 					 exc_info=True)
@@ -190,7 +192,7 @@ def getStandings(contestId, handleList):
 			updateStandings(contestId)
 
 	with standingsLock:
-		if globalStandings[contestId] is False:
+		if globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
 			return False
 		allStandings = globalStandings[contestId]["standings"]
 		allRows = allStandings["rows"]

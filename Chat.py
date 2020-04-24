@@ -5,8 +5,7 @@ import threading
 chatsLock = threading.Lock()
 chats = {}
 
-# the chatId has to be a string
-def getChat(chatId):
+def getChat(chatId : str):
 	with chatsLock:
 		if chatId not in chats:
 			chats[chatId] = Chat(chatId)
@@ -19,7 +18,7 @@ def initChats():
 			chats[chatId] = Chat(chatId)
 
 class Chat:
-	def __init__(self, chatId):
+	def __init__(self, chatId:str):
 		self._chatId = chatId
 		infos = db.queryChatInfos(chatId)
 		if infos is None:
@@ -32,14 +31,13 @@ class Chat:
 			(self._apikey, self._secret, self._timezone, self._handle) = infos
 		if self._timezone is None:
 			self._timezone = "UTC"
-		openCommand = None
 
 	@property
 	def chatId(self):
 		return self._chatId
 
 	@chatId.setter
-	def chatId(self, chatId):
+	def chatId(self, chatId:str):
 		self._chatId = chatId
 		self._updateDB()
 

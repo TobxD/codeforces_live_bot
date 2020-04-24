@@ -6,6 +6,7 @@ from util import logger
 import database as db
 import standings
 import Chat
+from typing import List
 
 import random
 from collections import defaultdict
@@ -48,12 +49,12 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			for chatId in db.getWhoseFriends(handle): # to all users with this friend
 				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
 
-	def _updateStandings(self, contest, chatIds):
+	def _updateStandings(self, contest, chatIds : List[str]):
 		for chatId in chatIds:
 			chat = Chat.getChat(chatId)
 			if contest in standings.standingsSent[chatId]:
 				logger.debug('update stadings for ' + str(chatId) + '!')
-				standings.updateStandingsForChat(contest, chat)
+				standings.updateStandingsForChat(contest, chat)	
 
 	def _analyseRow(self, contestId, row, ranking, firstRead):
 		handle = row["party"]["members"][0]["handle"]
@@ -87,10 +88,16 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		for row in results:
 			self._analyseRow(contestId, row, ranking, firstRead)
 		if ranking['contest']['phase'] != 'FINISHED' and not firstRead:
-			Thread(target=self._updateStandings, args=(contestId, db.getAllChatPartners()), name="updStandings").start()
+			self._updateStandings(contestId, db.getAllChatPartners())
 
 	# analyses the standings
 	def _doTask(self, firstRead=False):
 		friends = db.getAllFriends()
+		threads = []
 		for contestId in cf.getCurrentContestsId():
-			Thread(target=self._analyseContest, args=(contestId, friends, firstRead), name="analyseContest"+str(contestId)).start()
+			t = Thread(target=self._analyseContest, args=(contestId, friends, firstRead), name="analyseContest"+str(contestId))
+			t.start()
+			threads.append(t)
+		for t in threads:
+			t.join()
+

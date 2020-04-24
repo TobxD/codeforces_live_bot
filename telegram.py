@@ -86,6 +86,7 @@ def sendMessage(chatId, text, reply_markup = None):
 	if chatId == '0':
 		print('message sent: ' + text + "\n -------- End Message ----------")
 		return 1
+	logger.debug("sendMessage to " + str(chatId) + ":\n" + text + "\n\n") # TODO test
 	params = {
 	'parse_mode':'Markdown',
 	'chat_id':str(chatId),
@@ -111,6 +112,7 @@ def editMessageText(chatId, msgId, msg):
 	if chatId == '0':
 		print(str(msgId) + ' edited to: ' + msg + "\n -------- End Message ----------")
 		return
+	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + text + "\n\n") # TODO test
 	params = {
 		'parse_mode':'Markdown',
 		'chat_id':str(chatId),
