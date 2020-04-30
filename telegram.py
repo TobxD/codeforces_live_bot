@@ -95,7 +95,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 
 def editMessageText(chatId, msgId, msg):
 	msg = shortenMessage(msg)
-	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + text + "\n\n") # TODO test
+	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + msg + "\n\n") # TODO test
 	params = {
 		'parse_mode':'Markdown',
 		'chat_id':str(chatId),
