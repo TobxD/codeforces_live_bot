@@ -1,9 +1,7 @@
 import bot
 import util
-import database as db
 import time, datetime
 import codeforces as cf
-import telegram as tg
 
 def getDescription(contest, chat, timez = None):
 	if timez is None:

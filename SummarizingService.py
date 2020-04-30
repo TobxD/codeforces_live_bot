@@ -1,6 +1,5 @@
 import codeforces as cf
 import database as db
-import telegram as tg
 import standings
 import util
 import UpdateService

@@ -1,5 +1,4 @@
 import mysql.connector
-import util
 from util import logger
 
 db_creds = None

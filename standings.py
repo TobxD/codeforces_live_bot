@@ -1,13 +1,12 @@
+import requests, threading, time
+from collections import defaultdict
+
 import bot
 import codeforces as cf
 import telegram as tg
 import util
 from Table import Table
 from util import logger
-import requests
-from collections import defaultdict
-from util import logger
-import threading, time
 
 # ------ Current Standings	-------
 
@@ -125,10 +124,11 @@ def sendContestStandings(chat, contestId, sendIfEmpty=True):
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
 	if msg is False: # CF is down or (standings are emtpy and !sendIfEmpty)
 		return
-	id = chat.sendMessage(msg)
-	if id != False:
-		with standingsSentLock:
-			standingsSent[chat.chatId][contestId] = (id, msg)
+	def callBackFun(id):
+		if id != False:
+			with standingsSentLock:
+				standingsSent[chat.chatId][contestId] = (id, msg)
+	chat.sendMessage(msg, callback=callbackFun)
 
 def sendStandings(chat, msg):
 	bot.setOpenCommandFunc(chat.chatId, None)

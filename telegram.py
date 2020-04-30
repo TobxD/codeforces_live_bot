@@ -1,32 +1,21 @@
-import json, requests, time, urllib.parse
-import sys, traceback, random, hashlib, queue
+import requests
 import database as db
-import codeforces as cf
-import util
 import bot
 import UpdateService
 import settings
 import Chat
 from util import logger
+from Spooler import Spooler
 
-requestUrl = ""
+requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 testFlag = False
 
-endTimes = queue.Queue() # 30 msg per second to telegram
-for i in range(30):
-	endTimes.put(-1)
-
-#------ Main part with bot API access ------
-# wrap this method to ensure timing
 def requestPost(chatId, url, **kwargs):
 	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + str(kwargs['data'].get('text'))
 	if testFlag:
 		logger.info("telegram object that would have been sent: " + errorTxt)
 		r = {'ok':True, 'result':{'message_id':1}}
 		return r
-	waitTime = endTimes.get() + 1 - time.time()
-	if waitTime > 0:
-		time.sleep(waitTime)
 	try:
 		r = requests.post(url, **kwargs)
 		r = r.json()
@@ -43,10 +32,11 @@ def requestPost(chatId, url, **kwargs):
 	except Exception as e:
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
 		return False
-	finally:
-		endTimes.put(time.time())
 
-#returns if error could be handled
+requestSpooler = Spooler(requestPost, 29, "telegram", 1)
+
+
+#returns whether error could be handled
 def handleRequestError(chatId, req):
 	errMsg = req['description']
 	if (errMsg == "Forbidden: bot was blocked by the user" or
@@ -79,25 +69,21 @@ def sendAnswerCallback(chatId, callback_query_id, text = ""):
 		'callback_query_id':callback_query_id,
 		'text':text
 	}
-	requestPost(chatId, requestUrl + 'answerCallbackQuery', data=params, timeout=5)
+	requestSpooler.put(chatId, requestUrl + 'answerCallbackQuery', data=params, timeout=5)
 
-def sendMessage(chatId, text, reply_markup = None):
+def sendMessage(chatId, text, reply_markup = None, callback=None):
 	text = shortenMessage(text)
-	if chatId == '0':
-		print('message sent: ' + text + "\n -------- End Message ----------")
-		return 1
 	logger.debug("sendMessage to " + str(chatId) + ":\n" + text + "\n\n") # TODO test
 	params = {
-	'parse_mode':'Markdown',
-	'chat_id':str(chatId),
-	'text':text,
-	'reply_markup': reply_markup
+		'parse_mode':'Markdown',
+		'chat_id':str(chatId),
+		'text':text,
+		'reply_markup': reply_markup
 	}
-	r = requestPost(chatId, requestUrl + 'sendMessage', data=params, timeout=5)
-	if r:
-		return r['result']['message_id']
-	else:
-		return False
+	returnF = None
+	if callback:
+		returnF = lambda r : callback(r['result']['message_id'] if r else False)
+	requestSpooler.put(chatId, requestUrl + 'sendMessage', data=params, timeout=5, callback=returnF)
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	params = {
@@ -105,13 +91,10 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		'message_id': str(msgId),
 		'reply_markup': reply_markup
 	}
-	requestPost(chatId, requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
+	requestSpooler.put(chatId, requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
 
 def editMessageText(chatId, msgId, msg):
 	msg = shortenMessage(msg)
-	if chatId == '0':
-		print(str(msgId) + ' edited to: ' + msg + "\n -------- End Message ----------")
-		return
 	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + text + "\n\n") # TODO test
 	params = {
 		'parse_mode':'Markdown',
@@ -120,14 +103,12 @@ def editMessageText(chatId, msgId, msg):
 		'text':msg
 	}
 	url = requestUrl + 'editMessageText'
-	requestPost(chatId, url, data=params, timeout=5)
+	requestSpooler.put(chatId, url, data=params, timeout=5)
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
-		global requestUrl
 		UpdateService.UpdateService.__init__(self, 1)
 		self.name = "telegramService"
-		requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 		self._lastUpdateID = -1
 
 	def _poll(self):

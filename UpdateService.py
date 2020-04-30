@@ -1,7 +1,5 @@
 import threading
 import time
-import traceback
-import util
 from util import logger
 
 class UpdateService (threading.Thread):

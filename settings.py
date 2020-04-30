@@ -2,8 +2,7 @@ import json
 import database as db
 import telegram as tg
 import codeforces as cf
-import util
-import bot
+import util, bot
 import Chat
 from util import logger
 

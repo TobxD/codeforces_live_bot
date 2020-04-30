@@ -1,6 +1,5 @@
-import sys, time
+import sys
 import bot
-import telegram as tg
 import util
 
 util.initLogging()

@@ -1,10 +1,11 @@
-import hashlib
+import hashlib, threading, os
+
 import datetime
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
-from pytz import timezone, utc
-import threading
-import logging, os
+from pytz import timezone
+
+import logging
 from logging.handlers import TimedRotatingFileHandler
 
 # global and exported (init at initLogging)

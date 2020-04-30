@@ -80,12 +80,12 @@ class Chat:
 	def _updateDB(self):
 		db.updateChatInfos(self.chatId, self.apikey, self.secret, self.timezone, self.handle)
 
-	def sendMessage(self, text, reply_markup = None):
+	def sendMessage(self, text, reply_markup = None, callback=None):
 		if self.chatId == '0':
 			print('\n----- message sent: ------------\n' + text + "\n--------- End Message ----------\n")
 			return 0
 		else:
-			return tg.sendMessage(self.chatId, text, reply_markup)
+			return tg.sendMessage(self.chatId, text, reply_markup, callback)
 
 	def editMessageReplyMarkup(self, msgId, reply_markup):
 		if self.chatId == '0':

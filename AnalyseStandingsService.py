@@ -1,5 +1,4 @@
 import UpdateService
-import telegram as tg
 import codeforces as cf
 import util
 from util import logger
@@ -29,7 +28,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		for chatId in db.getWhoseFriends(handle):
-			Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
+			Chat.getChat(chatId).sendMessage(msg)
 
 	def _notifyTaskTested(self, handle, task, accepted):
 		funnyInsults = ["%s failed on system tests for task %s. What a looser.💩",
@@ -42,12 +41,12 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task
 			for chatId in db.getChatIds(handle): # only to user with this handle
-				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
+				Chat.getChat(chatId).sendMessage(msg)
 		else:
 			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
 			msg = insult % (util.formatHandle(handle), task)
 			for chatId in db.getWhoseFriends(handle): # to all users with this friend
-				Thread(target=Chat.getChat(chatId).sendMessage, args=(msg,), name="sendMsg").start()
+				Chat.getChat(chatId).sendMessage(msg)
 
 	def _updateStandings(self, contest, chatIds : List[str]):
 		for chatId in chatIds:
@@ -64,10 +63,10 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			taskName = ranking["problems"][taski]["index"]
 			if task["points"] > 0 and taski not in pointsList:
 				if not firstRead:
-					Thread(target=self._notifyTaskSolved, args=(handle, taskName, task["rejectedAttemptCount"],
-							 task["bestSubmissionTimeSeconds"], row["rank"] != 0), name="notifySolved").start()
+					self._notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
+							 task["bestSubmissionTimeSeconds"], row["rank"] != 0)
 					if ranking["contest"]['phase'] == 'FINISHED': # if contest is running, standings are updated automatically
-						Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
+						self._updateStandings(contestId, db.getWhoseFriends(handle, allList=True))
 				pointsList.append(taski)
 				if task['type'] == 'PRELIMINARY' and (taski not in self._notFinal[contestId][handle]):
 					logger.debug('adding non-final task ' + str(taski) + ' for user ' + str(handle))
@@ -75,8 +74,8 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			if task['type'] == 'FINAL' and (taski in self._notFinal[contestId][handle]):
 				logger.debug('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
 				self._notFinal[contestId][handle].remove(taski)
-				Thread(target=self._notifyTaskTested, args=(handle, taskName, task['points'] > 0), name="notifyTested").start()
-				Thread(target=self._updateStandings, args=(contestId, db.getWhoseFriends(handle, allList=True)), name="updStandings").start()
+				self._notifyTaskTested(handle, taskName, task['points'] > 0)
+				self._updateStandings(contestId, db.getWhoseFriends(handle, allList=True))
 				if int(task['points']) == 0: #failed on system tests, now not solved
 					pointsList.remove(taski)
 
