@@ -54,13 +54,16 @@ def ratingsOfUsers(userNameArr):
 	res += "```"
 	return res
 
-def handleRatingRequestCont(chat, handle):
-	chat.sendMessage(ratingsOfUsers([util.cleanString(handle)]))
+def handleRatingRequestCont(chat, handleStr):
+	handleStr = util.cleanString(handleStr)
+	handles = handleStr.split(',')
+	handles = [util.cleanString(h) for h in handles]
+	chat.sendMessage(ratingsOfUsers(handles))
 	setOpenCommandFunc(chat.chatId, None)
 
 def handleRatingRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, handleRatingRequestCont)
-	chat.sendMessage("Codeforces handle:")
+	chat.sendMessage("Codeforces handle(s), comma seperated:")
 
 def handleFriendRatingsRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, None)

@@ -3,6 +3,7 @@ import random, time
 import queue, threading
 import database as db
 import util
+import Chat
 from util import logger
 import UpdateService
 
