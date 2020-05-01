@@ -7,8 +7,6 @@ from util import logger
 import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
-friendUpdLock = threading.Lock()
-friendsLastUpdated = {}
 
 contestListLock = threading.Lock()
 aktuelleContests = [] # display scoreboard + upcoming
@@ -96,6 +94,7 @@ def handleCFError(request, r, chat):
 		if r['comment'] == 'apiKey: Incorrect API key;onlyOnline: You have to be authenticated to use this method':
 			chat.apikey = None
 			chat.secret = None
+			chat.sendMessage("Your API-key did not work 😢. Please add a valid key and secret in the settings.")
 			return
 		if "contestId: Contest with id" in r['comment'] and "has not started" in r['comment']:
 			return # TODO fetch new contest start time
@@ -115,21 +114,17 @@ def getUserRating(handle):
 		return 0
 	return info[0]["rating"]
 
+def updateFriends(chat):
+	p = {'onlyOnline':'false'}
+	logger.debug('request friends of chat with chat_id ' + str(chat.chatId))
+	f = sendRequest("user.friends", p, True, chat)
+	logger.debug('requesting friends finished')
+	if f != False:
+		db.addFriends(chat.chatId, f)
+		logger.debug('friends updated for chat ' + str(chat.chatId))
+
 def getFriendsWithDetails(chat):
-	global friendsLastUpdated
-	with friendUpdLock:
-		if time.time() - friendsLastUpdated.get(chat.chatId, 0) > 1200:
-			p = {}
-			p['onlyOnline'] = 'false'
-			logger.debug('request friends of chat with chat_id ' + str(chat.chatId))
-			f = sendRequest("user.friends", p, True, chat)
-			logger.debug('requesting friends finished')
-			if f != False:
-				db.addFriends(chat.chatId, f)
-				friendsLastUpdated[chat.chatId] = time.time()
-				logger.debug('friends updated for chat ' + str(chat.chatId))
-	friends = db.getFriends(chat.chatId)
-	return friends
+	return db.getFriends(chat.chatId)
 
 def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
@@ -250,6 +245,18 @@ def getFutureContests():
 			if c.get('startTimeSeconds', -1) > time.time():
 				res.append(c)
 	return res
+
+class FriendUpdateService (UpdateService.UpdateService):
+	def __init__(self):
+		UpdateService.UpdateService.__init__(self, 24*3600)
+		self.name = "FriendUpdateService"
+		self._doTask()
+
+	def _doTask(self):
+		logger.debug('starting to update all friends')
+		for chatId, chat in Chat.chats.items():
+			updateFriends(chat)
+		logger.debug('updating all friends finished')
 
 class ContestListService (UpdateService.UpdateService):
 	def __init__(self):

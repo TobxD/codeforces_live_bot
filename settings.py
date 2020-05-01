@@ -122,9 +122,13 @@ def handleAddSecret(chat, secret):
 	chat.secret = secret
 	bot.setOpenCommandFunc(chat.chatId, None)
 	logger.debug('new secret added for user ' + str(chat.chatId))
-	chat.sendMessage("Key added. Your friends are now added.")
+	chat.sendMessage("Key added. Now fetching your codeforces friends...")
+	cf.updateFriends(chat)
 
 def handleAddKey(chat, key):
+	if util.cleanString(key) == "no":
+		bot.setOpenCommandFunc(chat.chatId, None)
+		return
 	chat.apikey = key
 	bot.setOpenCommandFunc(chat.chatId, handleAddSecret)
 	chat.sendMessage("Enter your secret:")
@@ -132,7 +136,8 @@ def handleAddKey(chat, key):
 def handleSetAuthorization(chat, req):
 	bot.setOpenCommandFunc(chat.chatId, handleAddKey)
 	chat.sendMessage("Go to https://codeforces.com/settings/api and generate a key.\n"
-	+ "Then text me two seperate messages - the first one containing the key and the second one containing the secret")
+	+ "Then text me two seperate messages - the first one containing the key and the second one containing the secret.\n"
+	+ "If you do not want to add your secret now, text me _no_ and don't forget to add your secret later in the settings.")
 
 # ------- Time zone -------------
 def handleChangeTimezone(chat, text):

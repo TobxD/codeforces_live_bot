@@ -163,11 +163,11 @@ def initContestServices():
 	Chat.initChats()
 	services = [
 		cf.ContestListService(),
+		cf.FriendUpdateService(),
 		AnalyseStandingsService.AnalyseStandingsService(),
 		UpcomingService.UpcomingService(),
 		SummarizingService.SummarizingService()
 	]
-
 	for service in services:
 		service.start()
 
