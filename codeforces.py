@@ -232,6 +232,7 @@ def selectImportantContests(contestList):
 			aktuelleContests.append(c)
 		if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
 			currentContests.append(c)
+	currentContests = list(reversed(currentContests))
 
 def getCurrentContests():
 	with contestListLock:
