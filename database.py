@@ -1,7 +1,9 @@
 import mysql.connector
 from util import logger
+import threading
 
 db_creds = None
+friendsNotfLock = threading.Lock()
 
 def openDB():
 	global db_creds
@@ -109,6 +111,12 @@ def getAllChatPartners():
 		ret.append(x[0])
 	return ret
 
-def setFriendSettings(chatId, friend, column, value):
-	query = "UPDATE friends SET "+column+ "= %s WHERE chatId = %s AND friend = %s"
-	insertDB(query, (value, chatId, friend))
+def toggleFriendSettings(chatId, friend, column):
+	with friendsNotfLock:
+		query = f"SELECT {column} contestWatch FROM friends WHERE chatId = %s AND friend = %s"
+		gesetzt = str(queryDB(query, (chatId, friend))[0][0]) == '1'
+		newVal = not gesetzt
+		query = f"UPDATE friends SET {column}= %s WHERE chatId = %s AND friend = %s"
+		insertDB(query, (newVal, chatId, friend))
+		return newVal
+

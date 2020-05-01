@@ -53,10 +53,10 @@ def handleSettingsCallback(chat, data, callback):
 #------ Notification Settings------
 
 def getButtons(handle, ratingWatch, contestWatch):
-	text1 = handle + " list ["+ ("X" if ratingWatch else " ") + "]"
-	text2 = handle + " notify ["+ ("X" if contestWatch else " ") + "]"
-	data1 = "friend_notf:" + handle + ";0;" + ("0" if ratingWatch else "1")
-	data2 = "friend_notf:" + handle + ";1;" + ("0" if contestWatch else "1")
+	text1 = f"{handle} list {'✅' if ratingWatch else '❌'}"
+	text2 = f"{handle} notify {'✅' if contestWatch else '❌'}"
+	data1 = "friend_notf:" + handle + ";0"
+	data2 = "friend_notf:" + handle + ";1"
 	return [{"text":text1, "callback_data":data1}, {"text":text2, "callback_data":data2}]
 
 def getButtonRows(chat):
@@ -85,16 +85,13 @@ def updateButtons(chat, msg):
 
 
 def handleFriendNotSettingsCallback(chat, data, callback):
-	[handle, button, gesetzt] = data.split(';')
-	gesetzt = (gesetzt == '1')
+	[handle, button] = data.split(';')
+	gesetzt = db.toggleFriendSettings(chat.chatId, handle, 'ratingWatch' if button == "0" else 'contestWatch')
 	if button == "0":
 		notf = ("✅" if gesetzt else "❌") + " You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
-		db.setFriendSettings(chat.chatId, handle, 'ratingWatch', gesetzt)
 	else:
 		notf = ("🔔" if gesetzt else "🔕") + "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
-		db.setFriendSettings(chat.chatId, handle, 'contestWatch', gesetzt)
 	tg.sendAnswerCallback(chat.chatId, callback['id'], notf)
-
 	updateButtons(chat, callback['message'])
 
 # ---- Set User Handle ------
