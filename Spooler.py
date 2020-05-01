@@ -1,12 +1,14 @@
 import time
 from threading import Thread
 import queue
+from util import logger
 
 class Spooler:
 	def __init__(self, function, threadCount, name="", timeInterval=0):
 		self._q = queue.Queue()
 		self._function = function
 		self._timeInterval = timeInterval
+		self._name = name
 		for i in range(threadCount):
 			Thread(target=self._run, name=name + " spooler #" + str(i)).start()
 
@@ -21,9 +23,12 @@ class Spooler:
 			posArgs = curArg['posArgs']
 			kwArgs = curArg['kwArgs']
 			startT = time.time()
-			result = self._function(*posArgs, **kwArgs)
-			if callback:
-				callback(result)
+			try:
+				result = self._function(*posArgs, **kwArgs)
+				if callback:
+					callback(result)
+			except Exception as e:
+				logger.critical('%s spooler error %s', self._name, e, exc_info=True)
 			sleepT = startT + self._timeInterval - time.time()
 			if sleepT > 0:
 				time.sleep(sleepT)
