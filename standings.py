@@ -124,7 +124,7 @@ def sendContestStandings(chat, contestId, sendIfEmpty=True):
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
 	if msg is False: # CF is down or (standings are emtpy and !sendIfEmpty)
 		return
-	def callBackFun(id):
+	def callbackFun(id):
 		if id != False:
 			with standingsSentLock:
 				standingsSent[chat.chatId][contestId] = (id, msg)

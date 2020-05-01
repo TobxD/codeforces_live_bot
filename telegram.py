@@ -33,7 +33,7 @@ def requestPost(chatId, url, **kwargs):
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
 		return False
 
-requestSpooler = Spooler(requestPost, 29, "telegram", 1)
+requestSpooler = Spooler(requestPost, 19, "telegram", 2)
 
 
 #returns whether error could be handled
