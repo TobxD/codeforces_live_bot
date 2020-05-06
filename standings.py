@@ -15,13 +15,12 @@ standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId
 
 cfPredictorLock = threading.Lock()
 handleToRatingChanges = defaultdict(lambda : {})
-cfPredictorLastRequest = 0
+cfPredictorLastRequest = defaultdict(lambda : 0)
 cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
 
 def getRatingChanges(contestId):
-	global cfPredictorLastRequest
 	with cfPredictorLock:
-		if time.time() > cfPredictorLastRequest + 20:
+		if time.time() > cfPredictorLastRequest[contestId] + 20:
 			logger.debug('request rating changes from cf-predictor')
 			try:
 				r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
@@ -39,7 +38,7 @@ def getRatingChanges(contestId):
 			handleToRatingChanges[contestId] = {}
 			for row in r:
 				handleToRatingChanges[contestId][row['handle']] = (row['oldRating'], row['newRating'])
-			cfPredictorLastRequest = time.time()
+			cfPredictorLastRequest[contestId] = time.time()
 		return handleToRatingChanges[contestId]
 
 # if !sendIfEmpty and standings are empty then False is returned
