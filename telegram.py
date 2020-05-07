@@ -10,7 +10,7 @@ from Spooler import Spooler
 requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 testFlag = False
 
-def requestPost(chatId, url, **kwargs):
+def requestPost(chatId, url, cnt=3, **kwargs):
 	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + str(kwargs['data'].get('text'))
 	if testFlag:
 		logger.info("telegram object that would have been sent: " + errorTxt)
@@ -27,7 +27,11 @@ def requestPost(chatId, url, **kwargs):
 				logger.critical('Failed to request telegram. Error: ' + r.get('description', "No description available.") + '\n' + errorTxt)
 			return False
 	except requests.Timeout as e:
-		logger.error('Timeout at telegram request: ' + errorTxt)
+		if cnt > 0:
+			requestSpooler.put(chatId, url, cnt=cnt-1, **kwargs)
+			logger.debug(f'Timeout at telegram request: trying {cnt} more times...')
+		else:
+			logger.error('Timeout at telegram request: ' + errorTxt)
 		return False
 	except Exception as e:
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
