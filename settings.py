@@ -149,7 +149,7 @@ def handleSetTimezone(chat, tzstr):
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.timezone = tz
-		chat.sendMessage("Timezone set to '" + tz + "'")
+		chat.sendMessage("Timezone set to '" + util.escapeMarkdown(tz) + "'")
 		# if in setup after start, ask for user handle
 		if chat.handle is None:
 			chat.sendMessage("Now I need *your* handle.")

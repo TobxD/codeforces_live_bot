@@ -15,6 +15,15 @@ logger = logging.getLogger()
 def cleanString(s):
 	return s.lower().strip()
 
+def escapeMarkdown(s):
+	s = s.replace("\\", "\\\\")
+	s = s.replace("`", "\\`")
+	s = s.replace("_", "\\_")
+	s = s.replace("*", "\\*")
+	s = s.replace("[", "\\[")
+	s = s.replace("]", "\\]")
+	return s
+
 def sha512Hex(s):
 	return hashlib.sha512(s.encode()).hexdigest()
 
