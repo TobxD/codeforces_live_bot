@@ -36,7 +36,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 										"📉 %s failed the system tests for task %s. *So sad! It's true.*",
 										"%s didn't manage to solve task %s. The system tests failed. You can remove this friend using the command `/remove_friend`👋🏻",
 										"Hmmm...🤔 Probably the Codeblocks debugger did not work for %s. The solution for task %s was not good enough. It failed on system tests.",
-										"Div. 4 is near for %s 👋🏻. The system tests failed for task %s.",
+										"Div. 5 is near for %s 👋🏻. The system tests failed for task %s.",
 										"%s failed systest for task %s. Did they hardcode the samples?"]
 		if accepted:
 			msg = "✔️ You got accepted on system tests for task " + task

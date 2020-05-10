@@ -10,7 +10,7 @@ from Spooler import Spooler
 requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 testFlag = False
 
-def requestPost(chatId, url, cnt=3, **kwargs):
+def requestPost(chatId, url, timeout=30, **kwargs):
 	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + str(kwargs['data'].get('text'))
 	if testFlag:
 		logger.info("telegram object that would have been sent: " + errorTxt)
@@ -27,11 +27,7 @@ def requestPost(chatId, url, cnt=3, **kwargs):
 				logger.critical('Failed to request telegram. Error: ' + r.get('description', "No description available.") + '\n' + errorTxt)
 			return False
 	except requests.Timeout as e:
-		if cnt > 0:
-			requestSpooler.put(chatId, url, cnt=cnt-1, **kwargs)
-			logger.debug(f'Timeout at telegram request: trying {cnt} more times...')
-		else:
-			logger.error('Timeout at telegram request: ' + errorTxt)
+		logger.critical('Timeout at telegram request: ' + errorTxt)
 		return False
 	except Exception as e:
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
@@ -73,7 +69,7 @@ def sendAnswerCallback(chatId, callback_query_id, text = ""):
 		'callback_query_id':callback_query_id,
 		'text':text
 	}
-	requestSpooler.put(chatId, requestUrl + 'answerCallbackQuery', data=params, timeout=5)
+	requestSpooler.put(chatId, requestUrl + 'answerCallbackQuery', data=params)
 
 def sendMessage(chatId, text, reply_markup = None, callback=None):
 	text = shortenMessage(text)
@@ -87,7 +83,7 @@ def sendMessage(chatId, text, reply_markup = None, callback=None):
 	returnF = None
 	if callback:
 		returnF = lambda r : callback(r['result']['message_id'] if r else False)
-	requestSpooler.put(chatId, requestUrl + 'sendMessage', data=params, timeout=5, callback=returnF)
+	requestSpooler.put(chatId, requestUrl + 'sendMessage', data=params, callback=returnF)
 
 def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	params = {
@@ -95,7 +91,7 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 		'message_id': str(msgId),
 		'reply_markup': reply_markup
 	}
-	requestSpooler.put(chatId, requestUrl + 'editMessageReplyMarkup', data=params, timeout=5)
+	requestSpooler.put(chatId, requestUrl + 'editMessageReplyMarkup', data=params)
 
 def editMessageText(chatId, msgId, msg):
 	msg = shortenMessage(msg)
@@ -107,7 +103,7 @@ def editMessageText(chatId, msgId, msg):
 		'text':msg
 	}
 	url = requestUrl + 'editMessageText'
-	requestSpooler.put(chatId, url, data=params, timeout=5)
+	requestSpooler.put(chatId, url, data=params)
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):

@@ -10,9 +10,9 @@ import standings
 import upcoming
 import settings
 import Chat
-import queue, time
-from collections import defaultdict
 
+import queue, time, random
+from collections import defaultdict
 import threading
 
 # chatId -> function
@@ -140,8 +140,32 @@ def invalidCommand(chat, msg):
 def noCommand(chat, msg):
 	if chat.chatId in openCommandFunc:
 		openCommandFunc[chat.chatId](chat, msg)
-	elif int(chat.chatId) >= 0 or msg.startswith("/"):
+	elif msg.startswith("/"):
 		invalidCommand(chat, msg)
+	elif random.randint(0,6) == 0: #random comment
+		funnyComments = [
+			"Ok.",
+			"I will consider that next time",
+			"Good point!",
+			"Haha lol😂",
+			"🤔",
+			"🤨",
+			"WTF",
+			"No, are you stupid?",
+			"No way!",
+			"I didn't get that, can you please repeat it?",
+			"Sure.",
+			"Why not",
+			"Better watch your mouth☝🏻",
+			"Are you sure?",
+			"No! Don't leave me!😢 The insults after the last contest were just a joke. " +
+				"I didn't mean to hurt you. Pleeeaasee stay! " +
+				"I was always kind to you, provided you with the latest contest results and even had a uptime > 0! " +
+				"Forgive me, please!\n" +
+				"Ok, apparently you have blocked me now, so I'm gonna delete all your data...\n\n" +
+				"EDIT: sry, wrong chat"
+		]
+		chat.sendMessage(funnyComments[random.randint(0,len(funnyComments)-1)])
 
 #-----
 def handleMessage(chat, text):
