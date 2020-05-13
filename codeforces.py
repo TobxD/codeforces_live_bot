@@ -54,6 +54,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 		return False
 	except requests.exceptions.ChunkedEncodingError as e:
 		logger.error("ChunkedEncodingError on CF: %s", e)
+		return False
 	except Exception as e:
 		logger.critical('Failed to request codeforces: \nexception: %s\n', e, exc_info=True)
 		return False
