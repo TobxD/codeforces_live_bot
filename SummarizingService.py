@@ -2,14 +2,18 @@ import codeforces as cf
 import database as db
 import standings
 import util
+from util import logger
 import UpdateService
 import Chat
 import random
+import time
+from collections import defaultdict
 
 class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 60)
 		self.name = "summarizeService"
+		self.userRatings = defaultdict(lambda : -1)
 		self._summarized = set()
 		self._doTask(True)
 
@@ -21,8 +25,24 @@ class SummarizingService (UpdateService.UpdateService):
 					self._sendAllSummary(c)
 
 	def _sendAllSummary(self, contest):
-		for chatId in db.getAllChatPartners():
-			chat = Chat.getChat(chatId)
+		# cache rating for all users
+		chats = [Chat.getChat(c) for c in db.getAllChatPartners()]
+
+		# The getUserInfo command returns False if there is a unknown user in the list
+		# the user is then removed by the CF error handling routine. A retry is neccessary though.
+		retries = 20
+		while retries > 0:
+			handles = [c.handle for c in chats if c.handle]
+			infos = cf.getUserInfos(handles)
+			if infos:
+				for info in infos:
+					self.userRatings[info['handle']] = info.get('rating', -1)
+				break
+			retries -= 1
+			time.sleep(5)
+		logger.debug(f"sending summary for contest {contest['id']}. Cached {len(self.userRatings)} ratings in {20-retries+1} try.")
+
+		for chat in chats:
 			msg = self._getContestAnalysis(contest, chat)
 			if len(msg) > 0:  # only send if analysis is not empty
 				msg = contest['name'] + " has finished:\n" + msg
@@ -90,7 +110,7 @@ class SummarizingService (UpdateService.UpdateService):
 		curStandings = cf.getStandings(contestId, cf.getFriends(chat))
 		rows = curStandings["rows"]
 		# are changes already applied?
-		myRating = -1 if chat.handle is None else cf.getUserRating(chat.handle) 
+		myRating = self.userRatings[chat.handle]
 		minRC, maxRC = 0, 0
 		minOldR, maxOldR = -1, -1
 		minHandle, maxHandle = 0, 0

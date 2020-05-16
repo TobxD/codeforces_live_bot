@@ -1,6 +1,7 @@
 import mysql.connector
 from util import logger
 import threading
+import Chat
 
 db_creds = None
 friendsNotfLock = threading.Lock()
@@ -57,6 +58,12 @@ def deleteFriend(handle):
 	logger.debug("deleting friends with handle " + handle)
 	query = "DELETE FROM friends WHERE friend = %s"
 	insertDB(query, (handle,))
+
+	query = "SELECT chatId FROM tokens WHERE handle = %s"
+	chatIds = [r[0] for r in queryDB(query, (handle,))]
+	logger.debug(f"deleting chat handle {handle} for chats {chatIds}")
+	for chatId in chatIds:
+		Chat.getChat(chatId).handle = None # write through to DB
 
 def deleteFriendOfUser(handle, chatId):
 	logger.debug("deleting friend with handle " + handle + " from user " + str(chatId))

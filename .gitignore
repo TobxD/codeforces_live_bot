@@ -2,5 +2,6 @@ bot.log
 __pycache__/
 .database_creds
 .telegram_api_url
-log.txt
-error.txt
+log/
+backup/
+.vscode/
