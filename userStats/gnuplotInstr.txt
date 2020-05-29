@@ -1,3 +1,7 @@
+if (!exists("col")) col=2
+
+set terminal wxt persist
+
 set xdata time
 set format x "%d/%m/%Y"
 set xlabel "Date"
@@ -10,4 +14,7 @@ set style data linespoints
 
 set timefmt "%Y-%m-%d-%H:%M:%S"
 
-plot "./stats.txt" using 1:2 t "users", "./stats.txt" using 1:3 t "distinct friends", "./stats.txt" using 1:4 t "friends connections"
+if (col == 0) plot "./stats.txt" using 1:2 t "users", "./stats.txt" using 1:3 t "distinct friends", "./stats.txt" using 1:4 t "friends connections"; \
+else if(col == 2) plot "./stats.txt" using 1:col t "users"; \
+else if(col == 3) plot "./stats.txt" using 1:col t "distinct friends"; \
+else if(col == 4) plot "./stats.txt" using 1:col t "friend relation size"; \
