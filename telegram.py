@@ -4,6 +4,8 @@ import bot
 import UpdateService
 import settings
 import Chat
+import standings
+from collections import defaultdict
 from util import logger
 from Spooler import Spooler
 
@@ -17,7 +19,7 @@ def requestPost(chatId, url, timeout=30, **kwargs):
 		r = {'ok':True, 'result':{'message_id':1}}
 		return r
 	try:
-		r = requests.post(url, **kwargs)
+		r = requests.post(url, timeout=timeout, **kwargs)
 		r = r.json()
 		if r['ok']:
 			return r
@@ -48,6 +50,11 @@ def handleRequestError(chatId, req):
 		return True
 	elif errMsg == "Bad Request: group chat was upgraded to a supergroup chat":
 		Chat.getChat(chatId).chatId = req['parameters']['migrate_to_chat_id']
+		return True
+	elif errMsg == "Bad Request: message to edit not found":
+		with standings.standingsSentLock:
+			standings.standingsSent[chatId] = defaultdict()
+		logger.error(f"deleted standingsSent for Chat {chatId}")
 		return True
 	else:
 		return False

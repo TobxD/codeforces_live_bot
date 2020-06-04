@@ -5,3 +5,4 @@ __pycache__/
 log/
 backup/
 .vscode/
+userStats/stats.txt

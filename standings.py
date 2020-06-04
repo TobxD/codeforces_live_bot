@@ -138,13 +138,18 @@ def sendStandings(chat, msg):
 	else:
 		chat.sendMessage("No contests in the last two days 🤷🏻")
 
-# updates only, if the standings-message has changed
+# updates only, if message exists and the standings-message has changed
 def updateStandingsForChat(contest, chat):
+	with standingsSentLock:
+		if contest not in standingsSent[chat.chatId]:
+			return
 	msg = getFriendStandings(chat, contest)
 	if msg is False:
 		return
 	edit = False
 	with standingsSentLock:
+		if contest not in standingsSent[chat.chatId]:
+			return
 		msgId, oldMsg = standingsSent[chat.chatId][contest]
 		if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
 			standingsSent[chat.chatId][contest] = (msgId, msg)

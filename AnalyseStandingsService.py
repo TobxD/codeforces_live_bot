@@ -51,9 +51,8 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 	def _updateStandings(self, contest, chatIds : List[str]):
 		for chatId in chatIds:
 			chat = Chat.getChat(chatId)
-			if contest in standings.standingsSent[chatId]:
-				logger.debug('update stadings for ' + str(chatId) + '!')
-				standings.updateStandingsForChat(contest, chat)	
+			logger.debug('update standings for ' + str(chatId) + '!')
+			standings.updateStandingsForChat(contest, chat)
 
 	def _analyseRow(self, contestId, row, ranking, firstRead):
 		handle = row["party"]["members"][0]["handle"]
