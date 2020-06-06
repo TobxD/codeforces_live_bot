@@ -93,7 +93,7 @@ def handleCFError(request, r, chat):
 			db.deleteFriend(handle)
 			return
 		#remove wrong authentification
-		if r['comment'] == 'apiKey: Incorrect API key;onlyOnline: You have to be authenticated to use this method':
+		if 'Incorrect API key' in r['comment'] or 'Incorrect signature' in r['comment']:
 			chat.apikey = None
 			chat.secret = None
 			chat.sendMessage("Your API-key did not work 😢. Please add a valid key and secret in the settings.")

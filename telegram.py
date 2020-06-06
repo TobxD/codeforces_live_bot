@@ -43,6 +43,7 @@ def handleRequestError(chatId, req):
 	errMsg = req['description']
 	if (errMsg == "Forbidden: bot was blocked by the user" or
 		 errMsg == "Forbidden: bot was kicked from the group chat" or
+		 errMsg == "Forbidden: bot was kicked from the supergroup chat" or
 		 errMsg == "Bad Request: chat not found" or
 		 errMsg == "Forbidden: user is deactivated" or
 		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
