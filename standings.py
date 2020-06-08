@@ -22,6 +22,7 @@ def getRatingChanges(contestId):
 	with cfPredictorLock:
 		if time.time() > cfPredictorLastRequest[contestId] + 20:
 			logger.debug('request rating changes from cf-predictor')
+			cfPredictorLastRequest[contestId] = time.time()
 			try:
 				r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
 			except requests.exceptions.Timeout as errt:

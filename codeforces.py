@@ -182,10 +182,10 @@ def updateStandings(contestId):
 	else:
 		logger.error('standings not updated')
 
-def getStandings(contestId, handleList):
+def getStandings(contestId, handleList, forceRequest=False):
 	with standingsLock:
 		toUpd = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30
-		if toUpd:
+		if toUpd or forceRequest:
 			updateStandings(contestId)
 
 	with standingsLock:

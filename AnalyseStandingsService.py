@@ -79,7 +79,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 					pointsList.remove(taski)
 
 	def _analyseContest(self, contestId, friends, firstRead):
-		ranking = cf.getStandings(contestId, friends)
+		ranking = cf.getStandings(contestId, friends, forceRequest=True)
 		if ranking is False:
 			return
 		results = ranking['rows']
@@ -90,6 +90,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 
 	# analyses the standings
 	def _doTask(self, firstRead=False):
+		logger.debug('started analysing standings')
 		friends = db.getAllFriends()
 		threads = []
 		for contestId in cf.getCurrentContestsId():
@@ -98,4 +99,4 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			threads.append(t)
 		for t in threads:
 			t.join()
-
+		logger.debug('finished analysing standings')
