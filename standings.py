@@ -102,7 +102,7 @@ def getFriendStandings(chat, contestId, sendIfEmpty=True):
 			nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
 			for sub in row["problemResults"]:
 				if sub["points"] > 0:
-					timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0)
+					timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0, longOk=False)
 					subs.append(timeStr)
 				else:
 					status = ""
@@ -144,6 +144,7 @@ def updateStandingsForChat(contest, chat):
 	with standingsSentLock:
 		if contest not in standingsSent[chat.chatId]:
 			return
+	logger.debug('update standings for ' + str(chat.chatId) + '!')
 	msg = getFriendStandings(chat, contest)
 	if msg is False:
 		return

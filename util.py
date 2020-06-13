@@ -97,10 +97,12 @@ def displayTime(t, timez):
 
 	return outText
 
-def formatSeconds(s, useExcl = False):
+def formatSeconds(s, useExcl=False, longOk=True):
 	s = s//60
 	if s < 60:
 		out = "0:" + str(s).zfill(2)
+	elif s // 60 >= 10 and not longOk:
+		out = (str(s//60) + ("H" if useExcl else "h")).rjust(4)
 	else:
 		out = str(s//60) + ":" + str(s%60).zfill(2)
 	return out.replace(":", "!") if useExcl else out
