@@ -78,7 +78,7 @@ class SummarizingService (UpdateService.UpdateService):
 										"Check out [this article](https://www.learnpython.org/en/Hello%2C_World%21), you can learn a lot from it!🐍"]
 		funnyCompliments = ["Now you have more rating to loose in the next contest.😬",
 												"`tourist` would be proud of you.☺️",
-												str((2999-myOldR)//myRC) + " more contest and you are a 👑Legendary Grandmaster."]
+												str((2999-myOldR)//(myRC if myRC != 0 else 1)) + " more contest and you are a 👑Legendary Grandmaster."]
 		msg = ""
 		if myOldR == -1: 
 			return ""

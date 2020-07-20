@@ -256,8 +256,8 @@ class FriendUpdateService (UpdateService.UpdateService):
 
 	def _doTask(self):
 		logger.debug('starting to update all friends')
-		for chatId, chat in Chat.chats.items():
-			updateFriends(chat)
+		for chatId in db.getAllChatPartners():
+			updateFriends(Chat.getChat(chatId))
 		logger.debug('updating all friends finished')
 
 class ContestListService (UpdateService.UpdateService):

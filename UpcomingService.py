@@ -1,6 +1,7 @@
 import UpdateService
 import upcoming
 import codeforces as cf
+import database as db
 import time
 import Chat
 
@@ -25,13 +26,15 @@ class UpcomingService (UpdateService.UpdateService):
 						self._notifyAllUpcoming(c)
 
 	def _notifyAllNewContestAdded(self, contest):
-		for chatId, chat in Chat.chats.items():
+		for chatId in db.getAllChatPartners():
+			chat = Chat.getChat(chatId)
 			description = "new contest added:\n"
 			description += upcoming.getDescription(contest, chat)
 			chat.sendMessage(description)
 
 	def _notifyAllUpcoming(self, contest):
-		for chatId, chat in Chat.chats.items():
+		for chatId in db.getAllChatPartners():
+			chat = Chat.getChat(chatId)
 			if not (self._notified[contest['id']] > 1 
 				 and int(chatId) == -1001417835798):
 				description = upcoming.getDescription(contest, chat)
