@@ -71,34 +71,38 @@ def handleFriendRatingsRequest(chat, req):
 
 # ----- Add Friend -----
 def handleAddFriendRequestCont(chat, req):
-	handle = util.cleanString(req)
-	userInfos = cf.getUserInfos([handle])
+	handles = [util.cleanString(s) for s in req.split(',')]
+	userInfos = cf.getUserInfos(handles)
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
 		chat.sendMessage("👻 No user with this handle! Please try again:")
 	else:
-		db.addFriends(chat.chatId, [userInfos[0]['handle']])
-		rating = userInfos[0].get('rating', 0)
-		chat.sendMessage(util.getUserSmiley(rating) + " User `" + userInfos[0]['handle'] + "` with rating " + str(rating) + " added.")
+		for user in userInfos:
+			if "handle" in user:
+				db.addFriends(chat.chatId, [user['handle']])
+				rating = user.get('rating', 0)
+				chat.sendMessage(util.getUserSmiley(rating) + " User `" + user['handle'] + "` with rating " + str(rating) + " added.")
 		setOpenCommandFunc(chat.chatId, None)
 
 def handleAddFriendRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, handleAddFriendRequestCont)
-	chat.sendMessage("Codeforces handle:")
+	chat.sendMessage("Codeforces handle(s), comma seperated:")
 
 # ----- Remove Friend -----
 def handleRemoveFriendRequestCont(chat, req):
-	handle = util.cleanString(req)
-	userInfos = cf.getUserInfos([handle])
+	handles = [util.cleanString(s) for s in req.split(',')]
+	userInfos = cf.getUserInfos(handles)
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
 		chat.sendMessage("👻 No user with this handle!")
 	else:
-		db.deleteFriendOfUser(userInfos[0]['handle'], chat.chatId)
-		chat.sendMessage("💀 User `" + userInfos[0]['handle'] + "` was removed from your friends. If this is one of your Codeforces friends, they will be added automatically again in case you added your API-key. If so, just disable notifications for this user in the settings.")
+		for user in userInfos:
+			if "handle" in user:
+				db.deleteFriendOfUser(user['handle'], chat.chatId)
+				chat.sendMessage("💀 User `" + user['handle'] + "` was removed from your friends. If this is one of your Codeforces friends, they will be added automatically again in case you added your API-key. If so, just disable notifications for this user in the settings.")
 	setOpenCommandFunc(chat.chatId, None)
 
 def handleRemoveFriendRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, handleRemoveFriendRequestCont)
-	chat.sendMessage("Codeforces handle:")
+	chat.sendMessage("Codeforces handle(s), comma seperated:")
 
 #------ Start -------------
 def handleStart(chat, text):
