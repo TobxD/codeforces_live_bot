@@ -1,7 +1,8 @@
 import mysql.connector
-from util import logger
 import threading
-import Chat
+
+from utils.util import logger
+from telegram import Chat
 
 db_creds = None
 friendsNotfLock = threading.Lock()

@@ -1,7 +1,8 @@
 import time
 from threading import Thread
 import queue
-from util import logger
+
+from utils.util import logger
 
 class Spooler:
 	def __init__(self, function, threadCount, name="", timeInterval=0):

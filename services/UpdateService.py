@@ -1,6 +1,7 @@
 import threading
 import time
-from util import logger
+
+from utils.util import logger
 
 class UpdateService (threading.Thread):
 	def __init__(self, updateInterval):

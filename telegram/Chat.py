@@ -1,6 +1,7 @@
-import telegram as tg
-import database as db
 import threading
+
+from telegram import telegram as tg
+from utils import database as db
 
 chatsLock = threading.Lock()
 chats = {}

@@ -1,9 +1,10 @@
-import UpdateService
-import upcoming
-import codeforces as cf
-import database as db
 import time
-import Chat
+
+from services import UpdateService
+from codeforces import upcoming
+from codeforces import codeforces as cf
+from utils import database as db
+from telegram import Chat
 
 class UpcomingService (UpdateService.UpdateService):
 	def __init__(self):

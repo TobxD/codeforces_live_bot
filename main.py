@@ -1,6 +1,6 @@
-import sys
-import bot
-import util
+import sys, os
+from commands import bot
+from utils import util
 
 util.initLogging()
 
@@ -10,3 +10,6 @@ if "-t" in sys.argv:
 	bot.startTestingMode()
 elif "--production" in sys.argv:
 	bot.startTelegramBot()
+else:
+	print("invalid options")
+	os._exit(0)

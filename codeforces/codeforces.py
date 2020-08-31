@@ -1,11 +1,11 @@
 import requests, urllib, simplejson
 import random, time
 import queue, threading
-import database as db
-import util
-import Chat
-from util import logger
-import UpdateService
+from utils import database as db
+from utils import util
+from telegram import Chat
+from utils.util import logger
+from services import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
 

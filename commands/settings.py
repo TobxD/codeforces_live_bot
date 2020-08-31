@@ -1,10 +1,11 @@
 import json
-import database as db
-import telegram as tg
-import codeforces as cf
-import util, bot
-import Chat
-from util import logger
+from utils import database as db
+from telegram import telegram as tg
+from codeforces import codeforces as cf
+from utils import util
+from utils.util import logger
+from commands import bot
+from telegram import Chat
 
 def handleSettings(chat, req):
 	bot.setOpenCommandFunc(chat.chatId, None)

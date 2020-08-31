@@ -1,10 +1,8 @@
 import hashlib, threading, os
-
 import datetime
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 from pytz import timezone
-
 import logging
 from logging.handlers import TimedRotatingFileHandler
 

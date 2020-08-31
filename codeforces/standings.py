@@ -1,12 +1,12 @@
 import requests, threading, time
 from collections import defaultdict
 
-import bot
-import codeforces as cf
-import telegram as tg
-import util
-from Table import Table
-from util import logger
+from commands import bot
+from codeforces import codeforces as cf
+from telegram import telegram as tg
+from utils import util
+from utils.Table import Table
+from utils.util import logger
 
 # ------ Current Standings	-------
 

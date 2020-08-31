@@ -1,15 +1,15 @@
-import UpdateService
-import codeforces as cf
-import util
-from util import logger
-import database as db
-import standings
-import Chat
 from typing import List
-
 import random
 from collections import defaultdict
 from threading import Thread
+
+from services import UpdateService
+from codeforces import codeforces as cf
+from utils import util
+from utils.util import logger
+from utils import database as db
+from codeforces import standings
+from telegram import Chat
 
 class AnalyseStandingsService (UpdateService.UpdateService):
 	def __init__(self):

@@ -1,13 +1,14 @@
-import codeforces as cf
-import database as db
-import standings
-import util
-from util import logger
-import UpdateService
-import Chat
 import random
 import time
 from collections import defaultdict
+
+from codeforces import codeforces as cf
+from utils import database as db
+from codeforces import standings
+from utils import util
+from utils.util import logger
+from services import UpdateService
+from telegram import Chat
 
 class SummarizingService (UpdateService.UpdateService):
 	def __init__(self):
@@ -85,11 +86,11 @@ class SummarizingService (UpdateService.UpdateService):
 		# took part and was rated
 		if myRC < 0:
 			msg += "Ohh that hurts.😑 You lost *%s* rating points." % myRC
-			if myRC < -70:
+			if myRC < -60:
 				msg += " " + funnyInsults[random.randint(0,len(funnyInsults)-1)]
 		else:
 			msg += "🎉 Nice! You gained *+%s* rating points.🎉" % myRC
-			if myRC > 70:
+			if myRC > 60:
 				msg += " " + funnyCompliments[random.randint(0, len(funnyCompliments)-1)]
 		msg += "\n"
 

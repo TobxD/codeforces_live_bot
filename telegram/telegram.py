@@ -1,13 +1,13 @@
 import requests
-import database as db
-import bot
-import UpdateService
-import settings
-import Chat
-import standings
 from collections import defaultdict
-from util import logger
-from Spooler import Spooler
+
+from utils import database as db
+from utils.util import logger
+from commands import bot, settings
+from services import UpdateService
+from telegram import Chat
+from codeforces import standings
+from utils.Spooler import Spooler
 
 requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 testFlag = False

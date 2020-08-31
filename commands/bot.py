@@ -1,19 +1,16 @@
-import database as db
-import telegram as tg
-import codeforces as cf
-import util
-from util import logger
-import AnalyseStandingsService
-import UpcomingService
-import SummarizingService
-import standings
-import upcoming
-import settings
-import Chat
-
 import queue, time, random, re
 from collections import defaultdict
 import threading
+
+from utils import database as db
+from telegram import telegram as tg
+from codeforces import codeforces as cf
+from utils import util
+from utils.util import logger
+from services import AnalyseStandingsService, UpcomingService, SummarizingService
+from codeforces import standings, upcoming
+from commands import settings
+from telegram import Chat
 
 # chatId -> function
 openCommandFunc = {}

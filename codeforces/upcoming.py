@@ -1,7 +1,7 @@
-import bot
-import util
 import time, datetime
-import codeforces as cf
+from commands import bot
+from utils import util
+from codeforces import codeforces as cf
 
 def getDescription(contest, chat, timez = None):
 	if timez is None:
