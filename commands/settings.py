@@ -6,7 +6,7 @@ from utils import util
 from utils.util import logger
 from commands import bot
 from telegram import Chat
-from commands import setup, notification_settings as notify_settings, chat_settings
+from commands import setup, notification_settings as notify_settings, chat_settings, widthSelector
 
 def handleSettings(chat, req):
 	bot.setOpenCommandFunc(chat.chatId, None)
@@ -40,7 +40,8 @@ def handleCallbackQuery(callback):
 		"settings": handleSettingsCallback,
 		"setup": setup.handleSetupCallback,
 		"chat": chat_settings.handleChatCallback,
-		"friend_notf": notify_settings.handleFriendNotSettingsCallback
+		"friend_notf": notify_settings.handleFriendNotSettingsCallback,
+		"width": widthSelector.handleWidthChange,
 	}
 	if pref not in funs:
 		logger.critical("Invalid callback prefix: "+ pref + ", data: "+ suff)

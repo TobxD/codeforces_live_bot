@@ -1,9 +1,14 @@
+from __future__ import annotations
 import requests, threading, time
 from collections import defaultdict
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from telegram.Chat import Chat
 
 from commands import bot
 from codeforces import codeforces as cf
 from telegram import telegram as tg
+from telegram import Chat
 from utils import util
 from utils.Table import Table
 from utils.util import logger
@@ -43,7 +48,7 @@ def getRatingChanges(contestId):
 		return handleToRatingChanges[contestId]
 
 # if !sendIfEmpty and standings are empty then False is returned
-def getFriendStandings(chat, contestId, sendIfEmpty=True):
+def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 	friends = cf.getFriends(chat)
 	if len(friends) == 0:
 		if sendIfEmpty:
@@ -116,10 +121,10 @@ def getFriendStandings(chat, contestId, sendIfEmpty=True):
 	if not sendIfEmpty and len(res) == 0:
 		return False
 	table = Table(problems, res)
-	msg += table.formatTable()
+	msg += table.formatTable(chat.width)
 	return msg
 
-def sendContestStandings(chat, contestId, sendIfEmpty=True):
+def sendContestStandings(chat:Chat, contestId, sendIfEmpty=True):
 	global standingsSent
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
 	if msg is False: # CF is down or (standings are emtpy and !sendIfEmpty)
@@ -130,7 +135,7 @@ def sendContestStandings(chat, contestId, sendIfEmpty=True):
 				standingsSent[chat.chatId][contestId] = (id, msg)
 	chat.sendMessage(msg, callback=callbackFun)
 
-def sendStandings(chat, msg):
+def sendStandings(chat:Chat, msg):
 	bot.setOpenCommandFunc(chat.chatId, None)
 	contestIds = cf.getCurrentContestsId()
 	if len(contestIds) > 0:
@@ -140,7 +145,7 @@ def sendStandings(chat, msg):
 		chat.sendMessage("No contests in the last two days 🤷🏻")
 
 # updates only, if message exists and the standings-message has changed
-def updateStandingsForChat(contest, chat):
+def updateStandingsForChat(contest, chat:Chat):
 	with standingsSentLock:
 		if contest not in standingsSent[chat.chatId]:
 			return

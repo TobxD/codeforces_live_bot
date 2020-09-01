@@ -34,21 +34,35 @@ def insertDB(query, params):
 
 # returns (apikey, secret, timezone, handle) or None, if no such user exists
 def queryChatInfos(chatId):
-	query = "SELECT apikey, secret, timezone, handle FROM tokens WHERE chatId = %s"
+	query = ("SELECT apikey, secret, timezone, handle, new_friends_list, "
+			"new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d, "
+			"settings_msgid FROM tokens WHERE chatId = %s")
 	res = queryDB(query, (chatId,))
 	if len(res) == 0:
 		return None
 	else:
-		return (res[0][0], res[0][1], res[0][2], res[0][3])
+		return res[0]
 
-def updateChatInfos(chatId, apikey, secret, timezone, handle):
+def updateChatInfos(chatId, apikey, secret, timezone, handle, new_friends_list,
+		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
+		 settings_msgid):
 	query = ("INSERT INTO "
-							"tokens (chatId, apikey, secret, timezone, handle) "
+							"tokens (chatId, apikey, secret, timezone, handle, new_friends_list, "
+								"new_friends_notify, polite, reply, width, reminder2h, "
+								"reminder1d, reminder3d, settings_msgid) "
 					"VALUES "
-							"(%s, %s, %s, %s, %s) "
+							"(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
 					"ON DUPLICATE KEY UPDATE "
-							"apikey = %s , secret = %s , timezone = %s , handle = %s")
-	insertDB(query, (chatId, apikey, secret, timezone, handle, apikey, secret, timezone, handle))
+							"apikey = %s , secret = %s , timezone = %s , handle = %s , "
+							"new_friends_list = %s , new_friends_notify = %s , polite = %s , "
+							"reply = %s , width = %s , reminder2h = %s , reminder1d = %s , "
+							"reminder3d = %s , settings_msgid = %s")
+	insertDB(query, (chatId, apikey, secret, timezone, handle, new_friends_list,
+		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
+		 settings_msgid,
+		 apikey, secret, timezone, handle, new_friends_list,
+		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
+		 settings_msgid))
 
 def getChatIds(handle):
 	query = "SELECT chatId from tokens WHERE handle = %s"
@@ -94,7 +108,7 @@ def addFriends(chatId, friends):
 	insertDB(query, tuple(params))
 
 def getFriends(chatId, selectorColumn = "True"):
-	query = "SELECT friend, ratingWatch, contestWatch FROM friends WHERE chatId = %s AND " + selectorColumn + "=True"
+	query = "SELECT friend, showInList, notify FROM friends WHERE chatId = %s AND " + selectorColumn + "=True"
 	res = queryDB(query, (chatId,))
 	return res
 
@@ -105,9 +119,9 @@ def getAllFriends():
 
 def getWhoseFriends(handle, allList = False):
 	if allList:
-		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND (ratingWatch=True OR contestWatch=True)"
+		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND (showInList=True OR notify=True)"
 	else:
-		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND contestWatch=True"
+		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND notify=True"
 	res = queryDB(query, (handle,))
 	return [row[0] for row in res]
 
@@ -121,7 +135,7 @@ def getAllChatPartners():
 
 def toggleFriendSettings(chatId, friend, column):
 	with friendsNotfLock:
-		query = f"SELECT {column} contestWatch FROM friends WHERE chatId = %s AND friend = %s"
+		query = f"SELECT {column} FROM friends WHERE chatId = %s AND friend = %s"
 		gesetzt = str(queryDB(query, (chatId, friend))[0][0]) == '1'
 		newVal = not gesetzt
 		query = f"UPDATE friends SET {column}= %s WHERE chatId = %s AND friend = %s"

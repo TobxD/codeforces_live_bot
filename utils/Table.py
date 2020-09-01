@@ -3,37 +3,9 @@ class Table:
 		self._header = header
 		self._rows = rows
 
-	def formatTable(self):
-		if len(self._header) <= 6:
-			return self.formatTableWide()
-		else:
-			return self.formatTableNarrow()
-
-	def formatTableWide(self):
+	def formatTable(self, maxColCount): # multiple rows
 		colW = 4
-		totalW = len(self._header)*(colW+1)+1
-		msg = "```\n"
-		msg += self._getDividerHead(colW, totalW)
-		for h in self._header:
-			msg += "┃" + h.center(colW)
-		msg += "┃\n"
-
-		for row in self._rows:
-			msg += self._getDividerHalfBottom(colW, totalW)
-			msg += "┃" + row["head"].center(totalW-2) + "┃\n"
-			if "head2" in row:
-				msg += "┃" + row["head2"].center(totalW-2) + "┃\n"
-			for v in row["body"]:
-				msg += "┃" + str(v).center(colW)
-			msg += "┃\n"
-
-		msg += self._getDividerBottom(colW, totalW)
-		msg += "```"
-		return msg.replace("┃","|")
-
-	def formatTableNarrow(self): # 2 self._rows per row
-		colW = 4
-		colC = min(len(self._header), 6)
+		colC = min(len(self._header), maxColCount)
 		rowC = (len(self._header)+colC-1)//colC
 		totalW = colC*(colW+1)+1
 		msg = "```\n"

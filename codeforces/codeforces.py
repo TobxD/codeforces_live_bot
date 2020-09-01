@@ -130,7 +130,7 @@ def getFriendsWithDetails(chat):
 
 def getFriends(chat):
 	friends = getFriendsWithDetails(chat)
-	return [f[0] for f in friends if f[1] == 1] # only output if ratingWatch is enabled
+	return [f[0] for f in friends if f[1] == 1] # only output if showInList is enabled
 
 def mergeStandings(rowDict, newSt, oldSt):
 	if newSt:
