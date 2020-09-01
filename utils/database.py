@@ -142,3 +142,23 @@ def toggleFriendSettings(chatId, friend, column):
 		insertDB(query, (newVal, chatId, friend))
 		return newVal
 
+# ---------- standingsSent --------------
+def getAllStandingsSentList():
+	query = "SELECT * FROM standingsSent"
+	return queryDB(query, ())
+
+def saveStandingsSent(chatId, contestId, msgid):
+	query = (
+		"INSERT INTO standingsSent (chatId, contestId, msgid_standings)"
+		"VALUES (%s, %s, %s)"
+		"ON DUPLICATE KEY UPDATE msgid_standings = %s"
+	)
+	insertDB(query, (chatId, contestId, msgid, msgid))
+
+def saveReminderSent(chatId, contestId, msgid):
+	query = (
+		"INSERT INTO standingsSent (chatId, contestId, msgid_reminder)"
+		"VALUES (%s, %s, %s)"
+		"ON DUPLICATE KEY UPDATE msgid_reminder = %s"
+	)
+	insertDB(query, (chatId, contestId, msgid, msgid))
