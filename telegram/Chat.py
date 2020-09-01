@@ -205,3 +205,9 @@ class Chat:
 			print('\n----- message edited to: ---------\n' + msg + "\n--------- End Message ----------\n")
 		else:
 			tg.editMessageText(self.chatId, msgId, msg, reply_markup)
+
+	def deleteMessage(self, msgId):
+		if self.chatId == '0':
+			print('\n----- message deleted:' + msgId + '---------\n')
+		else:
+			tg.deleteMessage(self.chatId, msgId)

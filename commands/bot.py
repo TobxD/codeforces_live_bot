@@ -203,6 +203,7 @@ def handleMessage(chat, text):
 
 def initContestServices():
 	Chat.initChats()
+	standings.initDB()
 	services = [
 		cf.ContestListService(),
 		cf.FriendUpdateService(),

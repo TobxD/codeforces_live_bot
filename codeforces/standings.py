@@ -12,11 +12,10 @@ from telegram import Chat
 from utils import util
 from utils.Table import Table
 from utils.util import logger
-
-# ------ Current Standings	-------
+from utils import database as db
 
 standingsSentLock = threading.Lock()
-standingsSent = defaultdict(lambda : defaultdict()) # [chatId][contest] = (msgId, msg)
+standingsSent = defaultdict(lambda : defaultdict(lambda : None)) # [chatId][contest] = (msgId, msg)
 
 cfPredictorLock = threading.Lock()
 handleToRatingChanges = defaultdict(lambda : {})
@@ -125,14 +124,15 @@ def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 	return msg
 
 def sendContestStandings(chat:Chat, contestId, sendIfEmpty=True):
-	global standingsSent
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
 	if msg is False: # CF is down or (standings are emtpy and !sendIfEmpty)
 		return
 	def callbackFun(id):
 		if id != False:
 			with standingsSentLock:
-				standingsSent[chat.chatId][contestId] = (id, msg)
+				if standingsSent[chat.chatId][contestId]:
+					chat.deleteMessage(standingsSent[chat.chatId][contestId][0])
+				updateStandingsSent(chat.chatId, contestId, id, msg)
 	chat.sendMessage(msg, callback=callbackFun)
 
 def sendStandings(chat:Chat, msg):
@@ -159,7 +159,17 @@ def updateStandingsForChat(contest, chat:Chat):
 			return
 		msgId, oldMsg = standingsSent[chat.chatId][contest]
 		if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
-			standingsSent[chat.chatId][contest] = (msgId, msg)
+			updateStandingsSent(chat.chatId, contest, msgId, msg)
 			edit = True
 	if edit:
 		chat.editMessageText(msgId, msg)
+
+def initDB():
+	data = db.getAllStandingsSentList()
+	with standingsSentLock:
+		for (chatId, contestId, msgId, msgIdNotf) in data:
+			standingsSent[chatId][contestId] = (msgId, "")
+
+def updateStandingsSent(chatId, contestId, msgId, msg):
+	standingsSent[chatId][contestId] = (msgId, msg)
+	db.saveStandingsSent(chatId, contestId, msgId)

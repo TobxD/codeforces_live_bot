@@ -114,6 +114,15 @@ def editMessageText(chatId, msgId, msg, reply_markup):
 	url = requestUrl + 'editMessageText'
 	requestSpooler.put(chatId, url, data=params)
 
+def deleteMessage(chatId, msgId):
+	logger.debug(f"deleting msg {msgId} for chat {chatId}")
+	params = {
+		'chat_id':str(chatId),
+		'message_id':msgId,
+	}
+	url = requestUrl + 'deleteMessage'
+	requestSpooler.put(chatId, url, data=params)
+
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 0.2)
