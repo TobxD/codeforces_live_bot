@@ -94,8 +94,8 @@ class Chat:
 		else:
 			tg.editMessageReplyMarkup(self.chatId, msgId, reply_markup)
 
-	def editMessageText(self, msgId, msg):
+	def editMessageText(self, msgId, msg, reply_markup = None):
 		if self.chatId == '0':
 			print('\n----- message edited to: ---------\n' + msg + "\n--------- End Message ----------\n")
 		else:
-			tg.editMessageText(self.chatId, msgId, msg)
+			tg.editMessageText(self.chatId, msgId, msg, reply_markup)

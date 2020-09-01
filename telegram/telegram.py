@@ -101,14 +101,15 @@ def editMessageReplyMarkup(chatId, msgId, reply_markup):
 	}
 	requestSpooler.put(chatId, requestUrl + 'editMessageReplyMarkup', data=params)
 
-def editMessageText(chatId, msgId, msg):
+def editMessageText(chatId, msgId, msg, reply_markup):
 	msg = shortenMessage(msg)
 	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + msg + "\n\n") # TODO test
 	params = {
 		'parse_mode':'Markdown',
 		'chat_id':str(chatId),
 		'message_id':str(msgId),
-		'text':msg
+		'text':msg,
+		'reply_markup': reply_markup
 	}
 	url = requestUrl + 'editMessageText'
 	requestSpooler.put(chatId, url, data=params)
