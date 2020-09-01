@@ -33,8 +33,7 @@ def sendFriendSettingsButtons(chat, callback):
 def updateButtons(chat, msgId):
 	buttons = getButtonRows(chat)
 	replyMarkup = settings.getReplyMarkup(buttons)
-	chat.editMessageText(msgId, "", replyMarkup)
-
+	chat.editMessageText(msgId, "Change your notification/listing settings here", replyMarkup)
 
 #called with: funs[pref](chat, suff, callback)
 def handleFriendNotSettingsCallback(chat, data, callback):
