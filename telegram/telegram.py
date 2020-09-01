@@ -116,7 +116,7 @@ def editMessageText(chatId, msgId, msg, reply_markup):
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
-		UpdateService.UpdateService.__init__(self, 1)
+		UpdateService.UpdateService.__init__(self, 0.2)
 		self.name = "telegramService"
 		self._lastUpdateID = -1
 
