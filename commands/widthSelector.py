@@ -40,7 +40,7 @@ def handleWidthChange(chat:Chat, data, callback):
 		logger.critical("unrecognized data at handle width: " + str(data))
 
 	if warningText:
-		tg.sendAnswerCallback(chat.chatId, callback['id'], warningText)
+		return warningText
 	else:
 		text, buttons = getMsg(chat.width)
 		chat.editMessageText(callback["message"]["message_id"], text,

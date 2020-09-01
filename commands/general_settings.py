@@ -23,7 +23,7 @@ def handleSetupCallback(chat, data, callback):
 		if data not in funs:
 			logger.critical("wrong setup data: " + str(data))
 		else:
-			funs[data](chat)
+			return funs[data](chat)
 
 def showSetupPage(chat, data, callback):
 	buttons = [

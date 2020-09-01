@@ -26,13 +26,14 @@ def getChatSettingsButtons(chat):
 	return buttons
 
 def handleChatCallback(chat, data, callback):
+	answerText = None
 	with chatsLock:
 		if data == "polite":
 			chat.polite = not chat.polite
 			if chat.polite:
-				tg.sendAnswerCallback(chat.chatId, callback['id'], "👿 This is what I call weakness…")
+				answerText = "👿 This is what I call weakness…"
 			else:
-				tg.sendAnswerCallback(chat.chatId, callback['id'], "😈 Welcome back to the dark side.")
+				answerText = "😈 Welcome back to the dark side."
 		elif data == "reply":
 			chat.reply = not chat.reply
 		elif data == "reminder2h":
@@ -47,3 +48,4 @@ def handleChatCallback(chat, data, callback):
 		buttons = getChatSettingsButtons(chat)
 	replyMarkup = settings.getReplyMarkup(buttons)
 	chat.editMessageText(callback['message']['message_id'], "Change the behavior of the bot:", replyMarkup)
+	return answerText

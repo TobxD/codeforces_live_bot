@@ -46,5 +46,5 @@ def handleFriendNotSettingsCallback(chat, data, callback):
 			notf = ("✅" if gesetzt else "❌") + " You will" + ("" if gesetzt else " no longer") + " see "+ handle +" on your list."
 		else:
 			notf = ("🔔" if gesetzt else "🔕") + "You will" + ("" if gesetzt else " no longer") + " receive notifications for "+ handle +"."
-		tg.sendAnswerCallback(chat.chatId, callback['id'], notf)
 		updateButtons(chat, callback['message']['message_id'])
+		return notf

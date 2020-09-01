@@ -46,8 +46,8 @@ def handleCallbackQuery(callback):
 	if pref not in funs:
 		logger.critical("Invalid callback prefix: "+ pref + ", data: "+ suff)
 	else:
-		funs[pref](chat, suff, callback)
-		tg.sendAnswerCallback(chat.chatId, callback['id'])
+		retMsg = funs[pref](chat, suff, callback)
+		tg.sendAnswerCallback(chat.chatId, callback['id'], retMsg)
 
 def handleSettingsCallback(chat, data, callback):
 	if data != "":
