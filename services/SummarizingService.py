@@ -56,8 +56,8 @@ class SummarizingService (UpdateService.UpdateService):
 		 (maxHandle, maxRC, maxOldR),
 		 (myRC, myOldR, nowBetter, nowWorse)) = self._getWinnerLooser(chat, contest['id'])
 		if myRC is not None:
-			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse)
-		if minRC <= -30:
+			msg += self._getYourPerformance(myRC, myOldR, nowBetter, nowWorse, chat)
+		if minRC <= -30 and not chat.polite:
 			msg += "📉 The looser of the day is %s with a rating loss of %s!\n" % (util.formatHandle(minHandle, minRC+minOldR), minRC)
 		elif minRC > 0:
 			msg += "What a great contest!🎉\n"
@@ -69,7 +69,7 @@ class SummarizingService (UpdateService.UpdateService):
 
 		return msg
 
-	def _getYourPerformance(self, myRC, myOldR, nowBetter, nowWorse):
+	def _getYourPerformance(self, myRC, myOldR, nowBetter, nowWorse, chat):
 		funnyInsults = ["Maybe you should look for a different hobby.💁🏻‍♂️👋🏻",
 										"Have you thought about actually solving the tasks next time?🤨",
 										"Are you trying to get your rating below 0?🧐",
@@ -80,6 +80,9 @@ class SummarizingService (UpdateService.UpdateService):
 		funnyCompliments = ["Now you have more rating to loose in the next contest.😬",
 												"`tourist` would be proud of you.☺️",
 												str((2999-myOldR)//(myRC if myRC != 0 else 1)) + " more contest and you are a 👑Legendary Grandmaster."]
+		if chat.polite:
+			funnyInsults = ["No worries, you will likely increase your rating next time :)"]
+			funnyCompliments = funnyCompliments[1:]
 		msg = ""
 		if myOldR == -1: 
 			return ""
@@ -123,7 +126,7 @@ class SummarizingService (UpdateService.UpdateService):
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
 				ratingC = newR-oldR
-				if ratingC < minRC and int(chat.chatId) != -1001417835798: # not IOI group
+				if ratingC < minRC:
 					minRC, minOldR, minHandle = ratingC, oldR, handlename
 				if ratingC > maxRC:
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename

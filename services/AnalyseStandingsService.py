@@ -44,9 +44,14 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				Chat.getChat(chatId).sendMessage(msg)
 		else:
 			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
+			neutralMsg = "%s failed on system tests for task %s."
 			msg = insult % (util.formatHandle(handle), task)
 			for chatId in db.getWhoseFriends(handle): # to all users with this friend
-				Chat.getChat(chatId).sendMessage(msg)
+				chat = Chat.getChat(chatId)
+				if chat.polite:
+					chat.sendMessage(neutralMsg)
+				else:
+					chat.sendMessage(insult)
 
 	def _updateStandings(self, contest, chatIds : List[str]):
 		for chatId in chatIds:

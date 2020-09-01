@@ -136,46 +136,51 @@ def handleHelp(chat, text):
 def invalidCommand(chat, msg):
 	emoji = ["😅", "😬", "😑", "😠", "😡", "🤬"]
 	c = invalidCommandCount(chat.chatId)
-	chat.sendMessage("Invalid command!" + emoji[min(len(emoji)-1, c)])
+	chat.sendMessage("Invalid command!" + ("" if chat.polite else emoji[min(len(emoji)-1, c)]))
 
-def noCommand(chat, msg):
+def randomMessage(chat, msg):
 	provocations = [
 		"Better watch your mouth☝🏻",
 		"What are you talking?",
 		"Stop it! \nTomorrow 12:00\n*1 on 1 on Codeforces*\nwithout cheatsheet!\nIf you dare…",
 		"Watch out!"
 	]
-	if chat.chatId in openCommandFunc:
-		openCommandFunc[chat.chatId](chat, msg)
-	elif msg.startswith("/"):
-		invalidCommand(chat, msg)
-	elif re.match(r'.*\bbot\b', msg.lower()): # msg contains the word 'bot'
+	funnyComments = [
+		"Ok.",
+		"I will consider that next time",
+		"Good point!",
+		"Haha lol😂",
+		"🤔",
+		"🤨",
+		"WTF",
+		"No, are you stupid?",
+		"No way!",
+		"I didn't get that, can you please repeat it?",
+		"Sure.",
+		"Why not",
+		"Are you sure?",
+		"No! Don't leave me!😢 The insults after the last contest were just a joke. " +
+			"I didn't mean to hurt you. Pleeeaasee stay! " +
+			"I was always kind to you, provided you with the latest contest results and even had a uptime > 0! " +
+			"Forgive me, please!\n" +
+			"Ok, apparently you have blocked me now, so I'm gonna delete all your data...\n\n" +
+			"EDIT: sry, wrong chat"
+	] + provocations
+
+	if re.match(r'.*\bbot\b', msg.lower()): # msg contains the word 'bot'
 		if random.randint(0,1) == 0:
 			chat.sendMessage(provocations[random.randint(0,len(provocations)-1)])
 	elif random.randint(0,6) == 0: #random comment
-		funnyComments = [
-			"Ok.",
-			"I will consider that next time",
-			"Good point!",
-			"Haha lol😂",
-			"🤔",
-			"🤨",
-			"WTF",
-			"No, are you stupid?",
-			"No way!",
-			"I didn't get that, can you please repeat it?",
-			"Sure.",
-			"Why not",
-			"Are you sure?",
-			"No! Don't leave me!😢 The insults after the last contest were just a joke. " +
-				"I didn't mean to hurt you. Pleeeaasee stay! " +
-				"I was always kind to you, provided you with the latest contest results and even had a uptime > 0! " +
-				"Forgive me, please!\n" +
-				"Ok, apparently you have blocked me now, so I'm gonna delete all your data...\n\n" +
-				"EDIT: sry, wrong chat"
-		] + provocations
-
 		chat.sendMessage(funnyComments[random.randint(0,len(funnyComments)-1)])
+
+def noCommand(chat, msg):
+	if chat.chatId in openCommandFunc:
+		openCommandFunc[chat.chatId](chat, msg)
+	elif chat.reply:
+		if msg.startswith("/"):
+			invalidCommand(chat, msg)
+		elif not chat.polite:
+			randomMessage(chat, msg)
 
 #-----
 def handleMessage(chat, text):

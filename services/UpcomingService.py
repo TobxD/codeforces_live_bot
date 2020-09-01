@@ -10,7 +10,7 @@ class UpcomingService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 30)
 		self._notified = {}
-		self._notifyTimes = [3600*24+59, 3600*2+59, -100000000]
+		self._notifyTimes = [3600*24*3+59, 3600*24+59, 3600*2+59, -100000000]
 		self._doTask(True) #initializes notified
 
 	def _doTask(self, quiet=False):
@@ -24,7 +24,14 @@ class UpcomingService (UpdateService.UpdateService):
 				if timeLeft <= self._notifyTimes[self._notified[c['id']]]:
 					self._notified[c['id']] += 1
 					if not quiet:
-						self._notifyAllUpcoming(c)
+						shouldNotifyFun = lambda chat: False
+						if i==0:
+							shouldNotifyFun = lambda chat: chat.reminder3d
+						elif i==1:
+							shouldNotifyFun = lambda chat: chat.reminder1d
+						elif i==2:
+							shouldNotifyFun = lambda chat: chat.reminder2h
+						self._notifyAllUpcoming(c, shouldNotifyFun)
 
 	def _notifyAllNewContestAdded(self, contest):
 		for chatId in db.getAllChatPartners():
@@ -33,10 +40,9 @@ class UpcomingService (UpdateService.UpdateService):
 			description += upcoming.getDescription(contest, chat)
 			chat.sendMessage(description)
 
-	def _notifyAllUpcoming(self, contest):
+	def _notifyAllUpcoming(self, contest, shouldNotifyFun):
 		for chatId in db.getAllChatPartners():
 			chat = Chat.getChat(chatId)
-			if not (self._notified[contest['id']] > 1 
-				 and int(chatId) == -1001417835798):
+			if shouldNotifyFun(chat):
 				description = upcoming.getDescription(contest, chat)
 				chat.sendMessage(description)
