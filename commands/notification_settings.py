@@ -22,7 +22,7 @@ def getButtonRows(chat):
 	buttons = []
 	for [handle, showInList, notify] in friends:
 		buttons.append(getButtons(handle, showInList == 1, notify == 1))
-	buttons.append([{"text":"<< back to general settings", "callback_data":"settings:"}])
+	buttons.append([{"text":"👈 Back to the Overview", "callback_data":"settings:"}])
 	return buttons
 
 def sendFriendSettingsButtons(chat, callback):

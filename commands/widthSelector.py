@@ -19,7 +19,7 @@ def handleWidthChange(chat:Chat, data, callback):
 		text += table.formatTable(chat.width)
 		buttons = [
 			[{"text": "-", "callback_data": "width:-"}, {"text": "+", "callback_data": "width:+"}],
-			[{"text":"👈 Back to General Settings", "callback_data":"settings:"}],
+			[{"text":"👈 Back to General Settings", "callback_data":"general:"}],
 		]
 		return text, buttons
 

@@ -2,32 +2,26 @@ import queue, time, random, re
 from collections import defaultdict
 import threading
 
-from utils import database as db
-from telegram import telegram as tg
-from codeforces import codeforces as cf
-from utils import util
 from utils.util import logger
-from services import AnalyseStandingsService, UpcomingService, SummarizingService
-from codeforces import standings, upcoming
 from commands import settings
-from telegram import Chat
+from telegram import telegram as tg
 
 chatsLock = threading.Lock()
 
 def getChatSettingsButtons(chat):
 	politeText = ("Polite 😇" if chat.polite else "Rude 😈")
 	replyText = ("R" if chat.reply else "Not r") + "eceiving funny replies" + ("✅" if chat.reply else "❌")
-	reminder2hText = "Reminder 2h before contest " + ("active 🔔" if chat.reminder2h else " not active 🔕")
-	reminder1dText = "Reminder 1d before contest " + ("active 🔔" if chat.reminder1d else " not active 🔕")
-	reminder3dText = "Reminder 3d before contest " + ("active 🔔" if chat.reminder3d else " not active 🔕")
+	reminder2hText = "Reminder 2h before contest: " + ("active 🔔" if chat.reminder2h else "not active 🔕")
+	reminder1dText = "Reminder 1d before contest: " + ("active 🔔" if chat.reminder1d else "not active 🔕")
+	reminder3dText = "Reminder 3d before contest: " + ("active 🔔" if chat.reminder3d else "not active 🔕")
 
 	buttons = [
-		[{"text": politeText,		"callback_data": "chat:polite"}],
-		[{"text": replyText,		"callback_data": "chat:reply"}],
-		[{"text": reminder2hText,		"callback_data": "chat:reminder2h"}],
-		[{"text": reminder1dText,	"callback_data": "chat:reminder1d"}],
-		[{"text": reminder3dText,	"callback_data": "chat:reminder3d"}],
-		[{"text": "👈 back to settings overview",	"callback_data": "settings:"}]
+		[{"text": politeText,			"callback_data": "behavior:polite"}],
+		[{"text": replyText,			"callback_data": "behavior:reply"}],
+		[{"text": reminder2hText,	"callback_data": "behavior:reminder2h"}],
+		[{"text": reminder1dText,	"callback_data": "behavior:reminder1d"}],
+		[{"text": reminder3dText,	"callback_data": "behavior:reminder3d"}],
+		[{"text": "👈 Back to the Overview",	"callback_data": "settings:"}]
 	]
 	return buttons
 
@@ -35,6 +29,10 @@ def handleChatCallback(chat, data, callback):
 	with chatsLock:
 		if data == "polite":
 			chat.polite = not chat.polite
+			if chat.polite:
+				tg.sendAnswerCallback(chat.chatId, callback['id'], "👿 This is what I call weakness…")
+			else:
+				tg.sendAnswerCallback(chat.chatId, callback['id'], "😈 Welcome back to the dark side.")
 		elif data == "reply":
 			chat.reply = not chat.reply
 		elif data == "reminder2h":

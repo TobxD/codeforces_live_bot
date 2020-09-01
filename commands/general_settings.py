@@ -27,14 +27,14 @@ def handleSetupCallback(chat, data, callback):
 
 def showSetupPage(chat, data, callback):
 	buttons = [
-		[{"text": "Set timezone",								"callback_data": "setup:timezone"}],
-		[{"text": "Set your handle",						"callback_data": "setup:handle"}],
-		[{"text": "Set your api key",						"callback_data": "setup:apikey"}],
+		[{"text": "Set timezone",								"callback_data": "general:timezone"}],
+		[{"text": "Set your handle",						"callback_data": "general:handle"}],
+		[{"text": "Set your api key",						"callback_data": "general:apikey"}],
 		[{"text": "Set displayed table width",	"callback_data": "width:"}],
-		[{"text": "<< back to settings overview",	"callback_data": "settings:"}]
+		[{"text": "👈 Back to the Overview",		"callback_data": "settings:"}]
 	]
 	replyMarkup = settings.getReplyMarkup(buttons)
-	chat.editMessageText(callback['message']['message_id'], "Setup:", replyMarkup)
+	chat.editMessageText(callback['message']['message_id'], "General settings:", replyMarkup)
 
 # ---- Set User Handle ------
 def handleSetUserHandlePrompt(chat, msg=None):

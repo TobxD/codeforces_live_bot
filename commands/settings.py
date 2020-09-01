@@ -6,7 +6,7 @@ from utils import util
 from utils.util import logger
 from commands import bot
 from telegram import Chat
-from commands import setup, notification_settings as notify_settings, chat_settings, widthSelector
+from commands import general_settings, notification_settings as notify_settings, behavior_settings, widthSelector
 
 def handleSettings(chat, req):
 	bot.setOpenCommandFunc(chat.chatId, None)
@@ -21,9 +21,9 @@ def getReplyMarkup(inlineKeyboard):
 
 def getSettingsButtons():
 	buttons = [
-		[{"text": "Setup",																	"callback_data": "setup:"}],
-		[{"text": "Chat Settings",													"callback_data": "chat:"}],
-		[{"text": "Friend Notification settings",						"callback_data": "friend_notf:"}],
+		[{"text": "General Settings",							"callback_data": "general:"}],
+		[{"text": "Behavior Settings",						"callback_data": "behavior:"}],
+		[{"text": "Friend Notification Settings",	"callback_data": "friend_notf:"}],
 	]
 	return buttons
 
@@ -38,8 +38,8 @@ def handleCallbackQuery(callback):
 	pref, suff = data.split(":", 1)
 	funs = {
 		"settings": handleSettingsCallback,
-		"setup": setup.handleSetupCallback,
-		"chat": chat_settings.handleChatCallback,
+		"general": general_settings.handleSetupCallback,
+		"behavior": behavior_settings.handleChatCallback,
 		"friend_notf": notify_settings.handleFriendNotSettingsCallback,
 		"width": widthSelector.handleWidthChange,
 	}
@@ -51,6 +51,6 @@ def handleCallbackQuery(callback):
 
 def handleSettingsCallback(chat, data, callback):
 	if data != "":
-		logger.critical("Invalid callback prefix: "+ pref + ", data: "+ data)
+		logger.critical("Invalid callback settings data: " + data)
 	else:
 		chat.editMessageText(callback['message']['message_id'], "What do you want to change?", getReplyMarkup(getSettingsButtons()))
