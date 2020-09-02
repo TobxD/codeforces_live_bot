@@ -12,14 +12,14 @@ from utils.Spooler import Spooler
 requestUrl = [line.rstrip('\n') for line in open('.telegram_api_url')][0]
 testFlag = False
 
-def requestPost(chatId, url, timeout=30, **kwargs):
-	errorTxt = 'chatId: ' + str(kwargs['data'].get('chat_id')) + ' text:\n' + str(kwargs['data'].get('text'))
+def requestPost(chatId, url, data, timeout=30):
+	errorTxt = 'chatId: ' + str(data.get('chat_id')) + ' text:\n' + str(data.get('text'))
 	if testFlag:
 		logger.info("telegram object that would have been sent: " + errorTxt)
 		r = {'ok':True, 'result':{'message_id':1}}
 		return r
 	try:
-		r = requests.post(url, timeout=timeout, **kwargs)
+		r = requests.post(url, timeout=timeout, data=data)
 		r = r.json()
 		if r['ok']:
 			return r
@@ -35,7 +35,7 @@ def requestPost(chatId, url, timeout=30, **kwargs):
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
 		return False
 
-requestSpooler = Spooler(requestPost, 19, "telegram", 2)
+requestSpooler = Spooler(19, "telegram", 2)
 
 
 #returns whether error could be handled
@@ -77,7 +77,7 @@ def sendAnswerCallback(chatId, callback_query_id, text = ""):
 		'callback_query_id':callback_query_id,
 		'text':text
 	}
-	requestSpooler.put(chatId, requestUrl + 'answerCallbackQuery', data=params)
+	requestPost(chatId, requestUrl + 'answerCallbackQuery', params)
 
 def sendMessage(chatId, text, reply_markup = None, callback=None):
 	text = shortenMessage(text)
@@ -88,18 +88,9 @@ def sendMessage(chatId, text, reply_markup = None, callback=None):
 		'text':text,
 		'reply_markup': reply_markup
 	}
-	returnF = None
+	res = requestPost(chatId, requestUrl + 'sendMessage', params)
 	if callback:
-		returnF = lambda r : callback(r['result']['message_id'] if r else False)
-	requestSpooler.put(chatId, requestUrl + 'sendMessage', data=params, callback=returnF)
-
-def editMessageReplyMarkup(chatId, msgId, reply_markup):
-	params = {
-		'chat_id':str(chatId),
-		'message_id': str(msgId),
-		'reply_markup': reply_markup
-	}
-	requestSpooler.put(chatId, requestUrl + 'editMessageReplyMarkup', data=params)
+		callback(res['result']['message_id'] if res else False)
 
 def editMessageText(chatId, msgId, msg, reply_markup):
 	msg = shortenMessage(msg)
@@ -112,7 +103,7 @@ def editMessageText(chatId, msgId, msg, reply_markup):
 		'reply_markup': reply_markup
 	}
 	url = requestUrl + 'editMessageText'
-	requestSpooler.put(chatId, url, data=params)
+	requestPost(chatId, url, params)
 
 def deleteMessage(chatId, msgId):
 	logger.debug(f"deleting msg {msgId} for chat {chatId}")
@@ -121,7 +112,7 @@ def deleteMessage(chatId, msgId):
 		'message_id':msgId,
 	}
 	url = requestUrl + 'deleteMessage'
-	requestSpooler.put(chatId, url, data=params)
+	requestPost(chatId, url, params)
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):

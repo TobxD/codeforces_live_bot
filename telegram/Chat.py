@@ -21,6 +21,8 @@ def initChats():
 class Chat:
 	def __init__(self, chatId:str):
 		self._chatId = chatId
+		self._notifications = []	# all upsolving etc. msgs to be grouped
+		self._notificationLock = threading.Lock()
 		infos = db.queryChatInfos(chatId)
 		if infos is None:
 			self._apikey = None
@@ -192,22 +194,29 @@ class Chat:
 			print('\n----- message sent: ------------\n' + text + "\n--------- End Message ----------\n")
 			return 0
 		else:
-			return tg.sendMessage(self.chatId, text, reply_markup, callback)
+			tg.requestSpooler.put(lambda : tg.sendMessage(self.chatId, text, reply_markup, callback))
 
-	def editMessageReplyMarkup(self, msgId, reply_markup):
-		if self.chatId == '0':
-			print('\n----- message edited to: ---------\n' + reply_markup + "\n--------- End Message ----------\n")
-		else:
-			tg.editMessageReplyMarkup(self.chatId, msgId, reply_markup)
+	# message which can be grouped
+	def sendNotifcation(self, text):
+		def sendGroupedNotifications():
+			with self._notificationLock:
+				msgText = "\n".join(self._notifications)
+				self._notifications = []
+			tg.sendMessage(self._chatId, msgText)
+
+		with self._notificationLock:
+			self._notifications.append(text)
+			if len(self._notifications) == 1: # add to spooler queue
+				tg.requestSpooler.put(sendGroupedNotifications)
 
 	def editMessageText(self, msgId, msg, reply_markup = None):
 		if self.chatId == '0':
 			print('\n----- message edited to: ---------\n' + msg + "\n--------- End Message ----------\n")
 		else:
-			tg.editMessageText(self.chatId, msgId, msg, reply_markup)
+			tg.requestSpooler.put(lambda : tg.editMessageText(self.chatId, msgId, msg, reply_markup))
 
 	def deleteMessage(self, msgId):
 		if self.chatId == '0':
 			print('\n----- message deleted:' + msgId + '---------\n')
 		else:
-			tg.deleteMessage(self.chatId, msgId)
+			tg.requestSpooler.put(lambda : tg.deleteMessage(self.chatId, msgId))
