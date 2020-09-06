@@ -56,7 +56,7 @@ def handleCallbackQuery(callback):
 		"settings": handleSettingsCallback,
 		"general": general_settings.handleSetupCallback,
 		"behavior": behavior_settings.handleChatCallback,
-		"friend_notf": notify_settings.handleFriendNotSettingsCallback,
+		"friend_notf": notify_settings.handleChatCallback,
 		"width": widthSelector.handleWidthChange,
 	}
 	if pref not in funs:

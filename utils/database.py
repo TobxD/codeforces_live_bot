@@ -142,6 +142,11 @@ def toggleFriendSettings(chatId, friend, column):
 		insertDB(query, (newVal, chatId, friend))
 		return newVal
 
+def toggleAllFriendSettings(chatId, isEnabled, column):
+	with friendsNotfLock:
+		query = f"UPDATE friends SET {column}= %s WHERE chatId = %s"
+		insertDB(query, (isEnabled, chatId))
+
 # ---------- standingsSent --------------
 def getAllStandingsSentList():
 	query = "SELECT * FROM standingsSent"

@@ -57,6 +57,9 @@ def handleRequestError(chatId, req):
 			standings.standingsSent[chatId] = defaultdict()
 		logger.error(f"deleted standingsSent for Chat {chatId}")
 		return True
+	elif errMsg.startswith("Bad request: message can't be deleted"):
+		logger.error(f"Message deletion failed for Chat {chatId}")
+		return True
 	else:
 		return False
 
