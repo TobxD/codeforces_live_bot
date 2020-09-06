@@ -203,11 +203,12 @@ def getStandings(contestId, handleList, forceRequest=False):
 
 
 def getContestStatus(contest):
-	if contest['startTimeSeconds'] >= time.time():
+	startT = contest.get('startTimeSeconds', -1)
+	if startT >= time.time():
 		return 'before'
-	elif contest['startTimeSeconds']+contest['durationSeconds'] >= time.time():
+	elif startT + contest['durationSeconds'] >= time.time():
 		return 'running'
-	elif contest['phase'] != 'FINISHED':
+	elif contest['phase'] != 'FINISHED' and startT + contest['durationSeconds'] >= time.time()-5*60*60:
 		return 'testing'
 	else:
 		return 'finished'
@@ -215,21 +216,27 @@ def getContestStatus(contest):
 def selectImportantContests(contestList):
 	global aktuelleContests
 	global currentContests
-	lastStart = 0
-	currentContests = []
-	aktuelleContests = []
-	for c in contestList:
-		status = getContestStatus(c)
-		if status != 'before':
-			lastStart = max(lastStart, c.get('startTimeSeconds', -1))
-	for c in contestList:
-		twoDaysOld = time.time()-(c.get('startTimeSeconds', -2)+c.get('durationSeconds', -2)) > 60*60*24*2
-		status = getContestStatus(c)
-		if not twoDaysOld:
-			aktuelleContests.append(c)
-		if status == 'running' or status == 'testing' or c.get('startTimeSeconds', -2) == lastStart or (not twoDaysOld and status != 'before'):
-			currentContests.append(c)
-	currentContests = list(reversed(currentContests))
+
+	def contestInfos(contest):
+		endT = contest.get('startTimeSeconds', -1) + contest['durationSeconds']
+		status = getContestStatus(contest)
+		return {'contest':contest, 'duration':contest['durationSeconds'], 'endT':endT, 'status':status}
+
+	contestList = list(map(contestInfos, contestList))
+	futureContests = list(filter(lambda c: c['status'] == 'before', contestList))
+	contestList = list(filter(lambda c: c['status']!='before', contestList))
+	activeShort = list(filter((lambda c: (c['status'] in ['running', 'testing']) and c['duration'] <= 5*60*60), contestList))
+	if len(activeShort) > 0:
+		currentContests = activeShort
+	else:
+		currentContests = list(filter(lambda c: c['endT'] >= time.time()-60*60*24*2, contestList))
+		if len(currentContests) == 0:
+			lastFin = max(map(lambda c: c['endT'], contestList))
+			currentContests = list(filter(lambda c: c['endT']==lastFin, contestList))
+
+	aktuelleContests = currentContests + futureContests
+	currentContests = list(map(lambda c: c['contest'], currentContests))
+	aktuelleContests = list(map(lambda c: c['contest'], aktuelleContests))
 
 def getCurrentContests():
 	with contestListLock:
