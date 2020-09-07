@@ -98,16 +98,18 @@ def deleteUser(chatId):
 	logger.debug("deleting all token entries: " + query)
 	insertDB(query, (chatId,))
 
-def addFriends(chatId, friends):
-	query = "INSERT INTO friends (chatId, friend) VALUES "
+def addFriends(chatId, friends, notify, showInList):
+	query = "INSERT INTO friends (chatId, friend, notify, showInList) VALUES "
 	for f in friends:
-		query += "(%s, %s), "
+		query += "(%s, %s, %s, %s), "
 	query = query[:-2] + " ON DUPLICATE KEY UPDATE chatId=chatId"
 
 	params = []
 	for f in friends:
 		params.append(chatId)
 		params.append(f)
+		params.append(notify)
+		params.append(showInList)
 
 	insertDB(query, tuple(params))
 

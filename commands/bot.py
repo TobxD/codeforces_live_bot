@@ -10,6 +10,7 @@ from utils.util import logger
 from services import AnalyseStandingsService, UpcomingService, SummarizingService
 from codeforces import standings, upcoming
 from commands import settings
+from commands import general_settings
 from telegram import Chat
 
 # chatId -> function
@@ -64,7 +65,7 @@ def handleRatingRequest(chat, req):
 
 def handleFriendRatingsRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, None)
-	chat.sendMessage(ratingsOfUsers(cf.getFriends(chat)))
+	chat.sendMessage(ratingsOfUsers(cf.getAllFriends(chat)))
 
 # ----- Add Friend -----
 def handleAddFriendRequestCont(chat, req):
@@ -75,7 +76,7 @@ def handleAddFriendRequestCont(chat, req):
 	else:
 		for user in userInfos:
 			if "handle" in user:
-				db.addFriends(chat.chatId, [user['handle']])
+				db.addFriends(chat.chatId, [user['handle']], chat.new_friends_notify, chat.new_friends_list)
 				rating = user.get('rating', 0)
 				chat.sendMessage(util.getUserSmiley(rating) + " User `" + user['handle'] + "` with rating " + str(rating) + " added.")
 		setOpenCommandFunc(chat.chatId, None)
@@ -103,7 +104,7 @@ def handleRemoveFriendRequest(chat, req):
 
 #------ Start -------------
 def handleStart(chat, text):
-	setOpenCommandFunc(chat.chatId, settings.handleSetTimezone)
+	setOpenCommandFunc(chat.chatId, general_settings.handleSetTimezone)
 	chat.sendMessage("🔥*Welcome to the Codeforces Live Bot!*🔥\n\n"
 	+ "You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
 	+ "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "

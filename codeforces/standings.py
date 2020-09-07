@@ -48,7 +48,7 @@ def getRatingChanges(contestId):
 
 # if !sendIfEmpty and standings are empty then False is returned
 def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
-	friends = cf.getFriends(chat)
+	friends = cf.getListFriends(chat)
 	if len(friends) == 0:
 		if sendIfEmpty:
 			chat.sendMessage(("You have no friends :(\n"

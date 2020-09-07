@@ -98,7 +98,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		friends = db.getAllFriends()
 		threads = []
 		for contestId in cf.getCurrentContestsId():
-			t = Thread(target=self._analyseContest, args=(contestId, friends, firstRead), name="analyseContest"+str(contestId))
+			t = util.createThread(target=self._analyseContest, args=(contestId, friends, firstRead), name="analyseContest"+str(contestId))
 			t.start()
 			threads.append(t)
 		for t in threads:

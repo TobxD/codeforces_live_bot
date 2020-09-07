@@ -100,6 +100,9 @@ def handleCFError(request, r, chat):
 			return
 		if "contestId: Contest with id" in r['comment'] and "has not started" in r['comment']:
 			return # TODO fetch new contest start time
+		if "contestId: Contest with id" in r['comment'] and "not found" in r['comment']:
+			logger.debug("codeforces error: " + r['comment'])
+			return
 	logger.critical("codeforces error: " + str(r['comment']) + "\n" +
 					 "this request caused the error:\n" + (str(request)[:200]),
 					 exc_info=True)
@@ -122,15 +125,19 @@ def updateFriends(chat):
 	f = sendRequest("user.friends", p, True, chat)
 	logger.debug('requesting friends finished')
 	if f != False:
-		db.addFriends(chat.chatId, f)
+		db.addFriends(chat.chatId, f, chat.new_friends_notify, chat.new_friends_list)
 		logger.debug('friends updated for chat ' + str(chat.chatId))
 
 def getFriendsWithDetails(chat):
 	return db.getFriends(chat.chatId)
 
-def getFriends(chat):
-	friends = getFriendsWithDetails(chat)
-	return [f[0] for f in friends if f[1] == 1] # only output if showInList is enabled
+def getAllFriends(chat):
+	friends = db.getFriends(chat.chatId)
+	return [f[0] for f in friends]
+
+def getListFriends(chat):
+	friends = db.getFriends(chat.chatId, selectorColumn="showInList")
+	return [f[0] for f in friends]
 
 def mergeStandings(rowDict, newSt, oldSt):
 	if newSt:

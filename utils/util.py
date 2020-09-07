@@ -5,6 +5,7 @@ from timezonefinder import TimezoneFinder
 from pytz import timezone
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from threading import Thread
 
 # global and exported (init at initLogging)
 logger = logging.getLogger()
@@ -21,6 +22,15 @@ def escapeMarkdown(s):
 	s = s.replace("[", "\\[")
 	s = s.replace("]", "\\]")
 	return s
+
+def createThread(target, args, name=None):
+	def newTarget():
+		try:
+			target(*args)
+		except Exception as e:
+			logger.critical('Run error %s', e, exc_info=True)
+	t = Thread(target=newTarget, name=name)
+	return t
 
 def sha512Hex(s):
 	return hashlib.sha512(s.encode()).hexdigest()

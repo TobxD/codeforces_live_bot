@@ -111,7 +111,7 @@ class SummarizingService (UpdateService.UpdateService):
 		return msg
 
 	def _getWinnerLooser(self, chat, contestId):
-		curStandings = cf.getStandings(contestId, cf.getFriends(chat))
+		curStandings = cf.getStandings(contestId, cf.getListFriends(chat))
 		rows = curStandings["rows"]
 		# are changes already applied?
 		myRating = self.userRatings[chat.handle]
