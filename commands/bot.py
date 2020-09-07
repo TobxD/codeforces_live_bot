@@ -1,6 +1,10 @@
+from __future__ import annotations
 import queue, time, random, re
 from collections import defaultdict
 import threading
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from telegram.Chat import Chat as ChatClass
 
 from utils import database as db
 from telegram import telegram as tg
@@ -105,14 +109,31 @@ def handleRemoveFriendRequest(chat, req):
 #------ Start -------------
 def handleStart(chat, text):
 	setOpenCommandFunc(chat.chatId, general_settings.handleSetTimezone)
-	chat.sendMessage("🔥*Welcome to the Codeforces Live Bot!*🔥\n\n"
-	+ "You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
-	+ "the contest start time will be displayed correctly. So text me the name of the city you live in, for example "
-	+ "'Munich'.")
+	msg = ("🔥*Welcome to the Codeforces Live Bot!*🔥\n\n"
+	"You will receive reminders for upcoming Codeforces Contests. Please tell me your *timezone* so that "
+	"the contest start time will be displayed correctly. So text me the name of the city you live in, for example "
+	"'Munich'.")
+	if chat.chatId.startswith('-'): # group chat
+		msg += "\nAs you are in a group, be sure to *reply* to one of my messages so that I receive your text.\n\n*Your city:*"
+	chat.sendMessage(msg)
+
+def sendSetupFinished(chat:ChatClass):
+	friends = db.getFriends(chat.chatId) # [(handle, showInList, notfiy)]
+	friendsTotal = len(friends) if friends else 0
+	setOpenCommandFunc(chat.chatId, None)
+	msg = ("*Setup Completed*\n\n"
+	"You completed the bot setup, now feel free to use the bot.\n"
+	"Your current settings are:\n"
+	f"Timezone: {chat.timezone}\n"
+	f"Handle: {chat.handle if chat.handle else '❌'}\n"
+	f"API key added: {'✅' if chat.apikey else '❌'}\n"
+	f"Friends: {friendsTotal}\n"
+	"\nYou can change the settings with /settings")
+	chat.sendMessage(msg)
 
 #-------- HELP ------------
 def handleHelp(chat, text):
-	chat.sendMessage("🔥*Codeforces Live Bot*🔥\n\n"
+	msg = ("🔥*Codeforces Live Bot*🔥\n\n"
 	+ "With this bot you can:\n"
 	+ "• receive reminders about upcoming _Codeforces_ contest\n"
 	+ "• list upcoming _Codeforces_ contest via /upcoming\n"
@@ -123,6 +144,7 @@ def handleHelp(chat, text):
 	+ "• manage your friends with /add\_friend and /remove\_friend\n"
 	+ "• import your Codeforces friends by adding a Codeforces API key in /settings\n"
 	+ "• set your time zone and notification setting in /settings\n"
+	+ "• configure the bot's behaviour (politeness, replies, …) in /settings\n"
 	+ "\nWe use the following ranking system:\n"
 	+ "• " + util.getUserSmiley(2400) + ": rating ≥ 2400\n"
 	+ "• " + util.getUserSmiley(2100) + ": rating ≥ 2100\n"
@@ -132,6 +154,9 @@ def handleHelp(chat, text):
 	+ "• " + util.getUserSmiley(1200) + ": rating ≥ 1200\n"
 	+ "• " + util.getUserSmiley(1199) + ": rating < 1200\n"
 	)
+	if chat.chatId.startswith('-'): # group chat
+		msg += "\n\nAs you are in a group, be sure to *reply* to one of my messages so that I receive your text."
+	chat.sendMessage(msg)
 
 # ------ Other --------
 def invalidCommand(chat, msg):

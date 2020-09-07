@@ -1,4 +1,9 @@
+from __future__ import annotations
 import json
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from telegram.Chat import Chat as ChatClass
+
 from utils import database as db
 from telegram import telegram as tg
 from codeforces import codeforces as cf
@@ -39,10 +44,13 @@ def showSetupPage(chat, data, callback):
 # ---- Set User Handle ------
 def handleSetUserHandlePrompt(chat, msg=None):
 	bot.setOpenCommandFunc(chat.chatId, handleSetUserHandle)
-	chat.sendMessage("Please enter your Codeforces handle:")
+	chat.sendNotifcation("Please enter your Codeforces handle:")
 
-def handleSetUserHandle(chat, handle):
+def handleSetUserHandle(chat:ChatClass, handle):
 	handle = util.cleanString(handle)
+	if util.cleanString(handle) == 'no':
+		bot.sendSetupFinished(chat)
+		return
 	userInfos = cf.getUserInfos([handle])
 	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
 		chat.sendMessage("👻 No user with this handle! Try again:")
@@ -51,9 +59,9 @@ def handleSetUserHandle(chat, handle):
 		chat.handle = userInfos[0]['handle']
 		db.addFriends(chat.chatId, [userInfos[0]['handle']], chat.new_friends_notify, chat.new_friends_list)
 		rating = userInfos[0].get('rating', 0)
-		chat.sendMessage("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
+		chat.sendNotifcation("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
 		if chat.apikey is None:
-			chat.sendMessage("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
+			chat.sendNotifcation("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
 			handleSetAuthorization(chat, "")
 
 # ------- Add API KEY -----
@@ -63,10 +71,11 @@ def handleAddSecret(chat, secret):
 	logger.debug('new secret added for user ' + str(chat.chatId))
 	chat.sendMessage("Key added. Now fetching your codeforces friends...")
 	cf.updateFriends(chat)
+	bot.sendSetupFinished(chat)
 
 def handleAddKey(chat, key):
 	if util.cleanString(key) == "no":
-		bot.setOpenCommandFunc(chat.chatId, None)
+		bot.sendSetupFinished(chat)
 		return
 	chat.apikey = key
 	bot.setOpenCommandFunc(chat.chatId, handleAddSecret)
@@ -74,7 +83,7 @@ def handleAddKey(chat, key):
 
 def handleSetAuthorization(chat, req=None):
 	bot.setOpenCommandFunc(chat.chatId, handleAddKey)
-	chat.sendMessage("Go to https://codeforces.com/settings/api and generate a key.\n"
+	chat.sendNotifcation("Go to https://codeforces.com/settings/api and generate a key.\n"
 	+ "Then text me two seperate messages - the first one containing the key and the second one containing the secret.\n"
 	+ "If you do not want to add your secret now, text me _no_ and don't forget to add your secret later in the settings.")
 
@@ -83,7 +92,7 @@ def handleChangeTimezone(chat, text=None):
 	bot.setOpenCommandFunc(chat.chatId, handleSetTimezone)
 	chat.sendMessage("Setting up your time zone... Please enter the city you live in:")
 
-def handleSetTimezone(chat, tzstr):
+def handleSetTimezone(chat:ChatClass, tzstr):
 	tzstr = tzstr.lstrip().rstrip()
 	tz = util.getTimeZone(tzstr)
 	if not tz:
@@ -91,8 +100,9 @@ def handleSetTimezone(chat, tzstr):
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.timezone = tz
-		chat.sendMessage("Timezone set to '" + util.escapeMarkdown(tz) + "'")
+		chat.sendNotifcation("Timezone set to '" + util.escapeMarkdown(tz) + "'")
 		# if in setup after start, ask for user handle
 		if chat.handle is None:
-			chat.sendMessage("Now I need *your* handle.")
+			# use notification so that the order is correct
+			chat.sendNotifcation("Now I need *your* handle. Answer 'no' if you don't want to add your handle.")
 			handleSetUserHandlePrompt(chat, "")
