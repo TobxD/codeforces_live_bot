@@ -11,7 +11,7 @@ from telegram import telegram as tg
 from telegram import Chat
 from utils import util
 from utils.Table import Table
-from utils.util import logger
+from utils.util import logger, perfLogger
 from utils import database as db
 
 standingsSentLock = threading.Lock()
@@ -28,7 +28,9 @@ def getRatingChanges(contestId):
 			logger.debug('request rating changes from cf-predictor')
 			cfPredictorLastRequest[contestId] = time.time()
 			try:
+				startT = time.time()
 				r = requests.get(cfPredictorUrl + str(contestId), timeout=10)
+				perfLogger.info("cf predictor request {:.3f}s".format(time.time()-startT))
 			except requests.exceptions.Timeout as errt:
 				logger.error("Timeout on CF-predictor.")
 				return handleToRatingChanges[contestId]

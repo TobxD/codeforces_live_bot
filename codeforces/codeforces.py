@@ -4,7 +4,7 @@ import queue, threading
 from utils import database as db
 from utils import util
 from telegram import Chat
-from utils.util import logger
+from utils.util import logger, perfLogger
 from services import UpdateService
 
 codeforcesUrl = 'https://codeforces.com/api/'
@@ -44,11 +44,14 @@ def sendRequest(method, params, authorized = False, chat = None):
 		hsh = util.sha512Hex(rnd + '/' + tailPart + '#' + chat.secret)
 		tailPart += '&apiSig=' + rnd + hsh
 	request = codeforcesUrl + tailPart
+	startWait = time.time()
 	waitTime = endTimes.get() + 1 - time.time()
 	if waitTime > 0:
 		time.sleep(waitTime)
 	try:
+		startT = time.time()
 		r = requests.get(request, timeout=15)
+		perfLogger.info("cf request " + method + ": {:.3f}s; waittime: {:.3f}".format(time.time()-startT, time.time()-startWait))
 	except requests.exceptions.Timeout as errt:
 		logger.error("Timeout on Codeforces.")
 		return False

@@ -10,6 +10,7 @@ from collections import defaultdict
 class UpcomingService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 30)
+		self.name = "upcomingService"
 		self._notified = {}
 		self._notifyTimes = [3600*24*3+59, 3600*24+59, 3600*2+59, -100000000]
 		self._initDB()

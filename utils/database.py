@@ -1,7 +1,7 @@
 import mysql.connector, mysql.connector.pooling, mysql.connector.errors
 import threading, time
 
-from utils.util import logger
+from utils.util import logger, perfLogger
 from telegram import Chat
 
 friendsNotfLock = threading.Lock()
@@ -19,12 +19,14 @@ def openDB():
 		return openDB()
 
 def queryDB(query, params):
+	startT = time.time()
 	db = openDB()
 	cursor = db.cursor()
 	cursor.execute(query, params)
 	res = cursor.fetchall()
 	cursor.close()
 	db.close()
+	perfLogger.info("db query {}: {:.3f}s".format(query, time.time()-startT))
 	return res
 
 def insertDB(query, params):

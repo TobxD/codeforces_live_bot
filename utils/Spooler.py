@@ -2,7 +2,7 @@ import time
 from threading import Thread
 import queue
 
-from utils.util import logger
+from utils.util import logger, perfLogger
 
 class Spooler:
 	def __init__(self, threadCount, name="", timeInterval=0):
@@ -14,14 +14,15 @@ class Spooler:
 			Thread(target=self._run, name=name + " spooler #" + str(i)).start()
 
 	def put(self, callbackFun):
-		if self._q.qsize() >= self._threadCount:
-			logger.debug(f"Spooler full! Queue size {self._q.qsize()}/{self._threadCount}.")
-		self._q.put(callbackFun)
+		self._q.put((time.time(), callbackFun))
 
 	def _run(self):
 		while True:
-			callbackFun = self._q.get()
+			(timeStamp, callbackFun) = self._q.get()
 			startT = time.time()
+			timeUsed = startT-timeStamp
+			if timeUsed > 0.001:
+				perfLogger.info("time in spooler: {:.3f}s".format(timeUsed))
 			try:
 				callbackFun()
 			except Exception as e:

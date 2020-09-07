@@ -119,7 +119,7 @@ def deleteMessage(chatId, msgId):
 
 class TelegramUpdateService (UpdateService.UpdateService):
 	def __init__(self):
-		UpdateService.UpdateService.__init__(self, 0.2)
+		UpdateService.UpdateService.__init__(self, 0.2, logPerf=False)
 		self.name = "telegramService"
 		self._lastUpdateID = -1
 

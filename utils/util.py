@@ -9,7 +9,7 @@ from threading import Thread
 
 # global and exported (init at initLogging)
 logger = logging.getLogger()
-
+perfLogger = logging.getLogger("performance")
 
 def cleanString(s):
 	return s.lower().strip()
@@ -139,7 +139,6 @@ def formatHandle(handle, rating=-1): # format as fixed width, add emoji if ratin
 	return res
 
 def initLogging():
-	global logger
 	if not os.path.exists("log"):
 		os.mkdir("log")
 	logger.setLevel(logging.DEBUG)
@@ -163,3 +162,12 @@ def initLogging():
 	for h in [hConsole, hDebug, hInfo, hError, hCrit]:
 		h.setFormatter(formatter)
 		logger.addHandler(h)
+
+	# init performance logger
+	perfLogger.setLevel(logging.DEBUG)
+	hPerf = TimedRotatingFileHandler("log/perf.txt", **rotSettings)
+	hPerf.setLevel(logging.DEBUG)
+	perfFormatter = logging.Formatter('%(asctime)s - %(levelname)s - %(threadName)s: %(message)s')
+	hPerf.setFormatter(perfFormatter)
+	perfLogger.addHandler(hPerf)
+	perfLogger.propagate = False
