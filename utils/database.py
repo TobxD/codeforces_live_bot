@@ -1,18 +1,22 @@
-import mysql.connector
-import threading
+import mysql.connector, mysql.connector.pooling, mysql.connector.errors
+import threading, time
 
 from utils.util import logger
 from telegram import Chat
 
-db_creds = None
 friendsNotfLock = threading.Lock()
 
+db_creds = [line.rstrip('\n') for line in open('.database_creds')]
+dbpool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "cf_pool", pool_size = 5,
+	user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
+
 def openDB():
-	global db_creds
-	if db_creds == None:
-		db_creds = [line.rstrip('\n') for line in open('.database_creds')]
-	db = mysql.connector.connect(user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
-	return db
+	try:
+		return dbpool.get_connection()
+	except mysql.connector.errors.PoolError as e:
+		logger.warn("DB Pool exhausted!")
+		time.sleep(0.050)
+		return openDB()
 
 def queryDB(query, params):
 	db = openDB()
