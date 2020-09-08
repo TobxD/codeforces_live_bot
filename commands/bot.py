@@ -125,7 +125,7 @@ def sendSetupFinished(chat:ChatClass):
 	"You completed the bot setup, now feel free to use the bot.\n"
 	"Your current settings are:\n"
 	f"Timezone: {chat.timezone}\n"
-	f"Handle: {chat.handle if chat.handle else '❌'}\n"
+	f"Handle: {util.formatHandle(chat.handle) if chat.handle else '❌'}\n"
 	f"API key added: {'✅' if chat.apikey else '❌'}\n"
 	f"Friends: {friendsTotal}\n"
 	"\nYou can change the settings with /settings")
