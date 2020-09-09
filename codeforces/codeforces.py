@@ -171,13 +171,15 @@ def getStandings(contestId, handleList, forceRequest=False):
 			getStandings.isUpdating = False
 			standingsLock.notifyAll()
 
+	handleSet = set(handleList)
+
 	with standingsLock:
 		if globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
 			return False
 		allStandings = globalStandings[contestId]["standings"]
 		allRows = allStandings["rows"]
 		# filter only users from handleList
-		rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleList]
+		rows = [r for r in allRows if r["party"]["members"][0]["handle"] in handleSet]
 		standings = {}
 		standings['problems'] = allStandings['problems']
 		standings['contest'] = allStandings['contest']
