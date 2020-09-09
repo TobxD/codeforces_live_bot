@@ -169,7 +169,7 @@ def updateStandingsForChat(contest, chat:Chat):
 	logger.debug('update standings for ' + str(chat.chatId) + '!')
 	msg, msgId = prepareStandingsUpdateForChat(contest, chat)
 	if msg:
-		chat.editMessageTextLater(msgId, contest, lambda chat, contest: prepareStandingsUpdateForChat(chat, contest)[0])
+		chat.editMessageTextLater(msgId, contest, lambda chat, contest: prepareStandingsUpdateForChat(contest, chat)[0])
 
 def initDB():
 	data = db.getAllStandingsSentList()
