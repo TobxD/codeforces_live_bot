@@ -6,6 +6,8 @@ from telegram import Chat
 
 friendsNotfLock = threading.Lock()
 
+NOTIFY_COLUMNS = ["showInList", "notifyTest", "notifyUpsolving", "notify"]
+
 db_creds = [line.rstrip('\n') for line in open('.database_creds')]
 dbpool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "cf_pool", pool_size = 5,
 	user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
@@ -115,7 +117,7 @@ def addFriends(chatId, friends, notifyLevel):
 	insertDB(query, tuple(params))
 
 def getFriends(chatId, selectorColumn = "True"):
-	query = "SELECT friend, showInList, notify FROM friends WHERE chatId = %s AND " + selectorColumn + "=True"
+	query = f"SELECT friend, {', '.join(NOTIFY_COLUMNS)} FROM friends WHERE chatId = %s AND {selectorColumn}=True"
 	res = queryDB(query, (chatId,))
 	return res
 
@@ -124,11 +126,24 @@ def getAllFriends():
 	res = queryDB(query, ())
 	return [x[0] for x in res]
 
-def getWhoseFriends(handle, allList = False):
-	if allList:
-		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND (showInList=True OR notify=True)"
-	else:
-		query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND notify=True"
+
+def getWhoseFriendsListed(handle):
+	query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND showInList=True"
+	res = queryDB(query, (handle,))
+	return [row[0] for row in res]
+
+def getWhoseFriendsSystemTestFail(handle):
+	query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND notifyTest=True"
+	res = queryDB(query, (handle,))
+	return [row[0] for row in res]
+
+def getWhoseFriendsUpsolving(handle):
+	query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND notifyUpsolving=True"
+	res = queryDB(query, (handle,))
+	return [row[0] for row in res]
+
+def getWhoseFriendsContestSolved(handle):
+	query = "SELECT DISTINCT chatId FROM friends WHERE friend = %s AND notify=True"
 	res = queryDB(query, (handle,))
 	return [row[0] for row in res]
 
@@ -140,7 +155,8 @@ def getAllChatPartners():
 		ret.append(x[0])
 	return ret
 
-def toggleFriendSettings(chatId, friend, column):
+def toggleFriendSettings(chatId, friend, columnNum):
+	column = NOTIFY_COLUMNS[columnNum]
 	with friendsNotfLock:
 		query = f"SELECT {column} FROM friends WHERE chatId = %s AND friend = %s"
 		gesetzt = str(queryDB(query, (chatId, friend))[0][0]) == '1'
@@ -149,10 +165,16 @@ def toggleFriendSettings(chatId, friend, column):
 		insertDB(query, (newVal, chatId, friend))
 		return newVal
 
-def toggleAllFriendSettings(chatId, isEnabled, column):
+def updateToNotifyLevel(chatId, newLev, oldLev=None, reset=False):
 	with friendsNotfLock:
-		query = f"UPDATE friends SET {column}= %s WHERE chatId = %s"
-		insertDB(query, (isEnabled, chatId))
+		colsSet = [f"{NOTIFY_COLUMNS[i]} = {i < newLev}" for i in range(len(NOTIFY_COLUMNS))]
+		query = "UPDATE friends SET "
+		query += ", ".join(colsSet)
+		query += " WHERE chatId = %s"
+		if not reset:
+			oldColsCond = [f"{NOTIFY_COLUMNS[i]} = {i < oldLev}" for i in range(len(NOTIFY_COLUMNS))]
+			query += " AND " + (" AND ".join(oldColsCond))
+		insertDB(query, (chatId,))
 
 # ---------- standingsSent --------------
 def getAllStandingsSentList():

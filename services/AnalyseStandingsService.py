@@ -27,7 +27,8 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 		msg += util.formatHandle(handle) + " has solved task " + task
 		if rejectedAttemptCount > 0:
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
-		for chatId in db.getWhoseFriends(handle):
+		usersToNotify = db.getWhoseFriendsContestSolved(handle) if official else db.getWhoseFriendsUpsolving(handle)
+		for chatId in usersToNotify:
 			Chat.getChat(chatId).sendMessage(msg)
 
 	def _notifyTaskTested(self, handle, task, accepted):
@@ -46,7 +47,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			insult = funnyInsults[random.randint(0,len(funnyInsults)-1)]
 			neutralMsg = "%s failed on system tests for task %s."
 			msg = insult % (util.formatHandle(handle), task)
-			for chatId in db.getWhoseFriends(handle): # to all users with this friend
+			for chatId in db.getWhoseFriendsSystemTestFail(handle): # to all users with this friend
 				chat = Chat.getChat(chatId)
 				if chat.polite:
 					chat.sendMessage(neutralMsg)
@@ -69,7 +70,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 					self._notifyTaskSolved(handle, taskName, task["rejectedAttemptCount"],
 							 task["bestSubmissionTimeSeconds"], row["rank"] != 0)
 					if ranking["contest"]['phase'] == 'FINISHED': # if contest is running, standings are updated automatically
-						self._updateStandings(contestId, db.getWhoseFriends(handle, allList=True))
+						self._updateStandings(contestId, db.getWhoseFriendsListed(handle))
 				pointsList.append(taski)
 				if task['type'] == 'PRELIMINARY' and (taski not in self._notFinal[contestId][handle]):
 					logger.debug('adding non-final task ' + str(taski) + ' for user ' + str(handle))
@@ -78,7 +79,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 				logger.debug('finalizing non-final task ' + str(taski) + ' for user ' + str(handle))
 				self._notFinal[contestId][handle].remove(taski)
 				self._notifyTaskTested(handle, taskName, task['points'] > 0)
-				self._updateStandings(contestId, db.getWhoseFriends(handle, allList=True))
+				self._updateStandings(contestId, db.getWhoseFriendsListed(handle))
 				if int(task['points']) == 0: #failed on system tests, now not solved
 					pointsList.remove(taski)
 

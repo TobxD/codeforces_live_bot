@@ -36,7 +36,7 @@ class Chat:
 			self._secret = None
 			self._timezone = None
 			self._handle = None
-			self._notifyLevel = 3
+			self._notifyLevel = 3 # everything except in contest notifications
 			self._polite = False
 			self._reply = True
 			self._width = 6

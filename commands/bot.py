@@ -118,7 +118,7 @@ def handleStart(chat, text):
 	chat.sendMessage(msg)
 
 def sendSetupFinished(chat:ChatClass):
-	friends = db.getFriends(chat.chatId) # [(handle, showInList, notfiy)]
+	friends = db.getFriends(chat.chatId)
 	friendsTotal = len(friends) if friends else 0
 	setOpenCommandFunc(chat.chatId, None)
 	msg = ("*Setup Completed*\n\n"

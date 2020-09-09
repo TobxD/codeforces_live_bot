@@ -131,8 +131,6 @@ def updateFriends(chat):
 		db.addFriends(chat.chatId, f, chat.notifyLevel)
 		logger.debug('friends updated for chat ' + str(chat.chatId))
 
-def getFriendsWithDetails(chat):
-	return db.getFriends(chat.chatId)
 
 def getAllFriends(chat):
 	friends = db.getFriends(chat.chatId)
