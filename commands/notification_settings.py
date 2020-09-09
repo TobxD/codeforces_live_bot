@@ -85,7 +85,7 @@ def getMenu(chat:Chat):
 	friendsTotal = len(friends)
 	friendsList, friendsNotify = len([f for f in friends if f[1]]), len([f for f in friends if f[2]])
 	title = (f"*Change your friends settings*\nCurrently, you see *{friendsList}* / {friendsTotal} friends in the standings\n"
-						f"and get notified for *{friendsNotify}* / {friendsTotal} friends.")
+						f"and get notified for *{friendsNotify}* / {friendsTotal} friends. (e.g. '_User X_ has solved task B')")
 	showAllText = ("Hide" if chat.new_friends_list else "Show") + " All Friends on Scoreboard"
 	notifyAllText = ("Mute" if chat.new_friends_notify else "Notify for") + " All Friends"
 

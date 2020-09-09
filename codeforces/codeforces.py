@@ -51,7 +51,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 	try:
 		startT = time.time()
 		r = requests.get(request, timeout=15)
-		perfLogger.info("cf request " + method + ": {:.3f}s; waittime: {:.3f}".format(time.time()-startT, time.time()-startWait))
+		perfLogger.info("cf request " + method + ": {:.3f}s; waittime: {:.3f}".format(time.time()-startT, startT-startWait))
 	except requests.exceptions.Timeout as errt:
 		logger.error("Timeout on Codeforces.")
 		return False
@@ -142,52 +142,15 @@ def getListFriends(chat):
 	friends = db.getFriends(chat.chatId, selectorColumn="showInList")
 	return [f[0] for f in friends]
 
-def mergeStandings(rowDict, newSt, oldSt):
-	if newSt:
-		if "contest" in newSt: 
-			for row in newSt['rows']:
-				handle = row['party']['members'][0]['handle'] 
-				pType = row["party"]["participantType"]
-				rowDict[(handle, pType)] = row
-			return newSt, rowDict
-	return oldSt, rowDict
-
 def updateStandings(contestId):
 	global aktuelleContests
-	global globalStandings
-	handleList = db.getAllFriends()
-	if contestId not in globalStandings:
-		globalStandings[contestId] = {"time": 0, "standings": False}
-	standings = globalStandings[contestId]["standings"]
-	rowDict = {}
-	if standings:
-		for row in standings['rows']:
-			handle = row['party']['members'][0]['handle'] 
-			pType = row["party"]["participantType"]
-			rowDict[(handle, pType)] = row
-	l = 0
-	r = 0
-	while r < len(handleList):
-		handleString = ";".join(handleList[l:r])
-		while r < len(handleList) and len(";".join(handleList[l:r+1])) < 6000:
-			r += 1
-			handleString = ";".join(handleList[l:r+1])
-		logger.debug('updating standings for contest '+str(contestId)+' for '+str(r-l)+' of '+str(len(handleList))+' users')
-		stNew = sendRequest('contest.standings', {'contestId':contestId, 'handles':handleString, 'showUnofficial':True})
-		standings, rowDict = mergeStandings(rowDict, stNew, standings)
-		l = r 
-
-	if standings and "contest" in standings:
-		standings['rows'] = []
-		for key in rowDict:
-			standings['rows'].append(rowDict[key])
-		# sort: first official (rank > 0), then unoffical with desc by points
-		standings['rows'].sort(key= lambda row: row["rank"] if row["rank"] != 0 else 10000000 - row["points"])
-
-		contest = standings["contest"]
+	logger.debug('updating standings for contest '+str(contestId)+' for all users')
+	stNew = sendRequest('contest.standings', {'contestId':contestId, 'showUnofficial':True})
+	if stNew and "contest" in stNew:
+		with standingsLock:
+			globalStandings[contestId] = {"time": time.time(), "standings": stNew}
 		with contestListLock:
-			aktuelleContests = [contest if contest["id"] == c["id"] else c for c in aktuelleContests]
-		globalStandings[contestId] = {"time": time.time(), "standings": standings}
+			aktuelleContests = [stNew["contest"] if stNew["contest"]["id"] == c["id"] else c for c in aktuelleContests]
 		logger.debug('standings received')
 	else:
 		logger.error('standings not updated')

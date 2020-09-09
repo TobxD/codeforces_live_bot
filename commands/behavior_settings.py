@@ -11,9 +11,9 @@ chatsLock = threading.Lock()
 def getChatSettingsButtons(chat):
 	politeText = ("Polite 😇" if chat.polite else "Rude 😈")
 	replyText = ("R" if chat.reply else "Not r") + "eceiving funny replies" + ("✅" if chat.reply else "❌")
-	reminder2hText = "Reminder 2h before contest: " + ("active 🔔" if chat.reminder2h else "not active 🔕")
-	reminder1dText = "Reminder 1d before contest: " + ("active 🔔" if chat.reminder1d else "not active 🔕")
-	reminder3dText = "Reminder 3d before contest: " + ("active 🔔" if chat.reminder3d else "not active 🔕")
+	reminder2hText = "2h Reminder: " + ("active 🔔" if chat.reminder2h else "not active 🔕")
+	reminder1dText = "1d Reminder: " + ("active 🔔" if chat.reminder1d else "not active 🔕")
+	reminder3dText = "3d Reminder: " + ("active 🔔" if chat.reminder3d else "not active 🔕")
 
 	buttons = [
 		[{"text": politeText,			"callback_data": "behavior:polite"}],
