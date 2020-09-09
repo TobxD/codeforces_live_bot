@@ -6,9 +6,7 @@ from utils.util import logger, perfLogger
 
 class Spooler:
 	def __init__(self, threadCount, name="", timeInterval=0, priorityCount=1):
-		self._q = list()
-		for i in range(priorityCount):
-			self._q.append(queue.Queue())
+		self._q = [queue.Queue() for i in range(priorityCount)]
 		self._timeInterval = timeInterval
 		self._threadCount = threadCount
 		self._name = name

@@ -182,7 +182,7 @@ class Chat:
 
 	def _updateDB(self):
 		db.updateChatInfos(self.chatId, self.apikey, self.secret, self.timezone,
-			self.handle, self._notifyLevel,
+			self.handle, self.notifyLevel,
 			self.polite, self.reply, self.width, self.reminder2h,
 			self.reminder1d, self.reminder3d, self.settings_msgid)
 
@@ -217,7 +217,7 @@ class Chat:
 
 	def editMessageTextLater(self, msgId, msgGroup, fun):
 		if self.chatId == '0':
-			msg = fun(self)
+			msg = fun(self, msgGroup)
 			if msg:
 				print('\n----- message sent: ------------\n' + msg + "\n--------- End Message ----------\n")
 			return
