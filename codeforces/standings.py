@@ -161,9 +161,7 @@ def updateStandingsForChat(contest, chat:Chat):
 		msgId, oldMsg = standingsSent[chat.chatId][contest]
 		if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
 			updateStandingsSent(chat.chatId, contest, msgId, msg)
-			return
-	if msg:
-		chat.editMessageTextLater(msgId, contest, lambda chat, contest: getFriendStandings(chat, contest))
+			chat.editMessageTextLater(msgId, contest, lambda chat, contest: getFriendStandings(chat, contest))
 
 def initDB():
 	data = db.getAllStandingsSentList()
