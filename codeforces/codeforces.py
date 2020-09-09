@@ -13,7 +13,7 @@ contestListLock = threading.Lock()
 aktuelleContests = [] # display scoreboard + upcoming
 currentContests = [] # display scoreboard
 
-standingsLock = threading.Lock()
+standingsLock = threading.Condition()
 globalStandings = {}
 
 endTimes = queue.Queue()
@@ -194,9 +194,21 @@ def updateStandings(contestId):
 
 def getStandings(contestId, handleList, forceRequest=False):
 	with standingsLock:
-		toUpd = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 30
-		if toUpd or forceRequest:
-			updateStandings(contestId)
+		contestOld = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 120
+		toUpd = contestOld or forceRequest
+		shouldUpdate = False
+		if toUpd:
+			if getStandings.isUpdating:
+				standingsLock.wait()
+			else:
+				getStandings.isUpdating = True
+				shouldUpdate = True
+
+	if shouldUpdate:
+		updateStandings(contestId)
+		with standingsLock:
+			getStandings.isUpdating = False
+			standingsLock.notifyAll()
 
 	with standingsLock:
 		if globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
@@ -210,7 +222,7 @@ def getStandings(contestId, handleList, forceRequest=False):
 		standings['contest'] = allStandings['contest']
 		standings["rows"] = rows
 		return standings
-
+getStandings.isUpdating = False
 
 def getContestStatus(contest):
 	startT = contest.get('startTimeSeconds', -1)
@@ -269,7 +281,6 @@ class FriendUpdateService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 24*3600)
 		self.name = "FriendUpdateService"
-		self._doTask()
 
 	def _doTask(self):
 		logger.debug('starting to update all friends')
