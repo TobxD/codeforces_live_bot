@@ -102,7 +102,7 @@ def deleteUser(chatId):
 def addFriends(chatId, friends, notifyLevel):
 	query = "INSERT INTO friends (chatId, friend, showInList, notifyTest, notifyUpsolving, notify) VALUES "
 	for f in friends:
-		query += "(%s, %s, %s, %s), "
+		query += "(%s, %s, %s, %s, %s, %s), "
 	query = query[:-2] + " ON DUPLICATE KEY UPDATE chatId=chatId"
 
 	params = []

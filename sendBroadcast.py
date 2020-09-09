@@ -13,7 +13,8 @@ if len(sys.argv) != 1:
 		logger.info("sending broadcast message:\n" + msgText)
 		for chatId in Chat.chats:
 			Chat.chats[chatId].sendMessage(msgText)
-		while tg.requestSpooler._q.qsize() > 0:
+		time.sleep(1)
+		while tg.requestSpooler._q[0].qsize() > 0:
 			print("waiting")
 			time.sleep(1)
 		logger.info("sending broadcasts finished")

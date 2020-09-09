@@ -35,7 +35,7 @@ def requestPost(chatId, url, data, timeout=30):
 		logger.critical('Failed to request telegram: \nexception: %s\ntext: %s', e, errorTxt, exc_info=True)
 		return False
 
-requestSpooler = Spooler(19, "telegram", 2)
+requestSpooler = Spooler(19, "telegram", timeInterval=2, priorityCount=3)
 
 
 #returns whether error could be handled
@@ -95,7 +95,7 @@ def sendMessage(chatId, text, reply_markup = None, callback=None):
 	if callback:
 		callback(res['result']['message_id'] if res else False)
 
-def editMessageText(chatId, msgId, msg, reply_markup):
+def editMessageText(chatId, msgId, msg, reply_markup=None):
 	msg = shortenMessage(msg)
 	logger.debug("editMessageText to " + str(chatId) + " msgId: " + str(msgId)+":\n" + msg + "\n\n") # TODO test
 	params = {
