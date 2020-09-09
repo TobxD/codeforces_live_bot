@@ -80,7 +80,7 @@ def handleAddFriendRequestCont(chat, req):
 	else:
 		for user in userInfos:
 			if "handle" in user:
-				db.addFriends(chat.chatId, [user['handle']], chat.new_friends_notify, chat.new_friends_list)
+				db.addFriends(chat.chatId, [user['handle']], chat.notifyLevel)
 				rating = user.get('rating', 0)
 				chat.sendMessage(util.getUserSmiley(rating) + " User `" + user['handle'] + "` with rating " + str(rating) + " added.")
 		setOpenCommandFunc(chat.chatId, None)

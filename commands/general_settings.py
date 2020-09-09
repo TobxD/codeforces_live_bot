@@ -57,7 +57,7 @@ def handleSetUserHandle(chat:ChatClass, handle):
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.handle = userInfos[0]['handle']
-		db.addFriends(chat.chatId, [userInfos[0]['handle']], chat.new_friends_notify, chat.new_friends_list)
+		db.addFriends(chat.chatId, [userInfos[0]['handle']], chat.notifyLevel)
 		rating = userInfos[0].get('rating', 0)
 		chat.sendNotifcation("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
 		if chat.apikey is None:

@@ -40,8 +40,8 @@ def insertDB(query, params):
 
 # returns (apikey, secret, timezone, handle) or None, if no such user exists
 def queryChatInfos(chatId):
-	query = ("SELECT apikey, secret, timezone, handle, new_friends_list, "
-			"new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d, "
+	query = ("SELECT apikey, secret, timezone, handle, notifyLevel, "
+			"polite, reply, width, reminder2h, reminder1d, reminder3d, "
 			"settings_msgid FROM tokens WHERE chatId = %s")
 	res = queryDB(query, (chatId,))
 	if len(res) == 0:
@@ -49,25 +49,24 @@ def queryChatInfos(chatId):
 	else:
 		return res[0]
 
-def updateChatInfos(chatId, apikey, secret, timezone, handle, new_friends_list,
-		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
-		 settings_msgid):
+def updateChatInfos(chatId, apikey, secret, timezone, handle, notifyLevel,
+		polite, reply, width, reminder2h, reminder1d, reminder3d, settings_msgid):
 	query = ("INSERT INTO "
-							"tokens (chatId, apikey, secret, timezone, handle, new_friends_list, "
-								"new_friends_notify, polite, reply, width, reminder2h, "
+							"tokens (chatId, apikey, secret, timezone, handle, notifyLevel, "
+								"polite, reply, width, reminder2h, "
 								"reminder1d, reminder3d, settings_msgid) "
 					"VALUES "
-							"(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+							"(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
 					"ON DUPLICATE KEY UPDATE "
 							"apikey = %s , secret = %s , timezone = %s , handle = %s , "
-							"new_friends_list = %s , new_friends_notify = %s , polite = %s , "
+							"notifyLevel = %s , polite = %s , "
 							"reply = %s , width = %s , reminder2h = %s , reminder1d = %s , "
 							"reminder3d = %s , settings_msgid = %s")
-	insertDB(query, (chatId, apikey, secret, timezone, handle, new_friends_list,
-		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
+	insertDB(query, (chatId, apikey, secret, timezone, handle, notifyLevel,
+		 polite, reply, width, reminder2h, reminder1d, reminder3d,
 		 settings_msgid,
-		 apikey, secret, timezone, handle, new_friends_list,
-		 new_friends_notify, polite, reply, width, reminder2h, reminder1d, reminder3d,
+		 apikey, secret, timezone, handle, notifyLevel,
+		 polite, reply, width, reminder2h, reminder1d, reminder3d,
 		 settings_msgid))
 
 def getChatIds(handle):
@@ -100,8 +99,8 @@ def deleteUser(chatId):
 	logger.debug("deleting all token entries: " + query)
 	insertDB(query, (chatId,))
 
-def addFriends(chatId, friends, notify, showInList):
-	query = "INSERT INTO friends (chatId, friend, notify, showInList) VALUES "
+def addFriends(chatId, friends, notifyLevel):
+	query = "INSERT INTO friends (chatId, friend, showInList, notifyTest, notifyUpsolving, notify) VALUES "
 	for f in friends:
 		query += "(%s, %s, %s, %s), "
 	query = query[:-2] + " ON DUPLICATE KEY UPDATE chatId=chatId"
@@ -110,8 +109,8 @@ def addFriends(chatId, friends, notify, showInList):
 	for f in friends:
 		params.append(chatId)
 		params.append(f)
-		params.append(notify)
-		params.append(showInList)
+		for i in range(4): #TODO
+			params.append(i < notifyLevel)
 
 	insertDB(query, tuple(params))
 

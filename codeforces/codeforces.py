@@ -128,7 +128,7 @@ def updateFriends(chat):
 	f = sendRequest("user.friends", p, True, chat)
 	logger.debug('requesting friends finished')
 	if f != False:
-		db.addFriends(chat.chatId, f, chat.new_friends_notify, chat.new_friends_list)
+		db.addFriends(chat.chatId, f, chat.notifyLevel)
 		logger.debug('friends updated for chat ' + str(chat.chatId))
 
 def getFriendsWithDetails(chat):
