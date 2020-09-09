@@ -47,7 +47,7 @@ def handleRequestError(chatId, req):
 		 errMsg == "Bad Request: chat not found" or
 		 errMsg == "Forbidden: user is deactivated" or
 		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
-		db.deleteUser(chatId)
+		Chat.deleteUser(chatId)
 		return True
 	elif errMsg == "Bad Request: group chat was upgraded to a supergroup chat":
 		Chat.getChat(chatId).chatId = req['parameters']['migrate_to_chat_id']
@@ -59,6 +59,9 @@ def handleRequestError(chatId, req):
 		return True
 	elif errMsg.startswith("Bad request: message can't be deleted"):
 		logger.error(f"Message deletion failed for Chat {chatId}")
+		return True
+	elif errMsg == "Bad Request: have no rights to send a message":
+		logger.error(f"No rights to send message in Chat {chatId}")
 		return True
 	else:
 		return False

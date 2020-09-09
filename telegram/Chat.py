@@ -18,6 +18,11 @@ def initChats():
 		for chatId in chatIds:
 			chats[chatId] = Chat(chatId)
 
+def deleteUser(chatId):
+	with chatsLock:
+		del chats[chatId]
+		db.deleteUser(chatId)
+
 class Chat:
 	def __init__(self, chatId:str):
 		self._chatId = chatId
