@@ -146,30 +146,24 @@ def sendStandings(chat:Chat, msg):
 	else:
 		chat.sendMessage("No contests in the last two days 🤷🏻")
 
-def prepareStandingsUpdateForChat(contest, chat:Chat):
+# updates only, if message exists and the standings-message has changed
+def updateStandingsForChat(contest, chat:Chat):
 	with standingsSentLock:
 		if contest not in standingsSent[chat.chatId]: # only used as speed-up, checked again later
-			return False, None
+			return
 	msg = getFriendStandings(chat, contest)
 	if msg is False:
-		return False, None
-
+		return
+	logger.debug('update standings for ' + str(chat.chatId) + '!')
 	with standingsSentLock:
 		if contest not in standingsSent[chat.chatId]:
-			return False, None
+			return
 		msgId, oldMsg = standingsSent[chat.chatId][contest]
 		if tg.shortenMessage(oldMsg) != tg.shortenMessage(msg):
 			updateStandingsSent(chat.chatId, contest, msgId, msg)
-			return msg, msgId
-	
-	return False, None
-
-# updates only, if message exists and the standings-message has changed
-def updateStandingsForChat(contest, chat:Chat):
-	logger.debug('update standings for ' + str(chat.chatId) + '!')
-	msg, msgId = prepareStandingsUpdateForChat(contest, chat)
+			return
 	if msg:
-		chat.editMessageTextLater(msgId, contest, lambda chat, contest: prepareStandingsUpdateForChat(contest, chat)[0])
+		chat.editMessageTextLater(msgId, contest, lambda chat, contest: getFriendStandings(chat, contest))
 
 def initDB():
 	data = db.getAllStandingsSentList()
