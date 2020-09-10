@@ -12,7 +12,7 @@ class UpcomingService (UpdateService.UpdateService):
 		UpdateService.UpdateService.__init__(self, 30)
 		self.name = "upcomingService"
 		self._notified = {}
-		self._notifyTimes = [3600*24*3+59, 3600*24+59, 3600*2+59, -100000000]
+		self._notifyTimes = [3600*24*3+59, 3600*24+59, 3600*2+59, -15*60, -100000000]
 		self._initDB()
 		self._doTask(True) #initializes notified
 
@@ -44,6 +44,8 @@ class UpcomingService (UpdateService.UpdateService):
 							shouldNotifyFun = lambda chat: chat.reminder1d
 						elif i==2:
 							shouldNotifyFun = lambda chat: chat.reminder2h
+						elif i==3:
+							shouldNotifyFun = lambda chat: False # contest started -> no new reminder, only delete old reminder
 						self._notifyAllUpcoming(c, shouldNotifyFun)
 
 	def _notifyAllNewContestAdded(self, contest):
