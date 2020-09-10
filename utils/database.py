@@ -9,16 +9,9 @@ friendsNotfLock = threading.Lock()
 NOTIFY_COLUMNS = ["showInList", "notifyTest", "notifyUpsolving", "notify"]
 
 db_creds = [line.rstrip('\n') for line in open('.database_creds')]
-dbpool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "cf_pool", pool_size = 5,
-	user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
 
 def openDB():
-	try:
-		return dbpool.get_connection()
-	except mysql.connector.errors.PoolError as e:
-		logger.warn("DB Pool exhausted!")
-		time.sleep(0.050)
-		return openDB()
+	return mysql.connector.connect(user=db_creds[0], password=db_creds[1], host=db_creds[2], port=db_creds[3], database=db_creds[4])
 
 def queryDB(query, params):
 	startT = time.time()
