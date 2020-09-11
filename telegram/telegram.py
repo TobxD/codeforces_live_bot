@@ -146,6 +146,9 @@ class TelegramUpdateService (UpdateService.UpdateService):
 	def _handleUpdate(self, update):
 		self._lastUpdateID = update['update_id']
 		if 'message' in update:
+			if 'new_chat_members' in update['message'] and any([u.get('username') == 'codeforces_live_bot' for u in update['message']['new_chat_members']]):
+				# bot joined a group
+				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), "/start")
 			if 'text' in update['message']:
 				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
 			else:
