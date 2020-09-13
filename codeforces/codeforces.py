@@ -14,7 +14,7 @@ aktuelleContests = [] # display scoreboard + upcoming
 currentContests = [] # display scoreboard
 
 standingsLock = threading.Condition()
-globalStandings = {}
+globalStandings = {} # contest-id -> {time, standings}
 
 endTimes = queue.Queue()
 for i in range(1):
@@ -155,7 +155,7 @@ def updateStandings(contestId):
 
 def getStandings(contestId, handleList, forceRequest=False):
 	with standingsLock:
-		contestOld = not contestId in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 120
+		contestOld = contestId not in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 120
 		toUpd = contestOld or forceRequest
 		shouldUpdate = False
 		if toUpd:
@@ -174,7 +174,7 @@ def getStandings(contestId, handleList, forceRequest=False):
 	handleSet = set(handleList)
 
 	with standingsLock:
-		if globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
+		if contestId not in globalStandings or globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
 			return False
 		allStandings = globalStandings[contestId]["standings"]
 		allRows = allStandings["rows"]
