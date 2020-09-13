@@ -20,7 +20,8 @@ def initChats():
 
 def deleteUser(chatId):
 	with chatsLock:
-		del chats[chatId]
+		if chatId not in chats: # necessary, otherwise multiple deletions -> error
+			del chats[chatId]
 		db.deleteUser(chatId)
 
 class Chat:
