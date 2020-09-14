@@ -20,7 +20,8 @@ class UpcomingService (UpdateService.UpdateService):
 		self._reminderSent = defaultdict(lambda : defaultdict(lambda : None)) # [chatId][contest] = msgId
 		data = db.getAllStandingsSentList()
 		for (chatId, contestId, msgId, msgIdNotf) in data:
-			self._reminderSent[chatId][contestId] = msgIdNotf
+			if msgIdNotf: # maybe only msgId is set
+				self._reminderSent[chatId][contestId] = msgIdNotf
 
 	def _updateReminderSent(self, chatId, contestId, msgId):
 		self._reminderSent[chatId][contestId] = msgId

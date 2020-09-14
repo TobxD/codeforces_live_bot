@@ -167,7 +167,8 @@ def initDB():
 	data = db.getAllStandingsSentList()
 	with standingsSentLock:
 		for (chatId, contestId, msgId, msgIdNotf) in data:
-			standingsSent[chatId][contestId] = (msgId, "")
+			if msgId: # maybe only msgIdNotf is set
+				standingsSent[chatId][contestId] = (msgId, "")
 
 def updateStandingsSent(chatId, contestId, msgId, msg):
 	standingsSent[chatId][contestId] = (msgId, msg)
