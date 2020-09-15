@@ -128,7 +128,8 @@ def sendSetupFinished(chat:ChatClass):
 	f"Handle: {util.formatHandle(chat.handle) if chat.handle else '❌'}\n"
 	f"API key added: {'✅' if chat.apikey else '❌'}\n"
 	f"Friends: {friendsTotal}\n"
-	"\nYou can change the settings with /settings")
+	"\nLearn what the bot can do with /help.\n"
+	"Also check out the /settings.")
 	chat.sendMessage(msg)
 
 #-------- HELP ------------
