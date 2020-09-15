@@ -28,7 +28,7 @@ class UpcomingService (UpdateService.UpdateService):
 		db.saveReminderSent(chatId, contestId, msgId)
 
 	def _doTask(self, quiet=False):
-		for c in cf.getFutureContests():
+		for c in cf.getFutureAndCurrentContests():
 			timeLeft = c['startTimeSeconds'] - time.time()
 			if c['id'] not in self._notified:
 				self._notified[c['id']] = 0

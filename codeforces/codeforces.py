@@ -240,6 +240,9 @@ def getFutureContests():
 				res.append(c)
 	return res
 
+def getFutureAndCurrentContests():
+	return aktuelleContests
+
 class FriendUpdateService (UpdateService.UpdateService):
 	def __init__(self):
 		UpdateService.UpdateService.__init__(self, 24*3600)
