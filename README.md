@@ -1,4 +1,7 @@
 # Codeforces Live Bot
+
+![Codeforces Live Bot](https://raw.githubusercontent.com/TobxD/codeforces_live_bot/master/logo.png)
+
 This is a Telegram bot for users of the site [Codeforces](https://codeforces.com).
 Telegram username: [@codeforces_live_bot](https://t.me/codeforces_live_bot)
 
