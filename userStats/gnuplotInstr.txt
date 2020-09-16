@@ -3,9 +3,10 @@ if (!exists("col")) col=2
 set terminal wxt persist
 
 set xdata time
-set format x "%d/%m/%Y"
+set format x "%m/%Y"
 set xlabel "Date"
 set autoscale x
+set xtics 60. * 60. * 24. * 30.
 
 set ylabel "Count"
 set yrange [0:*]
@@ -13,6 +14,8 @@ set yrange [0:*]
 set style data linespoints
 
 set timefmt "%Y-%m-%d-%H:%M:%S"
+
+set key bottom right
 
 if (col == 0) plot "./stats.txt" using 1:2 t "users", "./stats.txt" using 1:3 t "distinct friends", "./stats.txt" using 1:4 t "friends connections"; \
 else if(col == 2) plot "./stats.txt" using 1:col t "users"; \
