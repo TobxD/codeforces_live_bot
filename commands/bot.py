@@ -74,16 +74,22 @@ def handleFriendRatingsRequest(chat, req):
 # ----- Add Friend -----
 def handleAddFriendRequestCont(chat, req):
 	handles = [util.cleanString(s) for s in req.split(',')]
-	userInfos = cf.getUserInfos(handles)
-	if userInfos == False or len(userInfos) == 0 or "handle" not in userInfos[0]:
-		chat.sendMessage("👻 No user with this handle! Please try again:")
+	resMsg = []
+	didnotwork = []
+	for handle in handles:
+		userInfo = cf.getUserInfos([handle])
+		if userInfo == False or len(userInfo) == 0 or "handle" not in userInfo[0]:
+			didnotwork.append("`" + handle + "`")
+		else:
+			user = userInfo[0]
+			db.addFriends(chat.chatId, [user['handle']], chat.notifyLevel)
+			rating = user.get('rating', 0)
+			resMsg.append(util.getUserSmiley(rating) + " User `" + user['handle'] + "` with rating " + str(rating) + " added.")
+	if len(didnotwork) > 0:
+		resMsg.append("👻 No user" + ("" if len(didnotwork) == 1 else "s") + " with handle " + ", ".join(didnotwork) + "! Please try again for those:")
 	else:
-		for user in userInfos:
-			if "handle" in user:
-				db.addFriends(chat.chatId, [user['handle']], chat.notifyLevel)
-				rating = user.get('rating', 0)
-				chat.sendMessage(util.getUserSmiley(rating) + " User `" + user['handle'] + "` with rating " + str(rating) + " added.")
 		setOpenCommandFunc(chat.chatId, None)
+	chat.sendMessage("\n".join(resMsg))
 
 def handleAddFriendRequest(chat, req):
 	setOpenCommandFunc(chat.chatId, handleAddFriendRequestCont)

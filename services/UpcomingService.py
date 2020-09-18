@@ -32,29 +32,20 @@ class UpcomingService (UpdateService.UpdateService):
 			timeLeft = c['startTimeSeconds'] - time.time()
 			if c['id'] not in self._notified:
 				self._notified[c['id']] = 0
-				#if not quiet:
-				#	self._notifyAllNewContestAdded(c)
-			for i in range(len(self._notifyTimes)):
-				if timeLeft <= self._notifyTimes[self._notified[c['id']]]:
-					self._notified[c['id']] += 1
-					if not quiet:
-						shouldNotifyFun = lambda chat: False
-						if i==0:
-							shouldNotifyFun = lambda chat: chat.reminder3d
-						elif i==1:
-							shouldNotifyFun = lambda chat: chat.reminder1d
-						elif i==2:
-							shouldNotifyFun = lambda chat: chat.reminder2h
-						elif i==3:
-							shouldNotifyFun = lambda chat: False # contest started -> no new reminder, only delete old reminder
-						self._notifyAllUpcoming(c, shouldNotifyFun)
-
-	def _notifyAllNewContestAdded(self, contest):
-		for chatId in db.getAllChatPartners():
-			chat = Chat.getChat(chatId)
-			description = "new contest added:\n"
-			description += upcoming.getDescription(contest, chat)
-			chat.sendMessage(description)
+			oldLevel = self._notified[c['id']]
+			while timeLeft <= self._notifyTimes[self._notified[c['id']]]:
+				self._notified[c['id']] += 1
+			if oldLevel != self._notified[c['id']] and not quiet:
+				shouldNotifyFun = lambda chat: False
+				if self._notified[c['id']] == 1:
+					shouldNotifyFun = lambda chat: chat.reminder3d
+				elif self._notified[c['id']] == 2:
+					shouldNotifyFun = lambda chat: chat.reminder1d
+				elif self._notified[c['id']] == 3:
+					shouldNotifyFun = lambda chat: chat.reminder2h
+				elif self._notified[c['id']] == 4:
+					shouldNotifyFun = lambda chat: False # contest started -> no new reminder, only delete old reminder
+				self._notifyAllUpcoming(c, shouldNotifyFun)
 
 	def _notifyAllUpcoming(self, contest, shouldNotifyFun):
 		for chatId in db.getAllChatPartners():
