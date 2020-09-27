@@ -66,6 +66,9 @@ def handleSetUserHandle(chat:ChatClass, handle):
 
 # ------- Add API KEY -----
 def handleAddSecret(chat, secret):
+	if not secret.isalnum():
+		chat.sendMessage("Your API-secret is incorrect, it may only contain alphanumerical letters. Please try again:")
+		return
 	chat.secret = secret
 	bot.setOpenCommandFunc(chat.chatId, None)
 	logger.debug('new secret added for user ' + str(chat.chatId))
@@ -76,6 +79,9 @@ def handleAddSecret(chat, secret):
 def handleAddKey(chat, key):
 	if util.cleanString(key) == "no":
 		bot.sendSetupFinished(chat)
+		return
+	if not key.isalnum():
+		chat.sendMessage("Your API-key is incorrect, it may only contain alphanumerical letters. Please try again:")
 		return
 	chat.apikey = key
 	bot.setOpenCommandFunc(chat.chatId, handleAddSecret)

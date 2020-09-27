@@ -20,7 +20,7 @@ class SummarizingService (UpdateService.UpdateService):
 
 	def _doTask(self, quiet=False):
 		for c in cf.getCurrentContests():
-			if cf.getContestStatus(c) == 'finished' and not c['id'] in self._summarized:
+			if cf.getContestStatus(c) == 'finished' and not c['id'] in self._summarized and cf.getStandings(c['id'], []):
 				self._summarized.add(c['id'])
 				if not quiet:
 					self._sendAllSummary(c)
