@@ -1,6 +1,8 @@
 import requests, urllib, simplejson
 import random, time
 import queue, threading
+from collections import defaultdict
+
 from utils import database as db
 from utils import util
 from telegram import Chat
@@ -13,7 +15,7 @@ contestListLock = threading.Lock()
 aktuelleContests = [] # display scoreboard + upcoming
 currentContests = [] # display scoreboard
 
-standingsLock = threading.Condition()
+standingsLock = defaultdict(lambda : threading.Condition())
 globalStandings = {} # contest-id -> {time, standings}
 
 endTimes = queue.Queue()
@@ -145,7 +147,7 @@ def updateStandings(contestId):
 	logger.debug('updating standings for contest '+str(contestId)+' for all users')
 	stNew = sendRequest('contest.standings', {'contestId':contestId, 'showUnofficial':True})
 	if stNew and "contest" in stNew:
-		with standingsLock:
+		with standingsLock[contestId]:
 			globalStandings[contestId] = {"time": time.time(), "standings": stNew}
 		with contestListLock:
 			aktuelleContests = [stNew["contest"] if stNew["contest"]["id"] == c["id"] else c for c in aktuelleContests]
@@ -154,26 +156,26 @@ def updateStandings(contestId):
 		logger.error('standings not updated')
 
 def getStandings(contestId, handleList, forceRequest=False):
-	with standingsLock:
+	with standingsLock[contestId]:
 		contestOld = contestId not in globalStandings or globalStandings[contestId] is False or time.time() - globalStandings[contestId]["time"] > 120
 		toUpd = contestOld or forceRequest
 		shouldUpdate = False
 		if toUpd:
-			if getStandings.isUpdating:
-				standingsLock.wait()
+			if getStandings.isUpdating[contestId]:
+				standingsLock[contestId].wait()
 			else:
-				getStandings.isUpdating = True
+				getStandings.isUpdating[contestId] = True
 				shouldUpdate = True
 
 	if shouldUpdate:
 		updateStandings(contestId)
-		with standingsLock:
-			getStandings.isUpdating = False
-			standingsLock.notifyAll()
+		with standingsLock[contestId]:
+			getStandings.isUpdating[contestId] = False
+			standingsLock[contestId].notifyAll()
 
 	handleSet = set(handleList)
 
-	with standingsLock:
+	with standingsLock[contestId]:
 		if contestId not in globalStandings or globalStandings[contestId] is False or globalStandings[contestId]["standings"] is False:
 			return False
 		allStandings = globalStandings[contestId]["standings"]
@@ -185,7 +187,7 @@ def getStandings(contestId, handleList, forceRequest=False):
 		standings['contest'] = allStandings['contest']
 		standings["rows"] = rows
 		return standings
-getStandings.isUpdating = False
+getStandings.isUpdating = defaultdict(lambda : False)
 
 def getContestStatus(contest):
 	startT = contest.get('startTimeSeconds', -1)

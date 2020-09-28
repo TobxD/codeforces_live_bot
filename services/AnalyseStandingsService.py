@@ -1,5 +1,5 @@
 from typing import List
-import random
+import random, os
 from collections import defaultdict
 from threading import Thread
 
@@ -85,6 +85,10 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 	def _analyseContest(self, contestId, friends, firstRead):
 		ranking = cf.getStandings(contestId, friends, forceRequest=True)
 		if ranking is False:
+			if firstRead:
+				logger.critical("------------ ranking not fetched during firstRead ----------------------------")
+				logger.critical("Aborting to avoid resending of solved notifications ...")
+				os._exit(1)
 			return
 		results = ranking['rows']
 		for row in results:

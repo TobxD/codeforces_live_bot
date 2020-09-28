@@ -15,7 +15,7 @@ testFlag = False
 def requestPost(chatId, url, data, timeout=30):
 	errorTxt = 'chatId: ' + str(data.get('chat_id')) + ' text:\n' + str(data.get('text'))
 	if testFlag:
-		logger.info("telegram object that would have been sent: " + errorTxt)
+		logger.info("telegram object that would have been sent (url " + url + "): " + errorTxt)
 		r = {'ok':True, 'result':{'message_id':1}}
 		return r
 	try:
