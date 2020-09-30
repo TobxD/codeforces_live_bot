@@ -44,7 +44,7 @@ def showSetupPage(chat, data, callback):
 # ---- Set User Handle ------
 def handleSetUserHandlePrompt(chat, msg=None):
 	bot.setOpenCommandFunc(chat.chatId, handleSetUserHandle)
-	chat.sendNotifcation("Please enter your Codeforces handle:")
+	chat.sendNotification("Please enter your Codeforces handle:")
 
 def handleSetUserHandle(chat:ChatClass, handle):
 	handle = util.cleanString(handle)
@@ -59,9 +59,9 @@ def handleSetUserHandle(chat:ChatClass, handle):
 		chat.handle = userInfos[0]['handle']
 		db.addFriends(chat.chatId, [userInfos[0]['handle']], chat.notifyLevel)
 		rating = userInfos[0].get('rating', 0)
-		chat.sendNotifcation("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
+		chat.sendNotification("Welcome `" + userInfos[0]['handle'] + "`. Your current rating is " + str(rating) + " " + util.getUserSmiley(rating) + ".")
 		if chat.apikey is None:
-			chat.sendNotifcation("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
+			chat.sendNotification("Do you want import your friends from Codeforces? Then, I need your Codeforces API key.")
 			handleSetAuthorization(chat, "")
 
 # ------- Add API KEY -----
@@ -89,7 +89,7 @@ def handleAddKey(chat, key):
 
 def handleSetAuthorization(chat, req=None):
 	bot.setOpenCommandFunc(chat.chatId, handleAddKey)
-	chat.sendNotifcation("Go to https://codeforces.com/settings/api and generate a key.\n"
+	chat.sendNotification("Go to https://codeforces.com/settings/api and generate a key.\n"
 	+ "Then text me two seperate messages - the first one containing the key and the second one containing the secret.\n"
 	+ "If you do not want to add your secret now, text me _no_ and don't forget to add your secret later in the settings.")
 
@@ -106,9 +106,9 @@ def handleSetTimezone(chat:ChatClass, tzstr):
 	else:
 		bot.setOpenCommandFunc(chat.chatId, None)
 		chat.timezone = tz
-		chat.sendNotifcation("Timezone set to '" + util.escapeMarkdown(tz) + "'")
+		chat.sendNotification("Timezone set to '" + util.escapeMarkdown(tz) + "'")
 		# if in setup after start, ask for user handle
 		if chat.handle is None:
 			# use notification so that the order is correct
-			chat.sendNotifcation("Now I need *your* handle. Answer 'no' if you don't want to add your handle.")
+			chat.sendNotification("Now I need *your* handle. Answer 'no' if you don't want to add your handle.")
 			handleSetUserHandlePrompt(chat, "")

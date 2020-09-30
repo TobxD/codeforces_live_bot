@@ -195,7 +195,7 @@ class Chat:
 			tg.requestSpooler.put(lambda : tg.sendMessage(self.chatId, text, reply_markup, callback), priority=0)
 
 	# message which can be grouped
-	def sendNotifcation(self, text):
+	def sendNotification(self, text):
 		if self.chatId == '0':
 			print('\n----- message sent: ------------\n' + text + "\n--------- End Message ----------\n")
 			return

@@ -34,6 +34,9 @@ def getRatingChanges(contestId):
 			except requests.exceptions.Timeout as errt:
 				logger.error("Timeout on CF-predictor.")
 				return handleToRatingChanges[contestId]
+			except Exception as e:
+				logger.critical('Failed to request cf-predictor: \nexception: %s\n', e, exc_info=True)
+				return handleToRatingChanges[contestId]
 			if r.status_code != requests.codes.ok:
 				logger.error("CF-Predictor request failed with code "+ str(r.status_code) + ", "+ str(r.reason))
 				return handleToRatingChanges[contestId]

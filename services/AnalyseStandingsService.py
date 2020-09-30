@@ -29,7 +29,7 @@ class AnalyseStandingsService (UpdateService.UpdateService):
 			msg += " *after " + str(rejectedAttemptCount) + " wrong submissions*"
 		usersToNotify = db.getWhoseFriendsContestSolved(handle) if official else db.getWhoseFriendsUpsolving(handle)
 		for chatId in usersToNotify:
-			Chat.getChat(chatId).sendMessage(msg)
+			Chat.getChat(chatId).sendNotification(msg)
 
 	def _notifyTaskTested(self, handle, task, accepted):
 		funnyInsults = ["%s failed on system tests for task %s. What a looser.💩",
