@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 	from telegram.Chat import Chat
 
 from commands import bot
-from codeforces import codeforces as cf
+from codeforces import codeforces as cf, Ranking
 from telegram import telegram as tg
 from telegram import Chat
 from utils import util
@@ -51,6 +51,18 @@ def getRatingChanges(contestId):
 			cfPredictorLastRequest[contestId] = time.time()
 		return handleToRatingChanges[contestId]
 
+def getContestHeader(contest):
+	msg = contest["name"] + " "
+	if contest["relativeTimeSeconds"] < contest["durationSeconds"]:
+		msg += "*"+ util.formatSeconds(contest["relativeTimeSeconds"]) + "* / "
+		msg += util.formatSeconds(contest["durationSeconds"]) + "\n\n"
+	elif contest['phase'] != 'FINISHED':
+		msg += "*TESTING*\n\n"
+	else:
+		msg += "*FINISHED*\n\n"
+	return msg
+
+
 # if !sendIfEmpty and standings are empty then False is returned
 def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 	friends = cf.getListFriends(chat)
@@ -64,69 +76,18 @@ def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 	if standings == False:
 		logger.debug("failed to get standings for " + str(friends))
 		return False
-	contest = standings["contest"]
-	msg = contest["name"] + " "
-	if contest["relativeTimeSeconds"] < contest["durationSeconds"]:
-		msg += "*"+ util.formatSeconds(contest["relativeTimeSeconds"]) + "* / "
-		msg += util.formatSeconds(contest["durationSeconds"]) + "\n\n"
-	elif contest['phase'] != 'FINISHED':
-		msg += "*TESTING*\n\n"
-	else:
-		msg += "*FINISHED*\n\n"
-
-	problems = [p["index"] for p in standings["problems"]]
+	
+	msg = getContestHeader(standings["contest"])
+	problemNames = [p["index"] for p in standings["problems"]]
 	ratingChanges = getRatingChanges(contestId)
+	ranking = Ranking.Ranking(standings["rows"], ratingChanges, len(problemNames))
+	tableRows = ranking.getRows(standings["contest"]['phase'] == 'SYSTEM_TEST')
 
-	rows = standings["rows"]
-	res = []
-	for row in rows:
-		nrow = {}
-		subs = []
-		if row["rank"] == 0: #unofficial
-			handle = row["party"]["members"][0]["handle"]
-			nrow["head"] = "* " + handle
-			for sub in row["problemResults"]:
-				val = ""
-				if sub["points"] > 0:
-					val = "+"
-				elif sub["rejectedAttemptCount"] > 0:
-					val = "-"
-
-				if sub["rejectedAttemptCount"] > 0:
-					val += str(sub["rejectedAttemptCount"])
-				subs.append(val)
-		else:		#official
-			handlename = row["party"]["members"][0]["handle"]
-			#rating changes
-			if handlename in ratingChanges:
-				(oldR, newR) = ratingChanges[handlename]
-				ratingC = newR-oldR
-				ratingC = ("+" if ratingC >= 0 else "") + str(ratingC)
-				nrow["head2"] = str(oldR) + " -> " + str(newR) + " (" + ratingC + ")"
-
-			if row["party"]["participantType"] == "VIRTUAL": #mark virtual participants
-				handlename = "* " + handlename
-			if len(handlename) > 11:
-				handlename = handlename[:10] + "…"
-			nrow["head"] = handlename + " (" + str(row["rank"]) +".)"
-			for sub in row["problemResults"]:
-				if sub["points"] > 0:
-					timeStr = util.formatSeconds(sub["bestSubmissionTimeSeconds"], sub["rejectedAttemptCount"] != 0, longOk=False)
-					subs.append(timeStr)
-				else:
-					status = ""
-					if sub["type"] == "PRELIMINARY" and contest['phase'] == 'SYSTEM_TEST':
-						status = "?"
-					if sub["rejectedAttemptCount"] > 0:
-						status += "-" + str(sub["rejectedAttemptCount"])
-					subs.append(status)
-		nrow["body"] = subs
-		res.append(nrow)
-	if not sendIfEmpty and len(res) == 0:
+	if not sendIfEmpty and len(tableRows) == 0:
 		return False
-	table = Table(problems, res)
+	table = Table(problemNames, tableRows)
 	msg += table.formatTable(chat.width)
-	return msg
+	return msg	
 
 def sendContestStandings(chat:Chat, contestId, sendIfEmpty=True):
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
