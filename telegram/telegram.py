@@ -57,7 +57,7 @@ def handleRequestError(chatId, req):
 			standings.standingsSent[chatId] = defaultdict(lambda : None)
 		logger.error(f"message to edit not found - deleted standingsSent for Chat {chatId}")
 		return True
-	elif (errMsg == "Bad Request: message can't be deleted for everyone"
+	elif (errMsg.startswith("Bad Request: message can't be deleted")
 		or errMsg == "Bad Request: message to delete not found"):
 		logger.error(f"Message deletion failed for Chat {chatId}")
 		return True

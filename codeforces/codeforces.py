@@ -50,10 +50,9 @@ def sendRequest(method, params, authorized = False, chat = None):
 	waitTime = endTimes.get() + 1 - time.time()
 	if waitTime > 0:
 		time.sleep(waitTime)
+	startT = time.time()
 	try:
-		startT = time.time()
 		r = requests.get(request, timeout=15)
-		perfLogger.info("cf request " + method + ": {:.3f}s; waittime: {:.3f}".format(time.time()-startT, startT-startWait))
 	except requests.exceptions.Timeout as errt:
 		logger.error("Timeout on Codeforces.")
 		return False
@@ -64,6 +63,7 @@ def sendRequest(method, params, authorized = False, chat = None):
 		logger.critical('Failed to request codeforces: \nexception: %s\n', e, exc_info=True)
 		return False
 	finally:
+		perfLogger.info("cf request " + method + ": {:.3f}s; waittime: {:.3f}".format(time.time()-startT, startT-startWait))
 		endTimes.put(time.time())
 	if r.status_code != requests.codes.ok:
 		if r.status_code == 429:
@@ -113,10 +113,17 @@ def handleCFError(request, r, chat):
 					 exc_info=True)
 
 def getUserInfos(userNameArr):
-	usrList = ';'.join(userNameArr)
-	logger.debug('requesting info of ' + str(len(userNameArr)) + ' users ')
-	r = sendRequest('user.info', {'handles':usrList})
-	return r
+	batchSize = 200
+	split = [userNameArr[batchSize*i:batchSize*(i+1)] for i in range((len(userNameArr)+batchSize-1)//batchSize)]
+	res = []
+	for part in split:
+		usrList = ';'.join(part)
+		logger.debug('requesting info of ' + str(len(part)) + ' users ')
+		r = sendRequest('user.info', {'handles':usrList})
+		if r is False:
+			return False
+		res.extend(r)
+	return res
 
 def getUserRating(handle):
 	info = getUserInfos([handle])
