@@ -14,7 +14,10 @@ if len(sys.argv) != 1:
 		for chatId in Chat.chats:
 			msg = msgText
 			chat = Chat.chats[chatId]
-			while (m := re.search("\[%t [0-9]*\]", msg)):
+			while True:
+				m = re.search("\[%t [0-9]*\]", msg)
+				if m is None:
+					break
 				tInSec = int(m.group()[4: -1])
 				timeLeft = int(tInSec - time.time())
 				delta = datetime.timedelta(seconds=timeLeft)

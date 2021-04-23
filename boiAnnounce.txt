@@ -1,19 +1,5 @@
-Hi!
+This year, the Baltic Olympiad in Informatics (BOI) is hosted by us in Germany 🇩🇪. We cordially invite you to participate in the online mirrors this weekend:
+Day 1: [%t 1619272800]
+Day 2: [%t 1619359200]
 
-This year, the Baltic Olympiad in Informatics (BOI) is hosted by us in Germany. We cordially invite you to participate in the online mirrors this weekend on:
-Day 1: [%t ]
-Day 2: [%t ]
-
-Note that you need to register beforehand. For that, check out the [Codeforces Blog Post](https://codeforces.com/blog/entry/89932) by our committee member 🦸🏻`lumibons`.
-
-
-If you are looking for a high quality 5h contest in the IOI format
-
-Congratulations (🏅) for finding me among the numerous telegram bots and thank you for testing all my features so far. Now, I have finally grown up and am ready to serve the whole Codeforces community 🚀.
-Make sure to check out the corresponding [Codeforces Blog Post](https://codeforces.com/blog/entry/82669) and comment your funniest conversations with me!
-
-Good luck and high ratings
-Your Codeforces Live Bot 🤖
-
-
-[%t 11116546]
+Note that you need to register beforehand. For that, check out the [Codeforces Blog Post](https://codeforces.com/blog/entry/89932) by our committee member 🦸🏻`lumibons`. 🚀
