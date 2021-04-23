@@ -22,9 +22,9 @@ if len(sys.argv) != 1:
 				timeLeft = int(tInSec - time.time())
 				delta = datetime.timedelta(seconds=timeLeft)
 				dTime = f"*{util.displayTime(tInSec, chat.timezone)}* (in {':'.join(str(delta).split(':')[:2])} hours)"
-				msg = msg[:m.span()[0]] + + msg[m.span()[1]:]
-			print(f"chat: {chatId}: {msg}")
-			#chat.sendMessage(msg)
+				msg = msg[:m.span()[0]] + dTime + msg[m.span()[1]:]
+			#print(f"chat: {chatId}: {msg}")
+			chat.sendMessage(msg)
 		time.sleep(1)
 		while tg.requestSpooler._q[0].qsize() > 0:
 			try:
