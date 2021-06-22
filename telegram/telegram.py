@@ -61,7 +61,7 @@ def handleRequestError(chatId, req):
 		or errMsg == "Bad Request: message to delete not found"):
 		logger.error(f"Message deletion failed for Chat {chatId}")
 		return True
-	elif errMsg == "Bad Request: have no rights to send a message":
+	elif errMsg == "Bad Request: have no rights to send a message" or errMsg == "Forbidden: CHAT_WRITE_FORBIDDEN":
 		logger.error(f"No rights to send message in Chat {chatId}")
 		return True
 	else:
