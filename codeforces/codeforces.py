@@ -81,19 +81,19 @@ def sendRequest(method, params, authorized = False, chat = None):
 								 exc_info=True)
 		return False
 	else:
-        try:
-            r = r.json()
-            if r['status'] == 'OK':
-                return r['result']
-            else:
-                logger.critical("Invalid Codeforces request: " + r['comment'])
-                return False
-        except Exception as e: #TODO why does CF send an invalid json with http 200?
-            logger.critical("json decoding failed; status code for cf request: " + str(r.status_code) + "\n" +
-                             "this request caused the error:\n" + str(request) + "\n" +
-                             "text got back:\n" + str(r.text),
-                             exc_info=True)
-            return False
+		try:
+			r = r.json()
+			if r['status'] == 'OK':
+				return r['result']
+			else:
+				logger.critical("Invalid Codeforces request: " + r['comment'])
+				return False
+		except Exception as e: #TODO why does CF send an invalid json with http 200?
+			logger.critical("json decoding failed; status code for cf request: " + str(r.status_code) + "\n" +
+							 "this request caused the error:\n" + str(request) + "\n" +
+							 "text got back:\n" + str(r.text),
+							 exc_info=True)
+			return False
 
 def handleCFError(request, r, chat):
 	if r['status'] == 'FAILED':
