@@ -7,6 +7,7 @@ set format x "%m/%Y"
 set xlabel "Date"
 set autoscale x
 set xtics 60. * 60. * 24. * 30.
+set xtics rotate by -90
 
 set ylabel "Count"
 set yrange [0:*]

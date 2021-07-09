@@ -26,7 +26,11 @@ def requestPost(chatId, url, data, timeout=30):
 		else:
 			#only print if error not handled yet
 			if not handleRequestError(chatId, r):
-				logger.critical('Failed to request telegram. Error: ' + r.get('description', "No description available.") + '\n' + errorTxt)
+				logText = 'Failed to request telegram. Error: ' + r.get('description', "No description available.") + '\n' + errorTxt
+				if r['description'] == "Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message":
+					logger.error(logText)
+				else:
+					logger.critical(logText)
 			return False
 	except requests.Timeout as e:
 		logger.critical('Timeout at telegram request: ' + errorTxt)
@@ -57,11 +61,13 @@ def handleRequestError(chatId, req):
 			standings.standingsSent[chatId] = defaultdict(lambda : None)
 		logger.error(f"message to edit not found - deleted standingsSent for Chat {chatId}")
 		return True
-	elif (errMsg.startswith("Bad Request: message can't be deleted")
-		or errMsg == "Bad Request: message to delete not found"):
+	elif (errMsg.startswith("Bad Request: message can't be deleted") or
+		  errMsg == "Bad Request: message to delete not found"):
 		logger.error(f"Message deletion failed for Chat {chatId}")
 		return True
-	elif errMsg == "Bad Request: have no rights to send a message" or errMsg == "Forbidden: CHAT_WRITE_FORBIDDEN":
+	elif (errMsg == "Bad Request: have no rights to send a message" or
+		 errMsg == "Forbidden: CHAT_WRITE_FORBIDDEN" or
+		 errMsg == "Forbidden: bot is not a member of the supergroup chat"):
 		logger.error(f"No rights to send message in Chat {chatId}")
 		return True
 	else:
@@ -71,7 +77,7 @@ def shortenMessage(text):
 	if len(text) > 4000: # Telegram doesn't allow longer messages
 		cutof = text[4000:]
 		text = text[:4000]
-		while text[-1] == '`': 			# don't split on "```"
+		while text[-1] == '`':			# don't split on "```"
 			cutof = text[-1] + cutof
 			text = text[:-1]
 		if cutof.count("```") % 2 == 1:
