@@ -18,7 +18,7 @@ set timefmt "%Y-%m-%d-%H:%M:%S"
 
 set key bottom right
 
-if (col == 0) plot "./stats.txt" using 1:2 t "users", "./stats.txt" using 1:3 t "distinct friends", "./stats.txt" using 1:4 t "friends connections"; \
-else if(col == 2) plot "./stats.txt" using 1:col t "users"; \
-else if(col == 3) plot "./stats.txt" using 1:col t "distinct friends"; \
-else if(col == 4) plot "./stats.txt" using 1:col t "friend relation size"; \
+if (col == 0) plot "./stats.txt" using 1:2 t "users" with lines, "./stats.txt" using 1:3 t "distinct friends" with lines, "./stats.txt" using 1:4 t "friends connections" with lines; \
+else if(col == 2) plot "./stats.txt" using 1:col t "users" with lines; \
+else if(col == 3) plot "./stats.txt" using 1:col t "distinct friends" with lines; \
+else if(col == 4) plot "./stats.txt" using 1:col t "friend relation size" with lines; \
