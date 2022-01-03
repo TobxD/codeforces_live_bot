@@ -50,7 +50,7 @@ def getAllHandles():
   users = [x[0] for x in db.queryDB(query, ()) if x[0] != None]
   res = list(set(friends + users))
   print(res[:100])
-  return users
+  return res
 
 def fixBatch(handles):
   curLen = len(handles)
