@@ -137,7 +137,7 @@ class SummarizingService (UpdateService.UpdateService):
 
 		# get better and worse
 		# TODO what about people not participating which you passed?
-		for row in [r for r in rows if r["rank"] != 0]: #official results onl
+		for row in [r for r in rows if r["rank"] != 0]: #official results only
 			handlename = row["party"]["members"][0]["handle"]
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
