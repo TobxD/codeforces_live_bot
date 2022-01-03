@@ -5,6 +5,15 @@ from utils import database as db
 
 renamed = {}
 
+def renameHandle(oldHandle, newHandle):
+  query = "update ignore friends set friend=%s where friend=%s"
+  db.insertDB(query, (newHandle, oldHandle))
+  query2 = "update tokens set handle=%s where handle=%s"
+  db.insertDB(query2, (newHandle, oldHandle))
+  query3 = "delete from friends where friend=%s"
+  db.insertDB(query3, (oldHandle, ))
+  renamed[oldHandle] = newHandle
+
 def requestHandles(handleList):
   handleStr = ";".join(handleList)
   codeforcesUrl = 'https://codeforces.com/api/'
@@ -27,17 +36,21 @@ def getNewName(handle):
   if res.url != "https://codeforces.com/":
     newHandle = res.url[len(prefix):]
     print(handle, "->", newHandle)
-    renamed[handle] = newHandle
+    renameHandle(oldHandle=handle, newHandle=newHandle)
     return newHandle
   else:
     print(handle, "not found")
     return None
 
 def getAllHandles():
-  print("requesting all handles from DB")
-  res = db.getAllFriends()
+  print("requesting all friends from DB")
+  friends = db.getAllFriends()
+  print("requesting all users from DB")
+  query = "select distinct handle from tokens"
+  users = [x[0] for x in db.queryDB(query, ()) if x[0] != None]
+  res = list(set(friends + users))
   print(res[:100])
-  return res
+  return users
 
 def fixBatch(handles):
   curLen = len(handles)
@@ -55,8 +68,11 @@ handles = getAllHandles()
 batchSize = 200
 split = [handles[batchSize*i:batchSize*(i+1)] for i in range((len(handles)+batchSize-1)//batchSize)]
 res = []
+batchNum = 1
 for part in split:
+  print("starting batch", batchNum, "/", len(split))
   fixBatch(part)
+  batchNum += 1
 
 print(renamed)
 print("done")
