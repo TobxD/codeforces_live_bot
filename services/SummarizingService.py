@@ -114,7 +114,7 @@ class SummarizingService (UpdateService.UpdateService):
 		curStandings = cf.getStandings(contestId, cf.getListFriends(chat))
 		rows = curStandings["rows"]
 		# are changes already applied?
-		myRating = self.userRatings[chat.handle]
+		myRating = self.userRatings[chat.handle] # could be -1 if CF requests fail 20 times - happens during new year special
 		minRC, maxRC = 0, 0
 		minOldR, maxOldR = -1, -1
 		minHandle, maxHandle = 0, 0
@@ -132,8 +132,8 @@ class SummarizingService (UpdateService.UpdateService):
 					maxRC, maxOldR, maxHandle = ratingC, oldR, handlename
 				if handlename == chat.handle:
 					myRC, myOldR = ratingC, oldR
-					if myRating == myOldR:
-						myRating += myRC
+					if myRating == myOldR or myRating == -1:
+						myRating = myOldR + myRC
 
 		# get better and worse
 		# TODO what about people not participating which you passed?
@@ -141,9 +141,9 @@ class SummarizingService (UpdateService.UpdateService):
 			handlename = row["party"]["members"][0]["handle"]
 			if handlename in ratingChanges:
 				(oldR, newR) = ratingChanges[handlename]
-				if oldR < myOldR and newR > myRating:
+				if myRating != -1 and oldR < myOldR and newR > myRating:
 					nowBetter.append((handlename, newR))
-				if oldR > myOldR and newR < myRating:
+				if myRating != -1 and oldR > myOldR and newR < myRating:
 					nowWorse.append((handlename, newR))
 
 
