@@ -20,7 +20,7 @@ standingsSent = defaultdict(lambda : defaultdict(lambda : None)) # [chatId][cont
 cfPredictorLock = threading.Lock()
 handleToRatingChanges = defaultdict(lambda : {})
 cfPredictorLastRequest = defaultdict(lambda : 0)
-cfPredictorUrl = "https://cf-predictor-frontend.herokuapp.com/GetNextRatingServlet?contestId="
+cfPredictorUrl = "https://cf-predictor.wasylf.xyz/GetNextRatingServlet?contestId="
 
 def getRatingChanges(contestId):
 	with cfPredictorLock:
@@ -76,7 +76,7 @@ def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 	if standings == False:
 		logger.debug("failed to get standings for " + str(friends))
 		return False
-	
+
 	msg = getContestHeader(standings["contest"])
 	problemNames = [p["index"] for p in standings["problems"]]
 	ratingChanges = getRatingChanges(contestId)
@@ -87,7 +87,7 @@ def getFriendStandings(chat:Chat, contestId, sendIfEmpty=True):
 		return False
 	table = Table(problemNames, tableRows)
 	msg += table.formatTable(chat.width)
-	return msg	
+	return msg
 
 def sendContestStandings(chat:Chat, contestId, sendIfEmpty=True):
 	msg = getFriendStandings(chat, contestId, sendIfEmpty=sendIfEmpty)
