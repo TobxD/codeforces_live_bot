@@ -12,7 +12,7 @@ Telegram username: [@codeforces_live_bot](https://t.me/codeforces_live_bot)
 - Watch your friends' standings from everywhere on a **live updating scoreboard** with rating predictions (powerd by [CFPredictor](https://codeforces.com/blog/entry/50411))
 - No need to spam F5 anymore while waiting for the system tests: get **notified** when your solution passes (or fails) the **system tests**
 
-Feel free to comment your favourite feature, furter improvements and general feedback on the [Codeforces Blog post]().
+Feel free to comment your favourite feature, further improvements and general feedback on the [Codeforces Blog post](https://codeforces.com/blog/entry/82669).
 
 ### Contribution
 You can also add your own features by creating a pull request.

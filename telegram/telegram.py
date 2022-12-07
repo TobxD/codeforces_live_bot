@@ -50,7 +50,8 @@ def handleRequestError(chatId, req):
 		 errMsg == "Forbidden: bot was kicked from the supergroup chat" or
 		 errMsg == "Bad Request: chat not found" or
 		 errMsg == "Forbidden: user is deactivated" or
-		 errMsg == "Forbidden: bot can't initiate conversation with a user"):
+		 errMsg == "Forbidden: bot can't initiate conversation with a user" or
+		 errMsg == "Forbidden: the group chat was deleted"):
 		Chat.deleteUser(chatId)
 		return True
 	elif errMsg == "Bad Request: group chat was upgraded to a supergroup chat":

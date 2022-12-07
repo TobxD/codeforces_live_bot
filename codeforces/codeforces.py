@@ -284,4 +284,4 @@ class ContestListService (UpdateService.UpdateService):
 		else:
 			with contestListLock:
 				selectImportantContests(allContests)
-		logger.debug('loding contests finished')
+		logger.debug('loading contests finished')
