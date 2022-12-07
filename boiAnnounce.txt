@@ -1,5 +1,0 @@
-This year, the Baltic Olympiad in Informatics (BOI) is hosted by us in Germany 🇩🇪. We cordially invite you to participate in the online mirrors this weekend:
-Day 1: [%t 1619272800]
-Day 2: [%t 1619359200]
-
-Note that you need to register beforehand. For that, check out the [Codeforces Blog Post](https://codeforces.com/blog/entry/89932) by our committee member 🦸🏻`lumibons`. 🚀
