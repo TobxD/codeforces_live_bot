@@ -42,7 +42,7 @@ def requestPost(chatId, url, data, timeout=30):
 requestSpooler = Spooler(19, "telegram", timeInterval=2, priorityCount=3)
 
 
-#returns whether error could be handled
+# returns whether error could be handled
 def handleRequestError(chatId, req):
 	errMsg = req['description']
 	if (errMsg == "Forbidden: bot was blocked by the user" or
@@ -52,10 +52,17 @@ def handleRequestError(chatId, req):
 		 errMsg == "Forbidden: user is deactivated" or
 		 errMsg == "Forbidden: bot can't initiate conversation with a user" or
 		 errMsg == "Forbidden: the group chat was deleted"):
+		logger.error(f"No rights to send message in Chat {chatId} -> deleting chat: {errMsg}")
 		Chat.deleteUser(chatId)
 		return True
 	elif errMsg == "Bad Request: group chat was upgraded to a supergroup chat":
-		Chat.getChat(chatId).chatId = req['parameters']['migrate_to_chat_id']
+		newChatId = req['parameters']['migrate_to_chat_id']
+		logger.error(f"Migrating to new chat id: {chatId} -> {newChatId}")
+		if newChatId in Chat.chats:
+			logger.error(f"Chat for new chatID {newChatId} already exists -> deleting old chat {chatId}")
+			Chat.deleteUser(chatId)
+		else:
+			Chat.getChat(chatId).chatId = newChatId
 		return True
 	elif errMsg == "Bad Request: message to edit not found":
 		with standings.standingsSentLock:
@@ -66,11 +73,14 @@ def handleRequestError(chatId, req):
 		  errMsg == "Bad Request: message to delete not found"):
 		logger.error(f"Message deletion failed for Chat {chatId}")
 		return True
+	# We are not allowed to write to the chat but maybe we are just temporarily muted/blocked
+	# Therefore, we don't delete the chat from the DB
 	elif (errMsg == "Bad Request: have no rights to send a message" or
 		 errMsg == "Forbidden: CHAT_WRITE_FORBIDDEN" or
-		 errMsg == "Forbidden: bot is not a member of the supergroup chat"):
-		logger.error(f"No rights to send message in Chat {chatId}")
-		return True
+		 errMsg == "Forbidden: bot is not a member of the supergroup chat" or
+		 errMsg == "Bad Request: not enough rights to send text messages to the chat" or
+		 errMsg == "Bad Request: CHAT_RESTRICTED"):
+		logger.info(f"No rights to send message in Chat {chatId}: {errMsg}")
 	else:
 		return False
 
@@ -160,7 +170,7 @@ class TelegramUpdateService (UpdateService.UpdateService):
 				bot.handleMessage(Chat.getChat(str(update['message']['chat']['id'])), update['message']['text'])
 			else:
 				logger.debug("no text in message: " + str(update['message']))
-		elif 'edited_message' in update:
+		elif 'edited_message' in update and 'text' in update['edited_message']:
 			bot.handleMessage(Chat.getChat(str(update['edited_message']['chat']['id'])), update['edited_message']['text'])
 		elif 'callback_query' in update:
 			settings.handleCallbackQuery(update['callback_query'])

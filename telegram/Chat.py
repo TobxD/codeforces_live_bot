@@ -61,7 +61,10 @@ class Chat:
 
 	@chatId.setter
 	def chatId(self, chatId:str):
+		if self._chatId in chats:
+			del chats[self._chatId]
 		self._chatId = chatId
+		chats[self._chatId] = self
 		self._updateDB()
 
 	@property
