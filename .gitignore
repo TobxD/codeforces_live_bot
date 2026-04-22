@@ -5,3 +5,4 @@ log/
 backup/
 .vscode/
 userStats/stats.txt
+.ruff_cache
