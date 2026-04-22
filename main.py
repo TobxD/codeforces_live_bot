@@ -7,9 +7,9 @@ util.initLogging()
 # with -t the testing mode gets enabled,
 # which only communicates over stdin/stdout instead of telegram
 if "-t" in sys.argv:
-	bot.startTestingMode()
+    bot.startTestingMode()
 elif "--production" in sys.argv:
-	bot.startTelegramBot()
+    bot.startTelegramBot()
 else:
-	print("invalid options")
-	os._exit(0)
+    print("invalid options")
+    os._exit(0)

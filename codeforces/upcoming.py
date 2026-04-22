@@ -3,29 +3,30 @@ from commands import bot
 from utils import util
 from codeforces import codeforces as cf
 
-def getDescription(contest, chat, timez = None):
-	if timez is None:
-		timez = chat.timezone
-	tim = contest['startTimeSeconds']
 
-	timeLeft = int(contest['startTimeSeconds'] - time.time())
-	delta = datetime.timedelta(seconds=timeLeft)
+def getDescription(contest, chat, timez=None):
+    if timez is None:
+        timez = chat.timezone
+    tim = contest["startTimeSeconds"]
 
-	timeStr = "*" + util.displayTime(tim, timez)
-	timeStr += '* (in ' + ':'.join(str(delta).split(':')[:2]) + ' hours' + ')'
+    timeLeft = int(contest["startTimeSeconds"] - time.time())
+    delta = datetime.timedelta(seconds=timeLeft)
 
-	res = timeStr.ljust(35)
-	res += ":\n" + contest['name'] + ""
-	res += '\n'
-	return res
+    timeStr = "*" + util.displayTime(tim, timez)
+    timeStr += "* (in " + ":".join(str(delta).split(":")[:2]) + " hours" + ")"
+
+    res = timeStr.ljust(35)
+    res += ":\n" + contest["name"] + ""
+    res += "\n"
+    return res
+
 
 def handleUpcoming(chat, req):
-	bot.setOpenCommandFunc(chat.chatId, None)
-	timez = chat.timezone
-	msg = ""
-	for c in sorted(cf.getFutureContests(), key=lambda x: x['startTimeSeconds']):
-		if msg != "":
-			msg += "\n"
-		msg += getDescription(c, chat, timez)
-	chat.sendMessage(msg)
-
+    bot.setOpenCommandFunc(chat.chatId, None)
+    timez = chat.timezone
+    msg = ""
+    for c in sorted(cf.getFutureContests(), key=lambda x: x["startTimeSeconds"]):
+        if msg != "":
+            msg += "\n"
+        msg += getDescription(c, chat, timez)
+    chat.sendMessage(msg)
