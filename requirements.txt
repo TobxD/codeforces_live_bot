@@ -5,3 +5,4 @@ pytz
 requests
 simplejson
 timezonefinder
+ruff
