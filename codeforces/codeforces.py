@@ -159,7 +159,11 @@ def getListFriends(chat):
 def updateStandings(contestId):
 	global aktuelleContests
 	logger.debug('updating standings for contest '+str(contestId)+' for all users')
-	stNew = sendRequest('contest.standings', {'contestId':contestId, 'showUnofficial':True})
+	# showUnofficial=True was removed because CF now rejects non-admin requests with any
+	# extra params beyond contestId ("available only via anonymous GET requests with no
+	# extra parameters"). Side effect: upsolving notifications no longer fire.
+	# Restore {'showUnofficial': True} here once CF allows it again.
+	stNew = sendRequest('contest.standings', {'contestId':contestId})
 	if stNew and "contest" in stNew:
 		with standingsLock[contestId]:
 			globalStandings[contestId] = {"time": time.time(), "standings": stNew}
