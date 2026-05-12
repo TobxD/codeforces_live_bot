@@ -1,6 +1,10 @@
-import requests, urllib, simplejson
-import random, time
-import queue, threading
+import requests
+import urllib
+import simplejson
+import random
+import time
+import queue
+import threading
 from collections import defaultdict
 
 from utils import database as db

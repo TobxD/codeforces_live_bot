@@ -1,14 +1,10 @@
 from __future__ import annotations
-import json
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from telegram.Chat import Chat
 from utils import database as db
-from telegram import telegram as tg
-from codeforces import codeforces as cf
-from utils import util
 from utils.util import logger
-from commands import bot, settings
+from commands import settings
 
 # constants
 NOTIFY_LEVEL_DESC_SHORT = ["Disabled", "Only Scoreboard", "Scoreboard + SysTest fail", "Scb + SysTest + Upsolve", "All Notifications"]

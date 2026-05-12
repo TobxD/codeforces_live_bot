@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from telegram.Chat import Chat as ChatClass

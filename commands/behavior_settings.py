@@ -1,10 +1,7 @@
-import queue, time, random, re
-from collections import defaultdict
 import threading
 
 from utils.util import logger
 from commands import settings
-from telegram import telegram as tg
 
 chatsLock = threading.Lock()
 
